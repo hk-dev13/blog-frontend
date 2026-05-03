@@ -1,0 +1,70 @@
+import Link from 'next/link';
+import { format } from 'date-fns';
+import { Clock, Eye } from 'lucide-react';
+import { Post } from '@/types';
+
+export default function PostCard({ post, featured = false }: { post: Post; featured?: boolean }) {
+  // Safe default values
+  const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80';
+  const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
+  const formattedDate = format(publishDate, 'MMM d, yyyy');
+  const category = post.categories?.[0];
+
+  return (
+    <article className={`group flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 ${featured ? 'md:flex-row' : ''}`}>
+      <Link href={`/posts/${post.slug}`} className={`relative overflow-hidden ${featured ? 'md:w-1/2' : 'w-full aspect-[16/9]'}`}>
+        <img 
+          src={imageUrl} 
+          alt={post.cover_image_alt || post.title}
+          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+        />
+        {category && (
+          <div className="absolute top-4 left-4 z-10">
+            <span className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-primary-500 text-white rounded-full shadow-sm">
+              {category.name}
+            </span>
+          </div>
+        )}
+      </Link>
+      
+      <div className={`flex flex-col flex-1 p-6 ${featured ? 'md:w-1/2 md:p-8 lg:p-12 justify-center' : ''}`}>
+        <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 mb-3 gap-4 font-medium">
+          <time dateTime={publishDate.toISOString()}>{formattedDate}</time>
+          <div className="flex items-center gap-1">
+            <Clock className="w-3.5 h-3.5" />
+            <span>{post.reading_time || 1} min read</span>
+          </div>
+          <div className="flex items-center gap-1">
+            <Eye className="w-3.5 h-3.5" />
+            <span>{post.views || 0}</span>
+          </div>
+        </div>
+        
+        <Link href={`/posts/${post.slug}`} className="block group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+          <h2 className={`font-serif font-bold text-slate-900 dark:text-white mb-3 leading-snug ${featured ? 'text-2xl md:text-3xl lg:text-4xl' : 'text-xl'}`}>
+            {post.title}
+          </h2>
+        </Link>
+        
+        {post.excerpt && (
+          <p className={`text-slate-600 dark:text-slate-300 line-clamp-3 mb-6 ${featured ? 'text-lg' : ''}`}>
+            {post.excerpt}
+          </p>
+        )}
+        
+        <div className="mt-auto flex items-center gap-3">
+          {post.author?.avatar_url ? (
+            <img src={post.author.avatar_url} alt={post.author.name} className="w-8 h-8 rounded-full" />
+          ) : (
+            <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs">
+              {post.author?.name?.charAt(0) || 'A'}
+            </div>
+          )}
+          <span className="text-sm font-medium text-slate-700 dark:text-slate-200">
+            {post.author?.name || 'Anonymous'}
+          </span>
+        </div>
+      </div>
+    </article>
+  );
+}
