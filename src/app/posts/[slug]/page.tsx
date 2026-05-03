@@ -7,6 +7,7 @@ import { Clock, Eye } from 'lucide-react';
 import CategoryPills from '@/components/shared/CategoryPills';
 import PostCard from '@/components/shared/PostCard';
 import CommentSection from './CommentSection';
+import Image from 'next/image';
 
 // Dynamic params
 type Props = {
@@ -77,7 +78,7 @@ export default async function PostPage({ params }: Props) {
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
             <div className="flex items-center gap-2">
               {post.author?.avatar_url ? (
-                <img src={post.author.avatar_url} alt={post.author.name} className="w-8 h-8 rounded-full" />
+                <Image src={post.author.avatar_url} alt={post.author.name} width={32} height={32} className="rounded-full object-cover" />
               ) : (
                 <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
                   {post.author?.name?.charAt(0) || 'A'}
@@ -101,11 +102,14 @@ export default async function PostPage({ params }: Props) {
         </header>
 
         {/* Cover Image */}
-        <div className="w-full max-w-6xl mx-auto px-4 mb-12 md:mb-20">
-          <img 
+        <div className="relative w-full max-w-6xl mx-auto px-4 mb-12 md:mb-20 aspect-[21/9]">
+          <Image 
             src={imageUrl} 
             alt={post.cover_image_alt || post.title} 
-            className="w-full aspect-[21/9] object-cover rounded-2xl shadow-xl"
+            fill
+            sizes="100vw"
+            priority
+            className="object-cover rounded-2xl shadow-xl"
           />
         </div>
 
@@ -113,6 +117,7 @@ export default async function PostPage({ params }: Props) {
         <div className="container mx-auto px-4 max-w-3xl">
           {/* Prose Wrapper for Typography */}
           <div 
+            suppressHydrationWarning
             className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none"
             dangerouslySetInnerHTML={{ __html: post.content }}
           />

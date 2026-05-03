@@ -2,14 +2,20 @@
 
 import Link from 'next/link';
 import { Search, Moon, Sun } from 'lucide-react';
-import { useAppStore } from '@/store/useAppStore';
+import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
-import { useState, FormEvent } from 'react';
+import { useState, useEffect, FormEvent } from 'react';
 
 export default function Navbar() {
-  const { theme, setTheme } = useAppStore();
+  const { theme, setTheme, systemTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
   const router = useRouter();
   const [searchQuery, setSearchQuery] = useState('');
+
+  // Avoid hydration mismatch by waiting for mount
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
@@ -19,14 +25,8 @@ export default function Navbar() {
   };
 
   const toggleTheme = () => {
-    const newTheme = theme === 'dark' ? 'light' : 'dark';
-    setTheme(newTheme);
-    // In a real app we'd also toggle a class on the HTML element
-    if (newTheme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    const currentTheme = theme === 'system' ? systemTheme : theme;
+    setTheme(currentTheme === 'dark' ? 'light' : 'dark');
   };
 
   return (
@@ -57,7 +57,11 @@ export default function Navbar() {
             className="p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-600 dark:text-slate-300 transition-colors"
             aria-label="Toggle theme"
           >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
+            {mounted && (theme === 'dark' || (theme === 'system' && systemTheme === 'dark')) ? (
+              <Sun className="h-5 w-5" />
+            ) : (
+              <Moon className="h-5 w-5" />
+            )}
           </button>
         </div>
       </div>

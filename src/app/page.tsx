@@ -14,7 +14,7 @@ function HomeContent() {
   // Fetch latest posts
   const { data: latestPostsData, isLoading: isLatestLoading } = usePosts({ 
     limit: 6, 
-    tag: activeTag 
+    ...(activeTag ? { tag: activeTag } : {})
   });
   
   // Fetch trending posts

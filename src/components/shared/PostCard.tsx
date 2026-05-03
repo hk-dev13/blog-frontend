@@ -3,6 +3,8 @@ import { format } from 'date-fns';
 import { Clock, Eye } from 'lucide-react';
 import { Post } from '@/types';
 
+import Image from 'next/image';
+
 export default function PostCard({ post, featured = false }: { post: Post; featured?: boolean }) {
   // Safe default values
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80';
@@ -12,11 +14,13 @@ export default function PostCard({ post, featured = false }: { post: Post; featu
 
   return (
     <article className={`group flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 ${featured ? 'md:flex-row' : ''}`}>
-      <Link href={`/posts/${post.slug}`} className={`relative overflow-hidden ${featured ? 'md:w-1/2' : 'w-full aspect-[16/9]'}`}>
-        <img 
+      <Link href={`/posts/${post.slug}`} className={`relative overflow-hidden ${featured ? 'md:w-1/2 min-h-[300px]' : 'w-full aspect-[16/9]'}`}>
+        <Image 
           src={imageUrl} 
           alt={post.cover_image_alt || post.title}
-          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+          fill
+          sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+          className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {category && (
           <div className="absolute top-4 left-4 z-10">
@@ -54,7 +58,7 @@ export default function PostCard({ post, featured = false }: { post: Post; featu
         
         <div className="mt-auto flex items-center gap-3">
           {post.author?.avatar_url ? (
-            <img src={post.author.avatar_url} alt={post.author.name} className="w-8 h-8 rounded-full" />
+            <Image src={post.author.avatar_url} alt={post.author.name} width={32} height={32} className="rounded-full object-cover" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs">
               {post.author?.name?.charAt(0) || 'A'}
