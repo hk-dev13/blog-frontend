@@ -8,6 +8,8 @@ import CategoryPills from '@/components/shared/CategoryPills';
 import PostCard from '@/components/shared/PostCard';
 import CommentSection from './CommentSection';
 import Image from 'next/image';
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 
 // Dynamic params
 type Props = {
@@ -116,11 +118,11 @@ export default async function PostPage({ params }: Props) {
         {/* Content Section */}
         <div className="container mx-auto px-4 max-w-3xl">
           {/* Prose Wrapper for Typography */}
-          <div 
-            suppressHydrationWarning
-            className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none"
-            dangerouslySetInnerHTML={{ __html: post.content }}
-          />
+          <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
+            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+              {post.content}
+            </ReactMarkdown>
+          </div>
 
           {/* Tags */}
           {post.tags && post.tags.length > 0 && (
