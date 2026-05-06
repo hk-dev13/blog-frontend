@@ -55,13 +55,13 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <aside className="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 hidden md:flex flex-col">
         <div className="p-6 border-b border-slate-200 dark:border-slate-700">
           <Link href="/admin" className="text-2xl font-bold font-serif text-primary-600 dark:text-primary-400">
-            Envoyou.
+            Editor
           </Link>
           <p className="text-xs text-slate-500 mt-1">Admin Panel</p>
         </div>
 
         <div className="flex-1 overflow-y-auto py-6 px-4">
-          <Link 
+          <Link
             href="/admin/posts/create"
             className="flex items-center gap-2 w-full px-4 py-2.5 bg-primary-600 hover:bg-primary-700 text-white rounded-lg mb-8 transition-colors font-medium justify-center"
           >
@@ -76,11 +76,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
                 <Link
                   key={item.name}
                   href={item.href}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium ${
-                    isActive 
-                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400' 
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium ${isActive
+                      ? 'bg-primary-50 dark:bg-primary-900/30 text-primary-600 dark:text-primary-400'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-700/50'
-                  }`}
+                    }`}
                 >
                   <item.icon className="w-5 h-5" />
                   {item.name}
@@ -118,14 +117,14 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
             {/* Can add breadcrumbs or search bar here in the future */}
           </div>
           <div className="flex items-center gap-4">
-            <Link 
-              href="/" 
-              target="_blank" 
+            <Link
+              href="/"
+              target="_blank"
               className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-1.5 rounded-full"
             >
               View Web <ExternalLink className="w-3.5 h-3.5" />
             </Link>
-            
+
             {/* Mobile Logout (since sidebar might be hidden) */}
             <button onClick={handleLogout} className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Logout">
               <LogOut className="w-5 h-5" />
