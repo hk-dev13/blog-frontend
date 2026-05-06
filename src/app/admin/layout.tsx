@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import Link from 'next/link';
-import { FileText, LogOut, LayoutDashboard, Plus, Loader2 } from 'lucide-react';
+import { FileText, LogOut, LayoutDashboard, Plus, Loader2, MessageSquare, ExternalLink } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { token, user, logout } = useAppStore();
@@ -46,6 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Posts', href: '/admin/posts', icon: FileText },
+    { name: 'Comments', href: '/admin/comments', icon: MessageSquare },
   ];
 
   return (
@@ -53,7 +54,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       {/* Sidebar */}
       <aside className="w-64 bg-white dark:bg-slate-800 border-r border-slate-200 dark:border-slate-700 hidden md:flex flex-col">
         <div className="p-6 border-b border-slate-200 dark:border-slate-700">
-          <Link href="/" className="text-2xl font-bold font-serif text-primary-600 dark:text-primary-400">
+          <Link href="/admin" className="text-2xl font-bold font-serif text-primary-600 dark:text-primary-400">
             Envoyou.
           </Link>
           <p className="text-xs text-slate-500 mt-1">Admin Panel</p>
@@ -111,14 +112,25 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
       {/* Main Content Area */}
       <main className="flex-1 flex flex-col min-w-0 overflow-hidden">
-        {/* Mobile Header */}
-        <header className="md:hidden bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 p-4 flex items-center justify-between">
-          <Link href="/" className="text-xl font-bold font-serif text-primary-600 dark:text-primary-400">
-            Envoyou.
-          </Link>
-          <button onClick={handleLogout} className="p-2 text-slate-600 dark:text-slate-400">
-            <LogOut className="w-5 h-5" />
-          </button>
+        {/* Global Utility Header */}
+        <header className="bg-white dark:bg-slate-800 border-b border-slate-200 dark:border-slate-700 px-4 md:px-8 py-3.5 flex items-center justify-between">
+          <div className="flex items-center">
+            {/* Can add breadcrumbs or search bar here in the future */}
+          </div>
+          <div className="flex items-center gap-4">
+            <Link 
+              href="/" 
+              target="_blank" 
+              className="flex items-center gap-1.5 text-sm font-medium text-slate-600 hover:text-primary-600 dark:text-slate-400 dark:hover:text-primary-400 transition-colors bg-slate-100 hover:bg-slate-200 dark:bg-slate-800 dark:hover:bg-slate-700 px-3 py-1.5 rounded-full"
+            >
+              View Web <ExternalLink className="w-3.5 h-3.5" />
+            </Link>
+            
+            {/* Mobile Logout (since sidebar might be hidden) */}
+            <button onClick={handleLogout} className="md:hidden p-2 text-slate-600 dark:text-slate-400 hover:text-red-600 dark:hover:text-red-400 transition-colors" title="Logout">
+              <LogOut className="w-5 h-5" />
+            </button>
+          </div>
         </header>
 
         <div className="flex-1 overflow-y-auto p-4 md:p-8">
