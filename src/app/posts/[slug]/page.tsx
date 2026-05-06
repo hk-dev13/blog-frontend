@@ -3,7 +3,7 @@ import { notFound } from 'next/navigation';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import { format } from 'date-fns';
-import { Clock, Eye } from 'lucide-react';
+import { Clock, Eye, RefreshCw } from 'lucide-react';
 import CategoryPills from '@/components/shared/CategoryPills';
 import PostCard from '@/components/shared/PostCard';
 import CommentSection from './CommentSection';
@@ -89,7 +89,23 @@ export default async function PostPage({ params }: Props) {
               <span className="font-medium text-slate-700 dark:text-slate-300">{post.author?.name || 'Anonymous'}</span>
             </div>
             
-            <time dateTime={publishDate.toISOString()}>{format(publishDate, 'MMMM d, yyyy')}</time>
+            <div className="flex items-center gap-3">
+              <time dateTime={publishDate.toISOString()}>
+                <span className="sr-only">Published: </span>
+                📅 {format(publishDate, 'MMMM d, yyyy')}
+              </time>
+              
+              {post.updated_at && new Date(post.updated_at).getTime() - publishDate.getTime() > 24 * 60 * 60 * 1000 && (
+                <div className="flex items-center gap-1.5 text-slate-400 dark:text-slate-500 text-xs font-medium" title="Terakhir diperbarui">
+                  <span className="w-1 h-1 rounded-full bg-slate-300 dark:bg-slate-600"></span>
+                  <span className="sr-only">Last updated: </span>
+                  <RefreshCw className="w-3.5 h-3.5" />
+                  <time dateTime={new Date(post.updated_at).toISOString()}>
+                    {format(new Date(post.updated_at), 'MMM d, yyyy')}
+                  </time>
+                </div>
+              )}
+            </div>
             
             <div className="flex items-center gap-1">
               <Clock className="w-4 h-4" />
