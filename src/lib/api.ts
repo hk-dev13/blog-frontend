@@ -38,10 +38,17 @@ export async function fetchApi<T>(
 ): Promise<T> {
   const headers = buildHeaders(options);
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  const defaultOptions: RequestInit = {
     ...options,
     headers,
-  });
+  };
+
+  // Add ISR revalidation (60s) for GET requests by default, unless explicitly overridden
+  if (!options?.method || options.method === 'GET') {
+    (defaultOptions as any).next = { revalidate: 60, ...(options as any)?.next };
+  }
+
+  const res = await fetch(`${API_URL}${endpoint}`, defaultOptions);
 
   const data = await res.json();
 
@@ -58,10 +65,16 @@ export async function fetchPaginatedApi<T>(
 ): Promise<{ data: T[]; meta: { page: number; limit: number; total: number; totalPages: number } }> {
   const headers = buildHeaders(options);
 
-  const res = await fetch(`${API_URL}${endpoint}`, {
+  const defaultOptions: RequestInit = {
     ...options,
     headers,
-  });
+  };
+
+  if (!options?.method || options.method === 'GET') {
+    (defaultOptions as any).next = { revalidate: 60, ...(options as any)?.next };
+  }
+
+  const res = await fetch(`${API_URL}${endpoint}`, defaultOptions);
 
   const data = await res.json();
 
