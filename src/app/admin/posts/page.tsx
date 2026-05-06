@@ -5,7 +5,7 @@ import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import Link from 'next/link';
 import { format } from 'date-fns';
-import { Edit, Trash2, Eye, Globe, Lock, Loader2 } from 'lucide-react';
+import { Edit, Trash2, Eye, Globe, Lock, Loader2, CalendarClock } from 'lucide-react';
 import { useState } from 'react';
 
 export default function AdminPostsPage() {
@@ -97,17 +97,40 @@ export default function AdminPostsPage() {
                       </div>
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap">
-                      <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
-                        post.status === 'published' 
-                          ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400' 
-                          : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
-                      }`}>
-                        {post.status === 'published' ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
-                        {post.status}
-                      </span>
+                      {post.status === 'scheduled' ? (
+                        <div className="relative group">
+                          <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 cursor-default">
+                            <CalendarClock className="w-3.5 h-3.5" />
+                            scheduled
+                          </span>
+                          {post.published_at && (
+                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
+                              <div className="font-medium">Scheduled for:</div>
+                              <div>{format(new Date(post.published_at), 'MMM d, yyyy • HH:mm')} WIB</div>
+                              <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900 dark:border-t-slate-700" />
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium ${
+                          post.status === 'published'
+                            ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                            : 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                        }`}>
+                          {post.status === 'published' ? <Globe className="w-3.5 h-3.5" /> : <Lock className="w-3.5 h-3.5" />}
+                          {post.status}
+                        </span>
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
-                      {format(new Date(post.created_at), 'MMM d, yyyy')}
+                      {post.status === 'scheduled' && post.published_at ? (
+                        <div>
+                          <div>{format(new Date(post.published_at), 'MMM d, yyyy')}</div>
+                          <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">{format(new Date(post.published_at), 'HH:mm')} WIB</div>
+                        </div>
+                      ) : (
+                        format(new Date(post.created_at), 'MMM d, yyyy')
+                      )}
                     </td>
                     <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                       {post.views || 0}
