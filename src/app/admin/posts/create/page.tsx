@@ -7,7 +7,7 @@ import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2 } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function CreatePostPage() {
@@ -306,35 +306,61 @@ export default function CreatePostPage() {
             <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cover Image</h3>
             
             {coverImageUrl ? (
-              <div className="relative aspect-video rounded-lg overflow-hidden group">
-                <img src={coverImageUrl} alt="Cover" className="w-full h-full object-cover" />
-                <div className="absolute inset-0 bg-black/50 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                  <button onClick={() => setCoverImageUrl('')} className="text-white text-sm font-medium bg-red-500/80 px-3 py-1.5 rounded-lg">
-                    Remove
+              <div className="space-y-3">
+                <div className="relative aspect-video rounded-lg overflow-hidden border border-slate-200 dark:border-slate-700 group">
+                  <img src={coverImageUrl} alt="Cover preview" className="w-full h-full object-cover" />
+                  
+                  {/* Persistent trash button — top-right corner */}
+                  <button
+                    onClick={() => setCoverImageUrl('')}
+                    className="absolute top-2 right-2 p-1.5 bg-red-500 hover:bg-red-600 text-white rounded-lg shadow-lg transition-colors z-10"
+                    title="Remove image"
+                  >
+                    <Trash2 className="w-3.5 h-3.5" />
                   </button>
+
+                  {/* Hover overlay to re-upload */}
+                  <label className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center cursor-pointer">
+                    <Upload className="w-6 h-6 text-white mb-1" />
+                    <span className="text-white text-xs font-medium">Change image</span>
+                    <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
+                  </label>
                 </div>
+
+                {/* File name hint */}
+                <p className="text-xs text-slate-400 truncate" title={coverImageUrl}>
+                  {coverImageUrl.split('/').pop()}
+                </p>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-32 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:hover:bg-bray-800 dark:bg-slate-900 hover:bg-slate-100 dark:border-slate-600 dark:hover:border-slate-500 dark:hover:bg-slate-800 transition-colors">
-                <div className="flex flex-col items-center justify-center pt-5 pb-6">
+              <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:border-slate-600 dark:hover:border-slate-500 dark:hover:bg-slate-800 transition-colors">
+                <div className="flex flex-col items-center justify-center py-6">
                   {uploadingImage ? (
-                    <Loader2 className="w-6 h-6 text-slate-500 animate-spin mb-2" />
+                    <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-2" />
                   ) : (
-                    <Upload className="w-6 h-6 text-slate-500 mb-2" />
+                    <div className="w-12 h-12 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mb-3">
+                      <Upload className="w-5 h-5 text-primary-500" />
+                    </div>
                   )}
-                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium">Click to upload image</p>
+                  <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
+                    {uploadingImage ? 'Uploading...' : 'Click to upload'}
+                  </p>
+                  <p className="text-xs text-slate-400 mt-1">PNG, JPG, WEBP up to 5MB</p>
                 </div>
                 <input type="file" className="hidden" accept="image/*" onChange={handleImageUpload} disabled={uploadingImage} />
               </label>
             )}
             
-            <input
-              type="text"
-              value={coverImageUrl}
-              onChange={e => setCoverImageUrl(e.target.value)}
-              className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none mt-2"
-              placeholder="Or paste external URL..."
-            />
+            <div className="relative">
+              <input
+                type="text"
+                value={coverImageUrl}
+                onChange={e => setCoverImageUrl(e.target.value)}
+                className="w-full pl-3 pr-8 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                placeholder="Or paste external URL..."
+              />
+              <ImageIcon className="absolute right-2.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+            </div>
           </div>
 
           {/* Categories */}
