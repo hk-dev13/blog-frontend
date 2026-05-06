@@ -1,6 +1,6 @@
 import { useAppStore } from '@/store/useAppStore';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://blog-envoyou-api.onrender.com/api';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
 
 function buildHeaders(options?: RequestInit): Record<string, string> {
   const token = useAppStore.getState().token;

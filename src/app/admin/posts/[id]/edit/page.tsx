@@ -239,7 +239,7 @@ export default function EditPostPage() {
     formData.append('file', file);
 
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://blog-envoyou-api.onrender.com/api';
+      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
       const res = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: {
