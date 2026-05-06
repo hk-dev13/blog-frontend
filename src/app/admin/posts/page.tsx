@@ -6,7 +6,7 @@ import { Post } from '@/types';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Edit, Trash2, Eye, Globe, Lock, Loader2, CalendarClock, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 
 const LIMIT = 10;
 
@@ -17,14 +17,14 @@ export default function AdminPostsPage() {
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
+  const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
-  // Debounced search handler
   const handleSearchChange = (value: string) => {
     setSearch(value);
     if (searchTimeout) clearTimeout(searchTimeout);
     const timeout = setTimeout(() => {
       setDebouncedSearch(value);
-      setPage(1); // Reset to page 1 on new search
+      setPage(1);
     }, 400);
     setSearchTimeout(timeout);
   };
@@ -34,7 +34,6 @@ export default function AdminPostsPage() {
     setPage(1);
   };
 
-  // Build query string
   const buildQuery = () => {
     const params = new URLSearchParams();
     params.set('page', String(page));
@@ -56,15 +55,59 @@ export default function AdminPostsPage() {
     },
   });
 
+  const bulkDeleteMutation = useMutation({
+    mutationFn: async (ids: string[]) => {
+      await Promise.all(ids.map(id => fetchApi(`/posts/${id}`, { method: 'DELETE' })));
+    },
+    onSuccess: () => {
+      setSelectedIds(new Set());
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
+    },
+  });
+
   const handleDelete = (id: string, title: string) => {
     if (window.confirm(`Are you sure you want to delete "${title}"?`)) {
       deleteMutation.mutate(id);
     }
   };
 
+  const handleBulkDelete = () => {
+    if (window.confirm(`Delete ${selectedIds.size} selected post(s)? This cannot be undone.`)) {
+      bulkDeleteMutation.mutate(Array.from(selectedIds));
+    }
+  };
+
   const posts = data?.data || [];
   const meta = data?.meta;
   const totalPages = meta?.totalPages || 1;
+
+  const allSelected = posts.length > 0 && posts.every(p => selectedIds.has(p.id));
+  const someSelected = selectedIds.size > 0;
+
+  const toggleSelect = (id: string) => {
+    setSelectedIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  };
+
+  const toggleSelectAll = () => {
+    if (allSelected) {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        posts.forEach(p => next.delete(p.id));
+        return next;
+      });
+    } else {
+      setSelectedIds(prev => {
+        const next = new Set(prev);
+        posts.forEach(p => next.add(p.id));
+        return next;
+      });
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -79,8 +122,8 @@ export default function AdminPostsPage() {
         </Link>
       </div>
 
-      {/* Search & Filter Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
+      {/* Search, Filter & Bulk Action Bar */}
+      <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <input
@@ -101,6 +144,18 @@ export default function AdminPostsPage() {
           <option value="draft">Draft</option>
           <option value="scheduled">Scheduled</option>
         </select>
+
+        {/* Bulk Action */}
+        {someSelected && (
+          <button
+            onClick={handleBulkDelete}
+            disabled={bulkDeleteMutation.isPending}
+            className="flex items-center gap-2 px-4 py-2.5 text-sm font-medium text-white bg-red-500 hover:bg-red-600 rounded-lg transition-colors disabled:opacity-50 whitespace-nowrap"
+          >
+            {bulkDeleteMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Trash2 className="w-4 h-4" />}
+            Delete ({selectedIds.size})
+          </button>
+        )}
       </div>
 
       {/* Table */}
@@ -115,17 +170,26 @@ export default function AdminPostsPage() {
               <table className="min-w-full divide-y divide-slate-200 dark:divide-slate-700">
                 <thead className="bg-slate-50 dark:bg-slate-900/50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Title</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Views</th>
-                    <th scope="col" className="px-6 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Actions</th>
+                    <th scope="col" className="pl-6 pr-2 py-3 w-10">
+                      <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={toggleSelectAll}
+                        className="rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500"
+                      />
+                    </th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Title</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Views</th>
+                    <th scope="col" className="px-4 py-3 text-right text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider pr-6">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                   {posts.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                      <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         {debouncedSearch || statusFilter
                           ? 'No posts match your filters.'
                           : 'No posts found. Create your first post!'}
@@ -133,16 +197,33 @@ export default function AdminPostsPage() {
                     </tr>
                   ) : (
                     posts.map((post) => (
-                      <tr key={post.id} className="hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <div className="flex items-center">
-                            <div className="ml-4">
-                              <div className="text-sm font-medium text-slate-900 dark:text-white max-w-xs truncate">{post.title}</div>
-                              <div className="text-xs text-slate-500 dark:text-slate-400">/{post.slug}</div>
-                            </div>
+                      <tr key={post.id} className={`transition-colors ${selectedIds.has(post.id) ? 'bg-primary-50 dark:bg-primary-900/10' : 'hover:bg-slate-50 dark:hover:bg-slate-700/50'}`}>
+                        <td className="pl-6 pr-2 py-4 w-10">
+                          <input
+                            type="checkbox"
+                            checked={selectedIds.has(post.id)}
+                            onChange={() => toggleSelect(post.id)}
+                            className="rounded border-slate-300 dark:border-slate-600 text-primary-600 focus:ring-primary-500"
+                          />
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="text-sm font-medium text-slate-900 dark:text-white max-w-[200px] truncate">{post.title}</div>
+                          <div className="text-xs text-slate-500 dark:text-slate-400">/{post.slug}</div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="flex flex-wrap gap-1">
+                            {(post as any).categories && (post as any).categories.length > 0 ? (
+                              (post as any).categories.map((cat: any) => (
+                                <span key={cat.id} className="inline-flex px-2 py-0.5 rounded-md text-xs font-medium bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-300">
+                                  {cat.name}
+                                </span>
+                              ))
+                            ) : (
+                              <span className="text-xs text-slate-400 italic">—</span>
+                            )}
                           </div>
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
+                        <td className="px-4 py-4 whitespace-nowrap">
                           {post.status === 'scheduled' ? (
                             <div className="relative group">
                               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-amber-100 text-amber-800 dark:bg-amber-900/30 dark:text-amber-400 cursor-default">
@@ -168,7 +249,7 @@ export default function AdminPostsPage() {
                             </span>
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                           {post.status === 'scheduled' && post.published_at ? (
                             <div>
                               <div>{format(new Date(post.published_at), 'MMM d, yyyy')}</div>
@@ -178,10 +259,10 @@ export default function AdminPostsPage() {
                             format(new Date(post.created_at), 'MMM d, yyyy')
                           )}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
+                        <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                           {post.views || 0}
                         </td>
-                        <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <td className="px-4 py-4 whitespace-nowrap text-right text-sm font-medium pr-6">
                           <div className="flex items-center justify-end gap-3">
                             {post.status === 'published' && (
                               <Link 
