@@ -1,13 +1,13 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2 } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Bold, Italic, Heading2, Link2, ImagePlus, Code2, List, Quote } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function CreatePostPage() {
@@ -31,6 +31,46 @@ export default function CreatePostPage() {
   const [metaDescription, setMetaDescription] = useState('');
   const [coverImageAlt, setCoverImageAlt] = useState('');
   const [seoOpen, setSeoOpen] = useState(false);
+  const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  // Insert markdown syntax at cursor position
+  const insertMarkdown = useCallback((before: string, after: string = '', placeholder: string = '') => {
+    const textarea = contentRef.current;
+    if (!textarea) return;
+
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const selected = content.substring(start, end);
+    const text = selected || placeholder;
+    const newContent = content.substring(0, start) + before + text + after + content.substring(end);
+
+    setContent(newContent);
+
+    // Restore cursor position after React re-render
+    requestAnimationFrame(() => {
+      textarea.focus();
+      const cursorPos = selected
+        ? start + before.length + text.length + after.length
+        : start + before.length;
+      const cursorEnd = selected
+        ? start + before.length + text.length + after.length
+        : start + before.length + text.length;
+      textarea.setSelectionRange(cursorPos, cursorEnd);
+    });
+  }, [content]);
+
+  const toolbarButtons = [
+    { icon: Bold, label: 'Bold', action: () => insertMarkdown('**', '**', 'bold text') },
+    { icon: Italic, label: 'Italic', action: () => insertMarkdown('*', '*', 'italic text') },
+    { icon: Heading2, label: 'Heading', action: () => insertMarkdown('## ', '', 'heading') },
+    { divider: true },
+    { icon: Link2, label: 'Link', action: () => insertMarkdown('[', '](url)', 'link text') },
+    { icon: ImagePlus, label: 'Image', action: () => insertMarkdown('![', '](url)', 'alt text') },
+    { icon: Code2, label: 'Code', action: () => insertMarkdown('`', '`', 'code') },
+    { divider: true },
+    { icon: List, label: 'List', action: () => insertMarkdown('- ', '', 'list item') },
+    { icon: Quote, label: 'Quote', action: () => insertMarkdown('> ', '', 'quote') },
+  ] as const;
 
   // Fetch categories and tags
   const { data: categoriesData } = useQuery({
@@ -278,7 +318,7 @@ export default function CreatePostPage() {
               </div>
 
               {isPreview ? (
-                <div className="w-full min-h-[400px] p-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg prose prose-slate dark:prose-invert max-w-none">
+                <div className="w-full min-h-[400px] p-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-b-lg prose prose-slate dark:prose-invert max-w-none">
                   {content ? (
                     <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
                   ) : (
@@ -286,14 +326,35 @@ export default function CreatePostPage() {
                   )}
                 </div>
               ) : (
-                <textarea
-                  value={content}
-                  onChange={e => setContent(e.target.value)}
-                  rows={20}
-                  className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
-                  placeholder="Write your content in Markdown..."
-                  required
-                />
+                <>
+                  {/* Markdown Toolbar */}
+                  <div className="flex items-center gap-0.5 px-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 border-b-0 rounded-t-lg">
+                    {toolbarButtons.map((btn, i) =>
+                      'divider' in btn ? (
+                        <div key={`div-${i}`} className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
+                      ) : (
+                        <button
+                          key={btn.label}
+                          type="button"
+                          onClick={btn.action}
+                          title={btn.label}
+                          className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                        >
+                          <btn.icon className="w-4 h-4" />
+                        </button>
+                      )
+                    )}
+                  </div>
+                  <textarea
+                    ref={contentRef}
+                    value={content}
+                    onChange={e => setContent(e.target.value)}
+                    rows={20}
+                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-b-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
+                    placeholder="Write your content in Markdown..."
+                    required
+                  />
+                </>
               )}
             </div>
           </div>
