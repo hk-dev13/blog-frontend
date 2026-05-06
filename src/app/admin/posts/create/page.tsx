@@ -7,7 +7,7 @@ import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, CalendarClock, Globe, Save } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 
 export default function CreatePostPage() {
@@ -27,6 +27,10 @@ export default function CreatePostPage() {
   const [showScheduler, setShowScheduler] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
   const [isSaving, setIsSaving] = useState(false);
+  const [metaTitle, setMetaTitle] = useState('');
+  const [metaDescription, setMetaDescription] = useState('');
+  const [coverImageAlt, setCoverImageAlt] = useState('');
+  const [seoOpen, setSeoOpen] = useState(false);
 
   // Fetch categories and tags
   const { data: categoriesData } = useQuery({
@@ -45,6 +49,9 @@ export default function CreatePostPage() {
     excerpt,
     content,
     cover_image: coverImageUrl || undefined,
+    cover_image_alt: coverImageAlt || undefined,
+    meta_title: metaTitle || undefined,
+    meta_description: metaDescription || undefined,
     category_ids: selectedCategories,
     tag_ids: selectedTags,
   });
@@ -376,6 +383,59 @@ export default function CreatePostPage() {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* SEO Settings (Collapsible) */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setSeoOpen(!seoOpen)}
+              className="flex items-center justify-between w-full p-6 text-left"
+            >
+              <div className="flex items-center gap-2">
+                <Search className="w-4 h-4 text-primary-500" />
+                <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">SEO Settings</h3>
+              </div>
+              {seoOpen ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />}
+            </button>
+            {seoOpen && (
+              <div className="px-6 pb-6 space-y-4 border-t border-slate-100 dark:border-slate-700 pt-4">
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Meta Title</label>
+                  <input
+                    type="text"
+                    value={metaTitle}
+                    onChange={e => setMetaTitle(e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                    placeholder={title || 'Custom title for search engines...'}
+                    maxLength={70}
+                  />
+                  <p className="text-xs text-slate-400 mt-1 text-right">{metaTitle.length}/70</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Meta Description</label>
+                  <textarea
+                    value={metaDescription}
+                    onChange={e => setMetaDescription(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                    placeholder={excerpt || 'Compelling description for search results...'}
+                    maxLength={160}
+                  />
+                  <p className="text-xs text-slate-400 mt-1 text-right">{metaDescription.length}/160</p>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Cover Image Alt Text</label>
+                  <input
+                    type="text"
+                    value={coverImageAlt}
+                    onChange={e => setCoverImageAlt(e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                    placeholder="Describe the cover image for accessibility..."
+                  />
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
