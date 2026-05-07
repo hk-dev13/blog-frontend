@@ -34,16 +34,16 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
-          <Image 
-            src="/logo.svg" 
-            alt="Envoyou Logo" 
-            width={36} 
-            height={36} 
+          <Image
+            src="/logo.svg"
+            alt="Envoyou Logo"
+            width={36}
+            height={36}
             className="h-8 w-8 object-contain"
             priority
           />
           <span className="text-xl font-bold font-serif text-primary-600 dark:text-primary-400">
-            Envoyou.
+            Envoyou
           </span>
         </Link>
 

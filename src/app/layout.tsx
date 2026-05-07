@@ -3,6 +3,23 @@ import { Inter, Lora } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
 import "./globals.css";
+
+const SITE_URL = 'https://blog.envoyou.com';
+
+const websiteSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'WebSite',
+  name: 'Blog.Envoyou',
+  url: SITE_URL,
+  potentialAction: {
+    '@type': 'SearchAction',
+    target: {
+      '@type': 'EntryPoint',
+      urlTemplate: `${SITE_URL}/search?q={search_term_string}`,
+    },
+    'query-input': 'required name=search_term_string',
+  },
+};
 import Providers from "./providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/layout/Navbar";
@@ -51,6 +68,11 @@ export default function RootLayout({
           })(window, document, "clarity", "script", "wn8pjbjmp3");
         `}
       </Script>
+      <Script
+        id="schema-website"
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+      />
     </html>
   );
 }

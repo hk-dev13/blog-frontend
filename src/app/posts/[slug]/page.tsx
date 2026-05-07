@@ -62,7 +62,57 @@ export default async function PostPage({ params }: Props) {
   const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80';
 
+  const SITE_URL = 'https://blog.envoyou.com';
+  const postUrl = `${SITE_URL}/posts/${post.slug}`;
+
+  // ── JSON-LD: Article Schema ──────────────────────────────
+  const articleSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'Article',
+    headline: post.title,
+    description: post.excerpt || post.meta_description || '',
+    image: imageUrl,
+    datePublished: post.published_at || post.created_at,
+    dateModified: post.updated_at || post.published_at || post.created_at,
+    url: postUrl,
+    mainEntityOfPage: { '@type': 'WebPage', '@id': postUrl },
+    author: {
+      '@type': 'Person',
+      name: post.author?.name || 'Husni Kusuma',
+      url: SITE_URL,
+      image: post.author?.avatar_url || 'https://cdn.envoyou.com/admin/avatarHusniKusuma.jpeg',
+      description: 'Self-taught Fullstack Developer & Data Analyst enthusiast. Founder of Envoyou.',
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'Envoyou',
+      url: SITE_URL,
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.svg` },
+    },
+    keywords: post.tags?.map(t => t.name).join(', ') || '',
+    articleSection: post.categories?.[0]?.name || '',
+  };
+
+  // ── JSON-LD: BreadcrumbList Schema ──────────────────────
+  const breadcrumbSchema = {
+    '@context': 'https://schema.org',
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      ...(post.categories?.[0] ? [{
+        '@type': 'ListItem',
+        position: 2,
+        name: post.categories[0].name,
+        item: `${SITE_URL}/?category=${post.categories[0].slug}`,
+      }] : []),
+      { '@type': 'ListItem', position: post.categories?.[0] ? 3 : 2, name: post.title, item: postUrl },
+    ],
+  };
+
   return (
+    <>
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
+      <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
     <main className="pb-16">
       <article>
         {/* Header Section */}
@@ -172,5 +222,6 @@ export default async function PostPage({ params }: Props) {
         </section>
       )}
     </main>
+    </>
   );
 }
