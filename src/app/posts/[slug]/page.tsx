@@ -98,7 +98,7 @@ export default async function PostPage({ params }: Props) {
     },
     publisher: {
       '@type': 'Organization',
-      name: 'Envoyou',
+      name: 'Blog.Envoyou',
       url: SITE_URL,
       logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.svg` },
     },

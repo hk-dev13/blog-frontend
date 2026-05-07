@@ -36,8 +36,11 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "Blog.Envoyou",
-  description: "A fast, modern, and distraction-free publishing platform.",
+  title: {
+    default: "Blog.Envoyou — Technology, ideas, and future perspectives.",
+    template: "%s | Blog.Envoyou",
+  },
+  description: "Technology, ideas, and future perspectives. A fast, modern, and distraction-free publishing platform by Envoyou.",
 };
 
 export default function RootLayout({

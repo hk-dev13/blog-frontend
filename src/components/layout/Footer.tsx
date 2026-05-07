@@ -14,7 +14,7 @@ export default function Footer() {
           className="h-8 w-8 object-contain mb-4 opacity-80"
         />
         <p className="text-sm">
-          &copy; {currentYear} Envoyou Blog. All rights reserved.
+          &copy; {currentYear} Blog.Envoyou. All rights reserved.
         </p>
       </div>
     </footer>
