@@ -28,10 +28,17 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
       openGraph: {
         title: post.title,
         description: post.excerpt,
-        images: post.cover_image ? [post.cover_image] : [],
+        // ↓ opengraph-image.tsx handles the OG image automatically
         type: 'article',
         publishedTime: post.published_at,
+        modifiedTime: post.updated_at,
         authors: post.author?.name ? [post.author.name] : [],
+        tags: post.tags?.map(t => t.name),
+      },
+      twitter: {
+        card: 'summary_large_image',
+        title: post.meta_title || post.title,
+        description: post.meta_description || post.excerpt,
       },
     };
   } catch (error) {
