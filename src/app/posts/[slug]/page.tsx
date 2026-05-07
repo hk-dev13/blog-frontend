@@ -6,6 +6,7 @@ import { format } from 'date-fns';
 import { Clock, Eye, RefreshCw } from 'lucide-react';
 import CategoryPills from '@/components/shared/CategoryPills';
 import PostCard from '@/components/shared/PostCard';
+import ShareButtons from '@/components/shared/ShareButtons';
 import CommentSection from './CommentSection';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
@@ -116,7 +117,7 @@ export default async function PostPage({ params }: Props) {
         '@type': 'ListItem',
         position: 2,
         name: post.categories[0].name,
-        item: `${SITE_URL}/?category=${post.categories[0].slug}`,
+        item: `${SITE_URL}/categories/${post.categories[0].slug}`,
       }] : []),
       { '@type': 'ListItem', position: post.categories?.[0] ? 3 : 2, name: post.title, item: postUrl },
     ],
@@ -215,6 +216,11 @@ export default async function PostPage({ params }: Props) {
               </div>
             </div>
           )}
+
+          {/* Share Buttons */}
+          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+            <ShareButtons url={postUrl} title={post.title} />
+          </div>
 
           {/* Comment Section */}
           <CommentSection postId={post.id} />

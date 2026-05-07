@@ -93,7 +93,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const categories = await serverFetch<Category[]>('/categories');
     const list = Array.isArray(categories) ? categories : (categories as any).data ?? [];
     categoryRoutes = list.map((cat: Category) => ({
-      url: `${BASE_URL}/?category=${cat.slug}`,
+      url: `${BASE_URL}/categories/${cat.slug}`,
       lastModified: new Date(cat.updated_at || new Date()),
       changeFrequency: 'weekly' as const,
       priority: 0.7,

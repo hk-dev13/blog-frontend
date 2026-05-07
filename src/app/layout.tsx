@@ -41,6 +41,11 @@ export const metadata: Metadata = {
     template: "%s | Blog.Envoyou",
   },
   description: "Technology, ideas, and future perspectives. A fast, modern, and distraction-free publishing platform by Envoyou.",
+  alternates: {
+    types: {
+      'application/rss+xml': `${SITE_URL}/feed.xml`,
+    },
+  },
 };
 
 export default function RootLayout({
