@@ -5,6 +5,7 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { useSearch } from '@/hooks/usePosts';
 import PostCard from '@/components/shared/PostCard';
 import { Search as SearchIcon, Loader2 } from 'lucide-react';
+import { PostGridSkeleton } from '@/components/shared/Skeletons';
 import { Post } from '@/types';
 
 // Utility to highlight keyword in text
@@ -114,8 +115,8 @@ function SearchContent() {
             <p className="text-xl">Type at least 3 characters to search</p>
           </div>
         ) : isLoading ? (
-          <div className="flex justify-center mt-20">
-            <Loader2 className="h-10 w-10 text-primary-500 animate-spin" />
+          <div className="mt-8">
+            <PostGridSkeleton count={4} />
           </div>
         ) : results.length > 0 ? (
           <div>

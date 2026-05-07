@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { Loader2 } from 'lucide-react';
+import { PostGridSkeleton, CategoryPillsSkeleton } from '@/components/shared/Skeletons';
 import { serverFetchPaginated, serverFetch } from '@/lib/serverApi';
 import { Post, Tag } from '@/types';
 import HomeContent from '@/components/home/HomeContent';
@@ -34,8 +34,10 @@ export default async function Home() {
   return (
     <Suspense
       fallback={
-        <div className="flex justify-center p-12">
-          <Loader2 className="w-8 h-8 animate-spin" />
+        <div className="container mx-auto px-4 py-8 space-y-16">
+          <PostGridSkeleton count={1} featured />
+          <CategoryPillsSkeleton />
+          <PostGridSkeleton count={4} />
         </div>
       }
     >

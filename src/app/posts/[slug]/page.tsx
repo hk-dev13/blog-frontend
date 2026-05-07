@@ -11,6 +11,9 @@ import CommentSection from './CommentSection';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import rehypeHighlight from 'rehype-highlight';
+import ReadingProgress from '@/components/shared/ReadingProgress';
+import TableOfContents from '@/components/shared/TableOfContents';
 
 // Dynamic params
 type Props = {
@@ -127,6 +130,7 @@ export default async function PostPage({ params }: Props) {
     <>
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(articleSchema) }} />
       <script type="application/ld+json" dangerouslySetInnerHTML={{ __html: JSON.stringify(breadcrumbSchema) }} />
+      <ReadingProgress />
     <main className="pb-16">
       <article>
         {/* Header Section */}
@@ -197,9 +201,12 @@ export default async function PostPage({ params }: Props) {
 
         {/* Content Section */}
         <div className="container mx-auto px-4 max-w-3xl">
+          {/* Table of Contents */}
+          <TableOfContents content={post.content} />
+
           {/* Prose Wrapper for Typography */}
           <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
               {post.content}
             </ReactMarkdown>
           </div>
