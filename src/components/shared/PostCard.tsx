@@ -27,7 +27,6 @@ export default function PostCard({ post, featured = false }: { post: Post; featu
             <Link
               href={`/categories/${category.slug}`}
               className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-primary-500 text-white rounded-full shadow-sm hover:bg-primary-600 transition-colors"
-              onClick={(e) => e.stopPropagation()}
             >
               {category.name}
             </Link>
