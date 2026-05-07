@@ -4,17 +4,18 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  --color-primary-50: #eff6ff;
-  --color-primary-100: #dbeafe;
-  --color-primary-200: #bfdbfe;
-  --color-primary-300: #93c5fd;
-  --color-primary-400: #60a5fa;
-  --color-primary-500: #3b82f6; /* Electric Blue */
-  --color-primary-600: #2563eb;
-  --color-primary-700: #1d4ed8;
-  --color-primary-800: #1e40af;
-  --color-primary-900: #1e3a8a;
-  --color-primary-950: #172554;
+  /* Primary palette — turunan dari warna logo #0B79C2 */
+  --color-primary-50:  #eaf4fb;
+  --color-primary-100: #cce5f5;
+  --color-primary-200: #99cbeb;
+  --color-primary-300: #66b0e0;
+  --color-primary-400: #3396d6;
+  --color-primary-500: #0d87cf;  /* Biru cerah logo */
+  --color-primary-600: #0b79c2;  /* ← Warna utama logo SVG */
+  --color-primary-700: #0966af;  /* #0066AF logo */
+  --color-primary-800: #075190;
+  --color-primary-900: #003c70;  /* mendekati #003780 logo */
+  --color-primary-950: #002550;
 }
 
 :root {
