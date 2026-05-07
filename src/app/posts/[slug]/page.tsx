@@ -18,33 +18,39 @@ type Props = {
 
 // Generate SEO Metadata dynamically
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
+  const SITE_URL = 'https://blog.envoyou.com';
   try {
     const resolvedParams = await params;
     const post = await fetchApi<Post>(`/posts/${resolvedParams.slug}`);
     
+    // URL served by opengraph-image.tsx (Next.js edge function)
+    const ogImageUrl = `${SITE_URL}/posts/${resolvedParams.slug}/opengraph-image`;
+    const title       = post.meta_title || post.title;
+    const description = post.meta_description || post.excerpt || '';
+
     return {
-      title: post.meta_title || post.title,
-      description: post.meta_description || post.excerpt,
+      title,
+      description,
       openGraph: {
-        title: post.title,
-        description: post.excerpt,
-        // ↓ opengraph-image.tsx handles the OG image automatically
+        title,
+        description,
         type: 'article',
+        url: `${SITE_URL}/posts/${resolvedParams.slug}`,
         publishedTime: post.published_at,
         modifiedTime: post.updated_at,
         authors: post.author?.name ? [post.author.name] : [],
         tags: post.tags?.map(t => t.name),
+        images: [{ url: ogImageUrl, width: 1200, height: 630, alt: title }],
       },
       twitter: {
         card: 'summary_large_image',
-        title: post.meta_title || post.title,
-        description: post.meta_description || post.excerpt,
+        title,
+        description,
+        images: [ogImageUrl],
       },
     };
   } catch (error) {
-    return {
-      title: 'Post Not Found',
-    };
+    return { title: 'Post Not Found' };
   }
 }
 
