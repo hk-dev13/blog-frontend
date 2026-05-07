@@ -69,13 +69,13 @@ export default async function Image({ params }: Props) {
     ? (post.excerpt.length > 100 ? post.excerpt.slice(0, 100).trimEnd() + '…' : post.excerpt)
     : '';
 
-  // ── Load Inter font ──────────────────────────────────────────
+  // ── Load Inter font (WOFF — Satori does NOT support WOFF2) ──
   let interBold: ArrayBuffer | undefined;
   let interRegular: ArrayBuffer | undefined;
   try {
     const [boldRes, regularRes] = await Promise.all([
-      fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuFuYAZ9hiA.woff2'),
-      fetch('https://fonts.gstatic.com/s/inter/v13/UcCO3FwrK3iLTeHuS_fvQtMwCp50KnMw2boKoduKmMEVuLyfAZ9hiA.woff2'),
+      fetch('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff'),
+      fetch('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff'),
     ]);
     interBold    = await boldRes.arrayBuffer();
     interRegular = await regularRes.arrayBuffer();
@@ -177,7 +177,7 @@ export default async function Image({ params }: Props) {
               <div style={{ color: 'white', fontSize: '20px', fontWeight: 700, display: 'flex' }}>E</div>
             </div>
             <span style={{ color: '#94b8d4', fontSize: '20px', fontWeight: 600, letterSpacing: '0.04em', display: 'flex' }}>
-              blog.envoyou.com
+              Blog.Envoyou
             </span>
 
             {/* Category pill — top right */}
