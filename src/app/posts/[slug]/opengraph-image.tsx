@@ -32,7 +32,7 @@ export default async function Image({ params }: Props) {
   }
 
   let post: PostData = {
-    title: 'Envoyou Blog',
+    title: 'Blog.Envoyou',
     excerpt: 'Teknologi, Keuangan & Dunia Digital',
     author: { name: 'Husni Kusuma', avatar_url: '' },
     categories: [{ name: 'Blog', slug: 'blog' }],
