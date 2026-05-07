@@ -200,38 +200,52 @@ export default async function PostPage({ params }: Props) {
           />
         </div>
 
-        {/* Content Section */}
-        <div className="container mx-auto px-4 max-w-3xl">
-          {/* Table of Contents */}
-          <TableOfContents content={post.content} />
-
-          {/* Prose Wrapper for Typography */}
-          <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug, rehypeHighlight]}>
-              {post.content}
-            </ReactMarkdown>
-          </div>
-
-          {/* Tags */}
-          {post.tags && post.tags.length > 0 && (
-            <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
-              <div className="flex flex-wrap gap-2">
-                {post.tags.map(tag => (
-                  <span key={tag.id} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-sm">
-                    #{tag.name}
-                  </span>
-                ))}
+        {/* Content Section — two-column layout with sticky TOC */}
+        <div className="container mx-auto px-4 max-w-6xl">
+          <div className="flex gap-10">
+            {/* Sticky TOC — desktop only */}
+            <aside className="hidden xl:block w-64 shrink-0">
+              <div className="sticky top-20">
+                <TableOfContents content={post.content} />
               </div>
+            </aside>
+
+            {/* Main Content */}
+            <div className="min-w-0 flex-1 max-w-3xl mx-auto">
+              {/* Mobile TOC — collapsible, shown only on mobile/tablet */}
+              <div className="xl:hidden">
+                <TableOfContents content={post.content} />
+              </div>
+
+              {/* Prose Wrapper for Typography */}
+              <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
+                <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug, rehypeHighlight]}>
+                  {post.content}
+                </ReactMarkdown>
+              </div>
+
+              {/* Tags */}
+              {post.tags && post.tags.length > 0 && (
+                <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800">
+                  <div className="flex flex-wrap gap-2">
+                    {post.tags.map(tag => (
+                      <span key={tag.id} className="px-3 py-1 bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300 rounded-md text-sm">
+                        #{tag.name}
+                      </span>
+                    ))}
+                  </div>
+                </div>
+              )}
+
+              {/* Share Buttons */}
+              <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+                <ShareButtons url={postUrl} title={post.title} />
+              </div>
+
+              {/* Comment Section */}
+              <CommentSection postId={post.id} />
             </div>
-          )}
-
-          {/* Share Buttons */}
-          <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
-            <ShareButtons url={postUrl} title={post.title} />
           </div>
-
-          {/* Comment Section */}
-          <CommentSection postId={post.id} />
         </div>
       </article>
 
