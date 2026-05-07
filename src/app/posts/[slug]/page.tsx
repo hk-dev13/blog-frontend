@@ -12,6 +12,7 @@ import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
+import rehypeSlug from 'rehype-slug';
 import ReadingProgress from '@/components/shared/ReadingProgress';
 import TableOfContents from '@/components/shared/TableOfContents';
 
@@ -206,7 +207,7 @@ export default async function PostPage({ params }: Props) {
 
           {/* Prose Wrapper for Typography */}
           <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
-            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]}>
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug, rehypeHighlight]}>
               {post.content}
             </ReactMarkdown>
           </div>

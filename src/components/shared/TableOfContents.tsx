@@ -14,25 +14,28 @@ export default function TableOfContents({ content }: { content: string }) {
   const [activeId, setActiveId] = useState('');
   const [isOpen, setIsOpen] = useState(false);
 
-  // Parse headings from markdown content
+  // Read headings from the actual rendered DOM (after rehype-slug adds IDs)
   useEffect(() => {
-    const lines = content.split('\n');
-    const items: TocItem[] = [];
+    // Small delay to let ReactMarkdown + rehype-slug render
+    const timer = setTimeout(() => {
+      const proseEl = document.querySelector('.prose');
+      if (!proseEl) return;
 
-    for (const line of lines) {
-      const match = line.match(/^(#{2,4})\s+(.+)$/);
-      if (match) {
-        const level = match[1].length; // 2 = h2, 3 = h3, 4 = h4
-        const text = match[2].replace(/[*_`\[\]()]/g, '').trim();
-        const id = text
-          .toLowerCase()
-          .replace(/[^\w\s-]/g, '')
-          .replace(/\s+/g, '-');
+      const elements = proseEl.querySelectorAll('h2, h3, h4');
+      const items: TocItem[] = [];
+
+      elements.forEach((el) => {
+        const id = el.id;
+        if (!id) return;
+        const level = parseInt(el.tagName[1]); // h2=2, h3=3, h4=4
+        const text = el.textContent?.trim() || '';
         items.push({ id, text, level });
-      }
-    }
+      });
 
-    setHeadings(items);
+      setHeadings(items);
+    }, 100);
+
+    return () => clearTimeout(timer);
   }, [content]);
 
   // Track active heading via IntersectionObserver
@@ -58,7 +61,18 @@ export default function TableOfContents({ content }: { content: string }) {
     return () => observer.disconnect();
   }, [headings]);
 
-  if (headings.length < 3) return null; // Don't show TOC for short articles
+  const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
+    e.preventDefault();
+    const el = document.getElementById(id);
+    if (el) {
+      el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      setActiveId(id);
+      // Update URL hash without jump
+      window.history.replaceState(null, '', `#${id}`);
+    }
+  };
+
+  if (headings.length < 3) return null;
 
   return (
     <nav className="mb-10 rounded-xl border border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-800/50 overflow-hidden">
@@ -82,7 +96,7 @@ export default function TableOfContents({ content }: { content: string }) {
             >
               <a
                 href={`#${heading.id}`}
-                onClick={() => setActiveId(heading.id)}
+                onClick={(e) => handleClick(e, heading.id)}
                 className={`block text-sm py-1 border-l-2 pl-3 transition-colors duration-200 ${
                   activeId === heading.id
                     ? 'border-primary-500 text-primary-600 dark:text-primary-400 font-medium'
