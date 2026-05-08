@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import Link from 'next/link';
-import { FileText, Eye, TrendingUp, PenLine, Loader2 } from 'lucide-react';
+import { FileText, Eye, TrendingUp, PenLine, Loader2, Heart, Mail } from 'lucide-react';
+import ViewsChart from '@/components/admin/ViewsChart';
 
 export default function AdminDashboardPage() {
   const { data, isLoading } = useQuery({
@@ -52,6 +53,9 @@ export default function AdminDashboardPage() {
           </div>
         ))}
       </div>
+
+      {/* Views Chart */}
+      <ViewsChart />
 
       {/* Recent Posts */}
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">

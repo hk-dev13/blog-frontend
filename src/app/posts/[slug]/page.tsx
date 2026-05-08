@@ -8,6 +8,7 @@ import { Clock, Eye, RefreshCw } from 'lucide-react';
 import CategoryPills from '@/components/shared/CategoryPills';
 import PostCard from '@/components/shared/PostCard';
 import ShareButtons from '@/components/shared/ShareButtons';
+import LikeButton from '@/components/shared/LikeButton';
 import CommentSection from './CommentSection';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
@@ -256,9 +257,10 @@ export default async function PostPage({ params }: Props) {
                 </div>
               )}
 
-              {/* Share Buttons */}
-              <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+              {/* Share & Like */}
+              <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-wrap items-center justify-between gap-4">
                 <ShareButtons url={postUrl} title={post.title} />
+                <LikeButton postId={post.id} />
               </div>
 
               {/* Comment Section */}
