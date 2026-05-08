@@ -7,8 +7,9 @@ import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag, Post } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Bold, Italic, Heading2, Link2, ImagePlus, Code2, List, Quote, Plus, X } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Bold, Italic, Heading2, Link2, ImagePlus, Code2, List, Quote, Plus, X, Lock, Unlock, Clock, AlignLeft } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
+import { generateSlug, getContentStats, useAutosave } from '@/lib/editorUtils';
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -19,6 +20,8 @@ export default function EditPostPage() {
   
   // Form state
   const [title, setTitle] = useState('');
+  const [slug, setSlug] = useState('');
+  const [slugLocked, setSlugLocked] = useState(false);
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
@@ -34,8 +37,31 @@ export default function EditPostPage() {
   const [metaDescription, setMetaDescription] = useState('');
   const [coverImageAlt, setCoverImageAlt] = useState('');
   const [seoOpen, setSeoOpen] = useState(false);
+  const [autosaveIndicator, setAutosaveIndicator] = useState<'idle' | 'saved'>('idle');
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
   const contentRef = useRef<HTMLTextAreaElement>(null);
+
+  // Live stats
+  const contentStats = getContentStats(content);
+
+  // Autosave (keyed per post — won't collide between posts)
+  const autosaveKey = `editor:edit:${postId}`;
+  const { clearSave } = useAutosave(
+    autosaveKey,
+    { title, excerpt, content, metaTitle, metaDescription, slug },
+    !!postId,
+    ({ title: t, excerpt: e, content: c, metaTitle: mt, metaDescription: md, slug: s }) => {
+      setTitle(t); setExcerpt(e); setContent(c);
+      setMetaTitle(mt); setMetaDescription(md);
+      if (s) { setSlug(s); setSlugLocked(true); }
+    },
+  );
+
+  const triggerSavedIndicator = useCallback(() => {
+    setAutosaveIndicator('saved');
+    const t = setTimeout(() => setAutosaveIndicator('idle'), 2500);
+    return () => clearTimeout(t);
+  }, []);
 
   // Fetch post data
   const { data: postData, isLoading: isPostLoading } = useQuery({
@@ -50,6 +76,8 @@ export default function EditPostPage() {
   useEffect(() => {
     if (post) {
       setTitle(post.title || '');
+      setSlug(post.slug || '');
+      setSlugLocked(true); // existing slug is always locked by default
       setExcerpt(post.excerpt || '');
       setContent(post.content || '');
       setCoverImageUrl(post.cover_image || '');
@@ -66,7 +94,6 @@ export default function EditPostPage() {
 
       // If scheduled, prepopulate schedule date
       if (post.status === 'scheduled' && post.published_at) {
-        // Convert ISO to datetime-local format (YYYY-MM-DDThh:mm)
         const d = new Date(post.published_at);
         const tzOffset = d.getTimezoneOffset() * 60000;
         const localISOTime = (new Date(d.getTime() - tzOffset)).toISOString().slice(0, 16);
@@ -160,6 +187,7 @@ export default function EditPostPage() {
     setIsSaving(true);
     try {
       await updateMutation.mutateAsync(buildPayload());
+      clearSave();
       router.push('/admin/posts');
     } catch (err: any) {
       alert(err.message || 'Failed to update post');
@@ -175,6 +203,7 @@ export default function EditPostPage() {
     try {
       await updateMutation.mutateAsync(buildPayload());
       await publishMutation.mutateAsync({});
+      clearSave();
       router.push('/admin/posts');
     } catch (err: any) {
       alert(err.message || 'Failed to publish post');
@@ -191,6 +220,7 @@ export default function EditPostPage() {
     try {
       await updateMutation.mutateAsync(buildPayload());
       await publishMutation.mutateAsync({ published_at: new Date(scheduleDate).toISOString() });
+      clearSave();
       router.push('/admin/posts');
     } catch (err: any) {
       alert(err.message || 'Failed to schedule post');
@@ -286,7 +316,14 @@ export default function EditPostPage() {
   return (
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Edit Post</h1>
+        <div>
+          <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Edit Post</h1>
+          {autosaveIndicator === 'saved' && (
+            <p className="text-xs text-emerald-500 mt-0.5 flex items-center gap-1">
+              <Save className="w-3 h-3" /> Autosaved
+            </p>
+          )}
+        </div>
         <div className="flex items-center gap-3">
           
           {/* Main Action Button varies based on status */}
@@ -394,11 +431,49 @@ export default function EditPostPage() {
               <input
                 type="text"
                 value={title}
-                onChange={e => setTitle(e.target.value)}
+                onChange={e => {
+                  setTitle(e.target.value);
+                  if (!slugLocked) setSlug(generateSlug(e.target.value));
+                }}
                 className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
                 placeholder="Enter post title..."
                 required
               />
+            </div>
+
+            {/* Slug editor */}
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">URL Slug</label>
+              <div className="flex items-center gap-2">
+                <span className="text-xs text-slate-400 whitespace-nowrap">posts/</span>
+                <div className="relative flex-1">
+                  <input
+                    type="text"
+                    value={slug}
+                    onChange={e => { setSlug(generateSlug(e.target.value)); setSlugLocked(true); }}
+                    className="w-full px-3 py-1.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono"
+                    placeholder="url-slug"
+                  />
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (slugLocked) {
+                      setSlug(generateSlug(title));
+                      setSlugLocked(false);
+                    } else {
+                      setSlugLocked(true);
+                    }
+                  }}
+                  title={slugLocked ? 'Click to re-generate from title' : 'Lock to custom slug'}
+                  className="p-1.5 rounded-lg text-slate-400 hover:text-primary-500 hover:bg-slate-100 dark:hover:bg-slate-700 transition-colors"
+                >
+                  {slugLocked ? <Lock className="w-4 h-4 text-amber-500" /> : <Unlock className="w-4 h-4" />}
+                </button>
+              </div>
+              {!slugLocked && (
+                <p className="text-xs text-slate-400 mt-1">⚠️ Changing slug will break existing links to this post</p>
+              )}
             </div>
 
             <div>
@@ -464,12 +539,29 @@ export default function EditPostPage() {
                   <textarea
                     ref={contentRef}
                     value={content}
-                    onChange={e => setContent(e.target.value)}
+                    onChange={e => {
+                      setContent(e.target.value);
+                      triggerSavedIndicator();
+                    }}
                     rows={20}
                     className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-b-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
                     placeholder="Write your content in Markdown..."
                     required
                   />
+                  {/* Word count & reading time bar */}
+                  <div className="flex items-center gap-4 px-1 py-1.5 text-xs text-slate-400">
+                    <span className="flex items-center gap-1">
+                      <AlignLeft className="w-3.5 h-3.5" />
+                      {contentStats.words.toLocaleString()} words
+                    </span>
+                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                    <span>{contentStats.chars.toLocaleString()} characters</span>
+                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                    <span className="flex items-center gap-1">
+                      <Clock className="w-3.5 h-3.5" />
+                      ~{contentStats.readingTime} min read
+                    </span>
+                  </div>
                 </>
               )}
             </div>
