@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { fetchApi, fetchPaginatedApi } from '@/lib/api';
+import { fetchApi } from '@/lib/api';
 import { Post } from '@/types';
 import { format } from 'date-fns';
 import { Clock, Eye, RefreshCw } from 'lucide-react';
@@ -70,28 +70,12 @@ export default async function PostPage({ params }: Props) {
     // Note: This API call should ideally increment view count on the backend.
     post = await fetchApi<Post>(`/posts/${resolvedParams.slug}`);
     
-    // Fetch related posts — priority: category > tag > latest
-    const categorySlug = post.categories?.[0]?.slug;
-    const tagSlug = post.tags?.[0]?.slug;
-
-    if (categorySlug) {
-      // Try category match first (most relevant)
-      const catRes = await fetchPaginatedApi<Post>(`/posts?category=${categorySlug}&limit=4`);
-      relatedPosts = catRes.data.filter(p => p.id !== post.id).slice(0, 2);
-    }
-
-    if (relatedPosts.length < 2 && tagSlug) {
-      // Fallback to tag match
-      const tagRes = await fetchPaginatedApi<Post>(`/posts?tag=${tagSlug}&limit=4`);
-      const tagRelated = tagRes.data.filter(p => p.id !== post.id && !relatedPosts.some(r => r.id === p.id));
-      relatedPosts = [...relatedPosts, ...tagRelated].slice(0, 2);
-    }
-
-    if (relatedPosts.length < 2) {
-      // Final fallback: latest posts
-      const latestRes = await fetchPaginatedApi<Post>(`/posts?limit=4`);
-      const latest = latestRes.data.filter(p => p.id !== post.id && !relatedPosts.some(r => r.id === p.id));
-      relatedPosts = [...relatedPosts, ...latest].slice(0, 2);
+    // Use backend's dedicated related endpoint (single optimized query)
+    try {
+      const related = await fetchApi<Post[]>(`/posts/${resolvedParams.slug}/related`);
+      relatedPosts = (related || []).slice(0, 2);
+    } catch {
+      // Silently ignore — related is non-critical
     }
   } catch (error) {
     notFound();
