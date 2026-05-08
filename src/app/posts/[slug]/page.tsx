@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
+import Link from 'next/link';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import { format } from 'date-fns';
@@ -68,10 +69,28 @@ export default async function PostPage({ params }: Props) {
     // Note: This API call should ideally increment view count on the backend.
     post = await fetchApi<Post>(`/posts/${resolvedParams.slug}`);
     
-    // Fetch related posts based on the first tag
-    if (post.tags && post.tags.length > 0) {
-      const relatedRes = await fetchPaginatedApi<Post>(`/posts?tag=${post.tags[0].slug}&limit=3`);
-      relatedPosts = relatedRes.data.filter(p => p.id !== post.id).slice(0, 2);
+    // Fetch related posts — priority: category > tag > latest
+    const categorySlug = post.categories?.[0]?.slug;
+    const tagSlug = post.tags?.[0]?.slug;
+
+    if (categorySlug) {
+      // Try category match first (most relevant)
+      const catRes = await fetchPaginatedApi<Post>(`/posts?category=${categorySlug}&limit=4`);
+      relatedPosts = catRes.data.filter(p => p.id !== post.id).slice(0, 2);
+    }
+
+    if (relatedPosts.length < 2 && tagSlug) {
+      // Fallback to tag match
+      const tagRes = await fetchPaginatedApi<Post>(`/posts?tag=${tagSlug}&limit=4`);
+      const tagRelated = tagRes.data.filter(p => p.id !== post.id && !relatedPosts.some(r => r.id === p.id));
+      relatedPosts = [...relatedPosts, ...tagRelated].slice(0, 2);
+    }
+
+    if (relatedPosts.length < 2) {
+      // Final fallback: latest posts
+      const latestRes = await fetchPaginatedApi<Post>(`/posts?limit=4`);
+      const latest = latestRes.data.filter(p => p.id !== post.id && !relatedPosts.some(r => r.id === p.id));
+      relatedPosts = [...relatedPosts, ...latest].slice(0, 2);
     }
   } catch (error) {
     notFound();
@@ -147,7 +166,7 @@ export default async function PostPage({ params }: Props) {
           </h1>
           
           <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
-            <div className="flex items-center gap-2">
+            <Link href={`/author/${post.author_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
               {post.author?.avatar_url ? (
                 <Image src={post.author.avatar_url} alt={post.author.name} width={32} height={32} className="rounded-full object-cover" />
               ) : (
@@ -156,7 +175,7 @@ export default async function PostPage({ params }: Props) {
                 </div>
               )}
               <span className="font-medium text-slate-700 dark:text-slate-300">{post.author?.name || 'Anonymous'}</span>
-            </div>
+            </Link>
             
             <div className="flex items-center gap-3">
               <time dateTime={publishDate.toISOString()}>

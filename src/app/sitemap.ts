@@ -116,6 +116,29 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   } catch (e) {
     console.error('[sitemap] Tags fetch failed:', e);
   }
+  // ── 5. Author pages (unique authors from posts) ────────────
+  const authorIds = new Set<string>();
+  let authorRoutes: MetadataRoute.Sitemap = [];
+  try {
+    const res = await fetch(`${API_URL}/posts?limit=100&status=published`, {
+      next: { revalidate: 3600 },
+    });
+    const json = await res.json();
+    const postsWithAuthors = json.data || [];
+    for (const p of postsWithAuthors) {
+      if (p.author_id && !authorIds.has(p.author_id)) {
+        authorIds.add(p.author_id);
+        authorRoutes.push({
+          url: `${BASE_URL}/author/${p.author_id}`,
+          lastModified: new Date(),
+          changeFrequency: 'weekly' as const,
+          priority: 0.6,
+        });
+      }
+    }
+  } catch (e) {
+    console.error('[sitemap] Author pages fetch failed:', e);
+  }
 
-  return [...staticRoutes, ...postRoutes, ...categoryRoutes, ...tagRoutes];
+  return [...staticRoutes, ...postRoutes, ...categoryRoutes, ...tagRoutes, ...authorRoutes];
 }
