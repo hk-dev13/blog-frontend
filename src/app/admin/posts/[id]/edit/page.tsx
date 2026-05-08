@@ -10,6 +10,7 @@ import remarkGfm from 'remark-gfm';
 import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Bold, Italic, Heading2, Link2, ImagePlus, Code2, List, Quote, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, History, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, useAutosave } from '@/lib/editorUtils';
+import RichTextEditor from '@/components/admin/RichTextEditor';
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -42,6 +43,7 @@ export default function EditPostPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [showRevisions, setShowRevisions] = useState(false);
   const [canonicalUrl, setCanonicalUrl] = useState('');
+  const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -510,82 +512,31 @@ export default function EditPostPage() {
             </div>
 
             <div className="space-y-2">
-              <div className="flex justify-between items-center">
-                <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Content (Markdown)</label>
-                <div className="flex bg-slate-100 dark:bg-slate-900 rounded-lg p-1">
-                  <button
-                    type="button"
-                    onClick={() => setIsPreview(false)}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${!isPreview ? 'bg-white dark:bg-slate-800 shadow text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                  >
-                    Write
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setIsPreview(true)}
-                    className={`px-3 py-1 text-sm rounded-md transition-colors ${isPreview ? 'bg-white dark:bg-slate-800 shadow text-primary-600 dark:text-primary-400' : 'text-slate-500 hover:text-slate-700 dark:hover:text-slate-300'}`}
-                  >
-                    Preview
-                  </button>
-                </div>
-              </div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300">Content</label>
 
-              {isPreview ? (
-                <div className="w-full min-h-[400px] p-6 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-b-lg prose prose-slate dark:prose-invert max-w-none">
-                  {content ? (
-                    <ReactMarkdown remarkPlugins={[remarkGfm]}>{content}</ReactMarkdown>
-                  ) : (
-                    <p className="text-slate-400 italic">Nothing to preview...</p>
-                  )}
-                </div>
-              ) : (
-                <>
-                  {/* Markdown Toolbar */}
-                  <div className="flex items-center gap-0.5 px-3 py-2 bg-slate-100 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 border-b-0 rounded-t-lg">
-                    {toolbarButtons.map((btn, i) =>
-                      'divider' in btn ? (
-                        <div key={`div-${i}`} className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
-                      ) : (
-                        <button
-                          key={btn.label}
-                          type="button"
-                          onClick={btn.action}
-                          title={btn.label}
-                          className="p-1.5 rounded-md text-slate-500 hover:text-slate-800 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                        >
-                          <btn.icon className="w-4 h-4" />
-                        </button>
-                      )
-                    )}
-                  </div>
-                  <textarea
-                    ref={contentRef}
-                    value={content}
-                    onChange={e => {
-                      setContent(e.target.value);
-                      triggerSavedIndicator();
-                    }}
-                    rows={20}
-                    className="w-full px-4 py-4 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-b-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
-                    placeholder="Write your content in Markdown..."
-                    required
-                  />
-                  {/* Word count & reading time bar */}
-                  <div className="flex items-center gap-4 px-1 py-1.5 text-xs text-slate-400">
-                    <span className="flex items-center gap-1">
-                      <AlignLeft className="w-3.5 h-3.5" />
-                      {contentStats.words.toLocaleString()} words
-                    </span>
-                    <span className="text-slate-300 dark:text-slate-600">·</span>
-                    <span>{contentStats.chars.toLocaleString()} characters</span>
-                    <span className="text-slate-300 dark:text-slate-600">·</span>
-                    <span className="flex items-center gap-1">
-                      <Clock className="w-3.5 h-3.5" />
-                      ~{contentStats.readingTime} min read
-                    </span>
-                  </div>
-                </>
-              )}
+              <RichTextEditor
+                value={content}
+                onChange={val => { setContent(val); triggerSavedIndicator(); }}
+                mode={editorMode}
+                onModeChange={setEditorMode}
+                placeholder="Write your content..."
+                contentRef={contentRef}
+              />
+
+              {/* Word count & reading time bar */}
+              <div className="flex items-center gap-4 px-1 py-1 text-xs text-slate-400">
+                <span className="flex items-center gap-1">
+                  <AlignLeft className="w-3.5 h-3.5" />
+                  {contentStats.words.toLocaleString()} words
+                </span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span>{contentStats.chars.toLocaleString()} characters</span>
+                <span className="text-slate-300 dark:text-slate-600">·</span>
+                <span className="flex items-center gap-1">
+                  <Clock className="w-3.5 h-3.5" />
+                  ~{contentStats.readingTime} min read
+                </span>
+              </div>
             </div>
           </div>
         </div>
