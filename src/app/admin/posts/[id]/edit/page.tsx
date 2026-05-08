@@ -155,6 +155,7 @@ export default function EditPostPage() {
   // Build the post payload
   const buildPayload = () => ({
     title,
+    slug: slug || undefined,       // always send slug — user may have edited it
     excerpt,
     content,
     cover_image: coverImageUrl || undefined,
