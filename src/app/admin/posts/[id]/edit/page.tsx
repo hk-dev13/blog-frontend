@@ -11,6 +11,7 @@ import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarCl
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, useAutosave } from '@/lib/editorUtils';
 import RichTextEditor from '@/components/admin/RichTextEditor';
+import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 
 export default function EditPostPage() {
   const router = useRouter();
@@ -822,6 +823,17 @@ export default function EditPostPage() {
               </div>
             )}
           </div>
+
+          {/* SEO Analyzer */}
+          <SEOAnalyzer
+            title={title}
+            metaTitle={metaTitle}
+            metaDescription={metaDescription}
+            content={content}
+            excerpt={excerpt}
+            slug={slug}
+            coverImage={coverImageUrl}
+          />
         </div>
       </div>
 
