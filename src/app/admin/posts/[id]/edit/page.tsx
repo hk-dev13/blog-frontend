@@ -41,6 +41,7 @@ export default function EditPostPage() {
   const [isFeatured, setIsFeatured] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [showRevisions, setShowRevisions] = useState(false);
+  const [canonicalUrl, setCanonicalUrl] = useState('');
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -88,6 +89,7 @@ export default function EditPostPage() {
       setMetaDescription(post.meta_description || '');
       setCoverImageAlt(post.cover_image_alt || '');
       setIsFeatured((post as any).is_featured || false);
+      setCanonicalUrl((post as any).canonical_url || '');
       
       if ((post as any).categories) {
         setSelectedCategories((post as any).categories.map((c: any) => c.id));
@@ -175,6 +177,7 @@ export default function EditPostPage() {
     cover_image_alt: coverImageAlt || undefined,
     meta_title: metaTitle || undefined,
     meta_description: metaDescription || undefined,
+    canonical_url: canonicalUrl || undefined,
     is_featured: isFeatured,
     category_ids: selectedCategories,
     tag_ids: selectedTags,
@@ -853,6 +856,17 @@ export default function EditPostPage() {
                     className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
                     placeholder="Describe the cover image for accessibility..."
                   />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">Canonical URL</label>
+                  <input
+                    type="url"
+                    value={canonicalUrl}
+                    onChange={e => setCanonicalUrl(e.target.value)}
+                    className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                    placeholder="https://example.com/original-article"
+                  />
+                  <p className="text-xs text-slate-400 mt-1">Leave empty to use this page's URL as canonical</p>
                 </div>
               </div>
             )}
