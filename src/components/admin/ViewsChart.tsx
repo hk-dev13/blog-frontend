@@ -8,8 +8,8 @@ interface DailyView {
   unique_visitors: number;
 }
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qixolxkcgyvapopvsgzs.supabase.co';
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InFpeG9seGtjZ3l2YXBvcHZzZ3pzIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc2ODcyODIsImV4cCI6MjA5MzI2MzI4Mn0.TwtNuKE94implj5NEtMpyuInit9hcRSQALatb1pZuHk';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export default function ViewsChart() {
   const [data, setData] = useState<DailyView[]>([]);

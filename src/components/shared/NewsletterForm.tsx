@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { Loader2, Mail, CheckCircle } from 'lucide-react';
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://qixolxkcgyvapopvsgzs.supabase.co';
+const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState('');
