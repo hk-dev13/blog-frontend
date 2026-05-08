@@ -7,7 +7,7 @@ import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag, Post } from '@/types';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Bold, Italic, Heading2, Link2, ImagePlus, Code2, List, Quote, Plus, X, Lock, Unlock, Clock, AlignLeft } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Bold, Italic, Heading2, Link2, ImagePlus, Code2, List, Quote, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, History, RotateCcw } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, useAutosave } from '@/lib/editorUtils';
 
@@ -38,6 +38,9 @@ export default function EditPostPage() {
   const [coverImageAlt, setCoverImageAlt] = useState('');
   const [seoOpen, setSeoOpen] = useState(false);
   const [autosaveIndicator, setAutosaveIndicator] = useState<'idle' | 'saved'>('idle');
+  const [isFeatured, setIsFeatured] = useState(false);
+  const [isDragging, setIsDragging] = useState(false);
+  const [showRevisions, setShowRevisions] = useState(false);
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
   const contentRef = useRef<HTMLTextAreaElement>(null);
 
@@ -77,13 +80,14 @@ export default function EditPostPage() {
     if (post) {
       setTitle(post.title || '');
       setSlug(post.slug || '');
-      setSlugLocked(true); // existing slug is always locked by default
+      setSlugLocked(true);
       setExcerpt(post.excerpt || '');
       setContent(post.content || '');
       setCoverImageUrl(post.cover_image || '');
       setMetaTitle(post.meta_title || '');
       setMetaDescription(post.meta_description || '');
       setCoverImageAlt(post.cover_image_alt || '');
+      setIsFeatured((post as any).is_featured || false);
       
       if ((post as any).categories) {
         setSelectedCategories((post as any).categories.map((c: any) => c.id));
@@ -92,7 +96,6 @@ export default function EditPostPage() {
         setSelectedTags((post as any).tags.map((t: any) => t.id));
       }
 
-      // If scheduled, prepopulate schedule date
       if (post.status === 'scheduled' && post.published_at) {
         const d = new Date(post.published_at);
         const tzOffset = d.getTimezoneOffset() * 60000;
@@ -101,6 +104,16 @@ export default function EditPostPage() {
       }
     }
   }, [post]);
+
+  // Fetch revisions on demand
+  const { data: revisionsData, isFetching: isRevisionsFetching } = useQuery({
+    queryKey: ['post-revisions', postId],
+    queryFn: () => fetchApi<any[]>(`/posts/${postId}/revisions`),
+    enabled: showRevisions && !!postId,
+    staleTime: 30_000,
+  });
+
+  const revisions = Array.isArray(revisionsData) ? revisionsData : [];
 
   // Insert markdown syntax at cursor position
   const insertMarkdown = useCallback((before: string, after: string = '', placeholder: string = '') => {
@@ -155,13 +168,14 @@ export default function EditPostPage() {
   // Build the post payload
   const buildPayload = () => ({
     title,
-    slug: slug || undefined,       // always send slug — user may have edited it
+    slug: slug || undefined,
     excerpt,
     content,
     cover_image: coverImageUrl || undefined,
     cover_image_alt: coverImageAlt || undefined,
     meta_title: metaTitle || undefined,
     meta_description: metaDescription || undefined,
+    is_featured: isFeatured,
     category_ids: selectedCategories,
     tag_ids: selectedTags,
   });
@@ -260,36 +274,40 @@ export default function EditPostPage() {
     }
   };
 
-  // Handle Image Upload
-  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
+  // Handle Image Upload (shared by click + drag)
+  const uploadFile = async (file: File) => {
     setUploadingImage(true);
     const formData = new FormData();
     formData.append('file', file);
-
     try {
       const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
       const res = await fetch(`${API_URL}/upload`, {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${token}`
-        },
+        headers: { 'Authorization': `Bearer ${token}` },
         body: formData,
       });
-
       const data = await res.json();
-      if (data.success) {
-        setCoverImageUrl(data.data.url);
-      } else {
-        throw new Error(data.error || 'Upload failed');
-      }
+      if (data.success) setCoverImageUrl(data.data.url);
+      else throw new Error(data.error || 'Upload failed');
     } catch (err: any) {
       alert(err.message || 'Failed to upload image');
     } finally {
       setUploadingImage(false);
     }
+  };
+
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    await uploadFile(file);
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    const file = e.dataTransfer.files?.[0];
+    if (!file || !file.type.startsWith('image/')) return;
+    await uploadFile(file);
   };
 
   const categories = categoriesData?.data || [];
@@ -603,17 +621,29 @@ export default function EditPostPage() {
                 </p>
               </div>
             ) : (
-              <label className="flex flex-col items-center justify-center w-full h-36 border-2 border-slate-300 border-dashed rounded-lg cursor-pointer bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:border-slate-600 dark:hover:border-slate-500 dark:hover:bg-slate-800 transition-colors">
-                <div className="flex flex-col items-center justify-center py-6">
+              <label
+                className={`flex flex-col items-center justify-center w-full h-36 border-2 border-dashed rounded-lg cursor-pointer transition-colors ${
+                  isDragging
+                    ? 'border-primary-400 bg-primary-50 dark:bg-primary-900/20'
+                    : 'border-slate-300 dark:border-slate-600 bg-slate-50 dark:bg-slate-900 hover:bg-slate-100 dark:hover:border-slate-500 dark:hover:bg-slate-800'
+                }`}
+                onDragOver={e => { e.preventDefault(); setIsDragging(true); }}
+                onDragEnter={e => { e.preventDefault(); setIsDragging(true); }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={handleDrop}
+              >
+                <div className="flex flex-col items-center justify-center py-6 pointer-events-none">
                   {uploadingImage ? (
                     <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-2" />
                   ) : (
-                    <div className="w-12 h-12 rounded-full bg-primary-50 dark:bg-primary-900/30 flex items-center justify-center mb-3">
+                    <div className={`w-12 h-12 rounded-full flex items-center justify-center mb-3 transition-colors ${
+                      isDragging ? 'bg-primary-100 dark:bg-primary-800/40' : 'bg-primary-50 dark:bg-primary-900/30'
+                    }`}>
                       <Upload className="w-5 h-5 text-primary-500" />
                     </div>
                   )}
                   <p className="text-sm text-slate-600 dark:text-slate-400 font-medium">
-                    {uploadingImage ? 'Uploading...' : 'Click to upload'}
+                    {uploadingImage ? 'Uploading...' : isDragging ? 'Drop image here' : 'Click or drag image here'}
                   </p>
                   <p className="text-xs text-slate-400 mt-1">PNG, JPG, WEBP up to 5MB</p>
                 </div>
@@ -695,6 +725,84 @@ export default function EditPostPage() {
                 </label>
               ))}
             </div>
+          </div>
+
+          {/* Featured Article Toggle */}
+          <div className="bg-white dark:bg-slate-800 p-4 rounded-xl border border-slate-200 dark:border-slate-700">
+            <label className="flex items-center justify-between cursor-pointer">
+              <div className="flex items-center gap-2">
+                <Star className={`w-4 h-4 ${isFeatured ? 'text-amber-400 fill-amber-400' : 'text-slate-400'}`} />
+                <div>
+                  <p className="text-sm font-medium text-slate-700 dark:text-slate-300">Featured Article</p>
+                  <p className="text-xs text-slate-400">Pin to homepage spotlight</p>
+                </div>
+              </div>
+              <div
+                onClick={() => setIsFeatured(!isFeatured)}
+                className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                  isFeatured ? 'bg-amber-400' : 'bg-slate-200 dark:bg-slate-700'
+                }`}
+              >
+                <span className={`inline-block h-4 w-4 transform rounded-full bg-white shadow-sm transition-transform ${
+                  isFeatured ? 'translate-x-6' : 'translate-x-1'
+                }`} />
+              </div>
+            </label>
+          </div>
+
+          {/* Revision History */}
+          <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+            <button
+              type="button"
+              onClick={() => setShowRevisions(!showRevisions)}
+              className="flex items-center justify-between w-full p-4 text-left"
+            >
+              <div className="flex items-center gap-2">
+                <History className="w-4 h-4 text-slate-400" />
+                <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Revision History</h3>
+              </div>
+              {isRevisionsFetching
+                ? <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
+                : showRevisions ? <ChevronUp className="w-4 h-4 text-slate-400" /> : <ChevronDown className="w-4 h-4 text-slate-400" />
+              }
+            </button>
+
+            {showRevisions && (
+              <div className="border-t border-slate-100 dark:border-slate-700">
+                {revisions.length === 0 && !isRevisionsFetching ? (
+                  <p className="text-xs text-slate-400 p-4 text-center">No revisions yet</p>
+                ) : (
+                  <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
+                    {revisions.map((rev: any) => (
+                      <div key={rev.id} className="p-3 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
+                        <div className="flex-1 min-w-0">
+                          <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
+                            v{rev.revision_number} — {rev.title}
+                          </p>
+                          <p className="text-xs text-slate-400 mt-0.5">
+                            {new Date(rev.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                          </p>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            if (confirm(`Restore revision v${rev.revision_number}? Current content will be replaced.`)) {
+                              setTitle(rev.title || title);
+                              setContent(rev.content || '');
+                              if (rev.excerpt) setExcerpt(rev.excerpt);
+                            }
+                          }}
+                          className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                          title="Restore this revision"
+                        >
+                          <RotateCcw className="w-3.5 h-3.5" />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
           </div>
 
           {/* SEO Settings (Collapsible) */}
