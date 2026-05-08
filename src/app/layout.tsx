@@ -37,10 +37,19 @@ const lora = Lora({
 
 export const metadata: Metadata = {
   title: {
-    default: "Blog.Envoyou — Technology, ideas, and future perspectives.",
+    default: "Blog.Envoyou — Wawasan Teknologi, AI, dan Bisnis Modern",
     template: "%s | Blog.Envoyou",
   },
-  description: "Technology, ideas, and future perspectives. A fast, modern, and distraction-free publishing platform by Envoyou.",
+  description: "Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.",
+  icons: {
+    icon: [
+      { url: '/favicon.ico' }, // Mengarah ke src/app/favicon.ico
+      { url: '/logo.svg', type: 'image/svg+xml' },
+    ],
+    apple: [
+      { url: '/apple-icon.png' },
+    ],
+  },
   alternates: {
     types: {
       'application/rss+xml': `${SITE_URL}/feed.xml`,
@@ -54,7 +63,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
+    <html lang="id" className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
       <body className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300">
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>

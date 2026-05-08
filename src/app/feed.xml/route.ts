@@ -53,9 +53,9 @@ export async function GET() {
   xmlns:dc="http://purl.org/dc/elements/1.1/"
 >
   <channel>
-    <title>Blog.Envoyou</title>
+<title>Blog.Envoyou — Wawasan Teknologi, AI, dan Bisnis Modern</title>
     <link>${SITE_URL}</link>
-    <description>Technology, ideas, and future perspectives.</description>
+    <description>Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.</description>
     <language>id</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${FEED_URL}" rel="self" type="application/rss+xml" />
