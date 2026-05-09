@@ -5,7 +5,13 @@ import { Post } from '@/types';
 
 import Image from 'next/image';
 
-export default function PostCard({ post, featured = false }: { post: Post; featured?: boolean }) {
+interface PostCardProps {
+  post: Post;
+  featured?: boolean;
+  priority?: boolean;
+}
+
+export default function PostCard({ post, featured = false, priority = false }: PostCardProps) {
   // Safe default values
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80';
   const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
@@ -19,7 +25,8 @@ export default function PostCard({ post, featured = false }: { post: Post; featu
           src={imageUrl} 
           alt={post.cover_image_alt || post.title}
           fill
-          sizes={featured ? "(max-width: 768px) 100vw, 50vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+          sizes={featured ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+          priority={priority}
           className="object-cover transition-transform duration-500 group-hover:scale-105"
         />
         {category && (

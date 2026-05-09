@@ -63,7 +63,7 @@ export default function HomeContent({
       {featuredPost && (
         <section>
           <h2 className="sr-only">Featured Article</h2>
-          <PostCard post={featuredPost} featured={true} />
+          <PostCard post={featuredPost} featured={true} priority={true} />
         </section>
       )}
 
