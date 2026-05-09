@@ -15,15 +15,15 @@ export default function Footer() {
 
         {/* Brand + Copyright */}
         <div className="flex flex-col items-center gap-3">
-          <Image 
-            src="/logo.svg" 
-            alt="Envoyou Logo" 
-            width={36} 
-            height={36} 
+          <Image
+            src="/logo.svg"
+            alt="Envoyou Logo"
+            width={36}
+            height={36}
             className="h-8 w-8 object-contain opacity-80"
           />
           <p className="text-sm text-slate-500 dark:text-slate-400">
-            &copy; {currentYear} Blog.Envoyou. All rights reserved.
+            &copy; {currentYear} Envoyou. All rights reserved.
           </p>
         </div>
       </div>

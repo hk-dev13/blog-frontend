@@ -43,7 +43,7 @@ export default function Navbar() {
             priority
           />
           <span className="text-xl font-bold font-serif text-primary-600 dark:text-primary-400">
-            Blog.Envoyou
+            Envoyou
           </span>
         </Link>
 
