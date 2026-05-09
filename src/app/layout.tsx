@@ -64,7 +64,11 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
-      <body className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300">
+      {/* 1. Tambahkan suppressHydrationWarning di body */}
+      <body
+        className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300"
+        suppressHydrationWarning
+      >
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <Providers>
             <Navbar />
@@ -74,18 +78,26 @@ export default function RootLayout({
             <Footer />
           </Providers>
         </ThemeProvider>
+
         {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
-        <Script id="microsoft-clarity" strategy="afterInteractive">
-          {`
-            (function(c,l,a,r,i,t,y){
-                c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
-                t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
-                y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
-            })(window, document, "clarity", "script", "wn8pjbjmp3");
-          `}
-        </Script>
+
+        {/* 2. Ubah format Clarity menggunakan dangerouslySetInnerHTML */}
         <Script
-          id="schema-website"
+          id="microsoft-clarity"
+          strategy="afterInteractive"
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function(c,l,a,r,i,t,y){
+                  c[a]=c[a]||function(){(c[a].q=c[a].q||[]).push(arguments)};
+                  t=l.createElement(r);t.async=1;t.src="https://www.clarity.ms/tag/"+i;
+                  y=l.getElementsByTagName(r)[0];y.parentNode.insertBefore(t,y);
+              })(window, document, "clarity", "script", "wn8pjbjmp3");
+            `
+          }}
+        />
+
+        {/* 3. Gunakan tag <script> biasa (huruf kecil) untuk Schema SEO */}
+        <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
         />
