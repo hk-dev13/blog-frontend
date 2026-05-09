@@ -9,7 +9,7 @@ const SITE_URL = 'https://blog.envoyou.com';
 const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'Blog.Envoyou',
+  name: 'Envoyou',
   url: SITE_URL,
   potentialAction: {
     '@type': 'SearchAction',
@@ -37,8 +37,8 @@ const lora = Lora({
 
 export const metadata: Metadata = {
   title: {
-    default: "Blog.Envoyou — Wawasan Teknologi, AI, dan Bisnis Modern",
-    template: "%s | Blog.Envoyou",
+    default: "Envoyou - Wawasan Teknologi, AI, dan Bisnis Modern",
+    template: "%s | Envoyou",
   },
   description: "Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.",
   icons: {

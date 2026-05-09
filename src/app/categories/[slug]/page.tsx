@@ -24,13 +24,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!category) return { title: 'Category Not Found' };
 
     const title = category.name;
-    const description = category.description || `Artikel terbaru dalam kategori ${category.name} di Blog.Envoyou.`;
+    const description = category.description || `Artikel terbaru dalam kategori ${category.name} di Envoyou.`;
 
     return {
       title,
       description,
       openGraph: {
-        title: `${title} | Blog.Envoyou`,
+        title: `${title} | Envoyou`,
         description,
         type: 'website',
         url: `https://blog.envoyou.com/categories/${slug}`,

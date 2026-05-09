@@ -40,7 +40,7 @@ export async function GET() {
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${pubDate}</pubDate>
-      <dc:creator>${escapeXml(post.author?.name || 'Blog.Envoyou')}</dc:creator>
+      <dc:creator>${escapeXml(post.author?.name || 'Envoyou')}</dc:creator>
       <description><![CDATA[${post.excerpt || post.meta_description || ''}]]></description>
       ${categories}
       ${coverImage}
@@ -53,7 +53,7 @@ export async function GET() {
   xmlns:dc="http://purl.org/dc/elements/1.1/"
 >
   <channel>
-<title>Blog.Envoyou — Wawasan Teknologi, AI, dan Bisnis Modern</title>
+<title>Envoyou — Wawasan Teknologi, AI, dan Bisnis Modern</title>
     <link>${SITE_URL}</link>
     <description>Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.</description>
     <language>id</language>
@@ -61,7 +61,7 @@ export async function GET() {
     <atom:link href="${FEED_URL}" rel="self" type="application/rss+xml" />
     <image>
       <url>${SITE_URL}/logo.svg</url>
-      <title>Blog.Envoyou</title>
+      <title>Envoyou</title>
       <link>${SITE_URL}</link>
     </image>
 ${items}

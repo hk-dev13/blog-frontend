@@ -15,9 +15,9 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api'
 const SITE_URL = 'https://blog.envoyou.com';
 
 // ── Brand colors ───────────────────────────────────────────────
-const BRAND_BLUE   = '#0B79C2';
-const BRAND_DARK   = '#071929';
-const BRAND_MID    = '#0a2540';
+const BRAND_BLUE = '#0B79C2';
+const BRAND_DARK = '#071929';
+const BRAND_MID = '#0a2540';
 
 export default async function Image({ params }: Props) {
   const { slug } = await params;
@@ -32,7 +32,7 @@ export default async function Image({ params }: Props) {
   }
 
   let post: PostData = {
-    title: 'Blog.Envoyou',
+    title: 'Envoyou',
     excerpt: 'Teknologi, Keuangan & Dunia Digital',
     author: { name: 'Husni Kusuma', avatar_url: '' },
     categories: [{ name: 'Blog', slug: 'blog' }],
@@ -51,13 +51,13 @@ export default async function Image({ params }: Props) {
     // Fallback to defaults above
   }
 
-  const authorName   = post.author?.name || 'Husni Kusuma';
-  const avatarUrl    = post.author?.avatar_url || '';
+  const authorName = post.author?.name || 'Husni Kusuma';
+  const avatarUrl = post.author?.avatar_url || '';
   const categoryName = post.categories?.[0]?.name || 'Blog';
-  const publishDate  = post.published_at
+  const publishDate = post.published_at
     ? new Date(post.published_at).toLocaleDateString('id-ID', {
-        day: 'numeric', month: 'long', year: 'numeric',
-      })
+      day: 'numeric', month: 'long', year: 'numeric',
+    })
     : '';
 
   // ── Truncate title for display ──────────────────────────────
@@ -77,7 +77,7 @@ export default async function Image({ params }: Props) {
       fetch('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-700-normal.woff'),
       fetch('https://cdn.jsdelivr.net/fontsource/fonts/inter@latest/latin-400-normal.woff'),
     ]);
-    interBold    = await boldRes.arrayBuffer();
+    interBold = await boldRes.arrayBuffer();
     interRegular = await regularRes.arrayBuffer();
   } catch {
     // If font fetch fails, fall back to system sans-serif
@@ -177,7 +177,7 @@ export default async function Image({ params }: Props) {
               <div style={{ color: 'white', fontSize: '20px', fontWeight: 700, display: 'flex' }}>E</div>
             </div>
             <span style={{ color: '#94b8d4', fontSize: '20px', fontWeight: 600, letterSpacing: '0.04em', display: 'flex' }}>
-              Blog.Envoyou
+              Envoyou
             </span>
 
             {/* Category pill — top right */}
