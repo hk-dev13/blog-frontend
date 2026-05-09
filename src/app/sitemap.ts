@@ -1,16 +1,20 @@
 import { MetadataRoute } from 'next';
 
+export const dynamic = 'force-dynamic';
+export const revalidate = 0;
+
 const BASE_URL = 'https://blog.envoyou.com';
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
 
 // ── Server-side fetch (no auth token needed for public endpoints) ──
-async function serverFetch<T>(endpoint: string): Promise<T> {
+async function serverFetch<T>(endpoint: string): Promise<{ data: T; meta?: any }> {
   const res = await fetch(`${API_URL}${endpoint}`, {
     next: { revalidate: 3600 }, // sitemap revalidates every 1 hour
   });
   if (!res.ok) throw new Error(`Failed to fetch ${endpoint}: ${res.status}`);
   const json = await res.json();
-  return json.data as T;
+  // Return both data and meta (if exists)
+  return { data: json.data as T, meta: json.meta };
 }
 
 interface PaginatedResponse<T> {
@@ -41,15 +45,16 @@ async function fetchAllPosts(): Promise<Post[]> {
   const limit = 100;
 
   while (true) {
-    const res = await serverFetch<PaginatedResponse<Post>>(
+    const { data: posts, meta } = await serverFetch<Post[]>(
       `/posts?limit=${limit}&page=${page}&status=published`
     );
-    // Backend wraps paginated: { data: [...], meta: {...} }
-    const posts = Array.isArray(res) ? res : (res as any).data ?? [];
-    const meta = (res as any).meta;
-    all.push(...posts);
+    
+    if (Array.isArray(posts)) {
+      all.push(...posts);
+    }
 
-    if (!meta || all.length >= meta.total || posts.length < limit) break;
+    // Break if no more pages
+    if (!meta || all.length >= meta.total || (Array.isArray(posts) && posts.length < limit)) break;
     page++;
   }
 
@@ -90,9 +95,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── 3. Category filter pages ──────────────────────────────
   let categoryRoutes: MetadataRoute.Sitemap = [];
   try {
-    const categories = await serverFetch<Category[]>('/categories');
-    const list = Array.isArray(categories) ? categories : (categories as any).data ?? [];
-    categoryRoutes = list.map((cat: Category) => ({
+    const { data: list } = await serverFetch<Category[]>('/categories');
+    const categories = Array.isArray(list) ? list : [];
+    categoryRoutes = categories.map((cat: Category) => ({
       url: `${BASE_URL}/categories/${cat.slug}`,
       lastModified: new Date(cat.updated_at || new Date()),
       changeFrequency: 'weekly' as const,
@@ -105,9 +110,9 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── 4. Tag filter pages ───────────────────────────────────
   let tagRoutes: MetadataRoute.Sitemap = [];
   try {
-    const tags = await serverFetch<Tag[]>('/tags');
-    const list = Array.isArray(tags) ? tags : (tags as any).data ?? [];
-    tagRoutes = list.map((tag: Tag) => ({
+    const { data: list } = await serverFetch<Tag[]>('/tags');
+    const tags = Array.isArray(list) ? list : [];
+    tagRoutes = tags.map((tag: Tag) => ({
       url: `${BASE_URL}/?tag=${tag.slug}`,
       lastModified: new Date(tag.updated_at || new Date()),
       changeFrequency: 'monthly' as const,
@@ -120,12 +125,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   const authorIds = new Set<string>();
   let authorRoutes: MetadataRoute.Sitemap = [];
   try {
-    const res = await fetch(`${API_URL}/posts?limit=100&status=published`, {
-      next: { revalidate: 3600 },
-    });
-    const json = await res.json();
-    const postsWithAuthors = json.data || [];
-    for (const p of postsWithAuthors) {
+    const { data: postsWithAuthors } = await serverFetch<any[]>('/posts?limit=100&status=published');
+    const list = Array.isArray(postsWithAuthors) ? postsWithAuthors : [];
+    
+    for (const p of list) {
       if (p.author_id && !authorIds.has(p.author_id)) {
         authorIds.add(p.author_id);
         authorRoutes.push({
