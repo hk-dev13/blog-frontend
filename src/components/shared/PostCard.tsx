@@ -20,15 +20,17 @@ export default function PostCard({ post, featured = false, priority = false }: P
 
   return (
     <article className={`group flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 ${featured ? 'md:flex-row' : ''}`}>
-      <Link href={`/posts/${post.slug}`} className={`relative overflow-hidden ${featured ? 'md:w-1/2 min-h-[300px]' : 'w-full aspect-[16/9]'}`}>
-        <Image 
-          src={imageUrl} 
-          alt={post.cover_image_alt || post.title}
-          fill
-          sizes={featured ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
-          priority={priority}
-          className="object-cover transition-transform duration-500 group-hover:scale-105"
-        />
+      <div className={`relative overflow-hidden ${featured ? 'md:w-1/2 min-h-[300px]' : 'w-full aspect-[16/9]'}`}>
+        <Link href={`/posts/${post.slug}`} className="relative block w-full h-full">
+          <Image 
+            src={imageUrl} 
+            alt={post.cover_image_alt || post.title}
+            fill
+            sizes={featured ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+            priority={priority}
+            className="object-cover transition-transform duration-500 group-hover:scale-105"
+          />
+        </Link>
         {category && (
           <div className="absolute top-4 left-4 z-10">
             <Link
@@ -39,7 +41,7 @@ export default function PostCard({ post, featured = false, priority = false }: P
             </Link>
           </div>
         )}
-      </Link>
+      </div>
       
       <div className={`flex flex-col flex-1 p-6 ${featured ? 'md:w-1/2 md:p-8 lg:p-12 justify-center' : ''}`}>
         <div className="flex items-center text-xs text-slate-500 dark:text-slate-400 mb-3 gap-4 font-medium">
