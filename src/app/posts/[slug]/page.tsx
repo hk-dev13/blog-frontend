@@ -223,7 +223,33 @@ export default async function PostPage({ params }: Props) {
 
                 {/* Prose Wrapper for Typography */}
                 <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeSlug, rehypeHighlight]}>
+                  <ReactMarkdown 
+                    remarkPlugins={[remarkGfm]} 
+                    rehypePlugins={[rehypeSlug, rehypeHighlight]}
+                    components={{
+                      a: ({ node, href, children, ...props }) => {
+                        let isExternal = false;
+                        if (href && href.startsWith('http')) {
+                          try {
+                            const url = new URL(href);
+                            isExternal = url.hostname !== 'envoyou.com' && !url.hostname.endsWith('.envoyou.com');
+                          } catch (e) {
+                            isExternal = false;
+                          }
+                        }
+                        return (
+                          <a
+                            href={href}
+                            target={isExternal ? '_blank' : undefined}
+                            rel={isExternal ? 'noopener noreferrer' : undefined}
+                            {...props}
+                          >
+                            {children}
+                          </a>
+                        );
+                      }
+                    }}
+                  >
                     {post.content}
                   </ReactMarkdown>
                 </div>
