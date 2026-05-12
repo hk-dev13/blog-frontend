@@ -13,6 +13,7 @@ type Props = {
 // Extended Category type with description
 interface CategoryWithDesc extends Category {
   description?: string;
+  meta_description?: string;
   post_count?: number;
 }
 
@@ -24,7 +25,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!category) return { title: 'Category Not Found' };
 
     const title = category.name;
-    const description = category.description || `Artikel terbaru dalam kategori ${category.name} di Envoyou.`;
+    const description = category.meta_description || category.description || `Artikel terbaru dalam kategori ${category.name} di Envoyou.`;
 
     return {
       title,
@@ -56,6 +57,7 @@ export default async function CategoryPage({ params }: Props) {
   return (
     <CategoryPageContent
       category={category}
+      allCategories={categories}
       initialPosts={postsRes.data}
       initialMeta={postsRes.meta}
       slug={slug}

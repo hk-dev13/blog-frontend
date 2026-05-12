@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Clock, Eye } from 'lucide-react';
-import { Post } from '@/types';
+import { Post, Category } from '@/types';
 
 import Image from 'next/image';
 
@@ -9,14 +9,25 @@ interface PostCardProps {
   post: Post;
   featured?: boolean;
   priority?: boolean;
+  activeCategorySlug?: string;
 }
 
-export default function PostCard({ post, featured = false, priority = false }: PostCardProps) {
+export default function PostCard({ post, featured = false, priority = false, activeCategorySlug }: PostCardProps) {
   // Safe default values
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80';
   const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
   const formattedDate = format(publishDate, 'MMM d, yyyy');
-  const category = post.categories?.[0];
+  const categories = post.categories ?? [];
+  const primaryCategory = activeCategorySlug
+    ? categories.find((category) => category.slug === activeCategorySlug) ?? categories[0]
+    : categories[0];
+
+  const badgeCategories: Category[] = [];
+  if (primaryCategory) {
+    badgeCategories.push(primaryCategory);
+    const secondaryCategories = categories.filter((category) => category.slug !== primaryCategory.slug).slice(0, 1);
+    badgeCategories.push(...secondaryCategories);
+  }
 
   return (
     <article className={`group flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 ${featured ? 'md:flex-row' : ''}`}>
@@ -31,14 +42,17 @@ export default function PostCard({ post, featured = false, priority = false }: P
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </Link>
-        {category && (
-          <div className="absolute top-4 left-4 z-10">
-            <Link
-              href={`/categories/${category.slug}`}
-              className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-primary-500 text-white rounded-full shadow-sm hover:bg-primary-600 transition-colors"
-            >
-              {category.name}
-            </Link>
+        {badgeCategories.length > 0 && (
+          <div className="absolute top-4 left-4 z-10 flex flex-wrap gap-2">
+            {badgeCategories.map((category) => (
+              <Link
+                key={category.slug}
+                href={`/categories/${category.slug}`}
+                className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-primary-500 text-white rounded-full shadow-sm hover:bg-primary-600 transition-colors"
+              >
+                {category.name}
+              </Link>
+            ))}
           </div>
         )}
       </div>
