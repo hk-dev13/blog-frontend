@@ -2,16 +2,18 @@
 
 import PostCard from '@/components/shared/PostCard';
 import CategoryPills from '@/components/shared/CategoryPills';
-import { Post, Tag } from '@/types';
-import { Loader2 } from 'lucide-react';
+import { Post, Tag, Category } from '@/types';
+import { Loader2, ArrowRight, LayoutGrid } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
+import Link from 'next/link';
 
 interface HomeContentProps {
   initialPosts: Post[];
   initialMeta: { page: number; limit: number; total: number; totalPages: number };
   trendingPosts: Post[];
   tags: Tag[];
+  categories?: Category[];
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
@@ -21,6 +23,7 @@ export default function HomeContent({
   initialMeta,
   trendingPosts,
   tags,
+  categories = [],
 }: HomeContentProps) {
   const searchParams = useSearchParams();
   const activeTag = searchParams.get('tag') || undefined;
@@ -78,6 +81,43 @@ export default function HomeContent({
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {trendingPosts.map((post) => (
               <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        </section>
+      )}
+
+      {/* Browse by Category Section */}
+      {!activeTag && categories.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-8">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
+                <LayoutGrid className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              </div>
+              <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+                Browse by Category
+              </h2>
+            </div>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+            {categories.map((cat) => (
+              <Link
+                key={cat.id}
+                href={`/categories/${cat.slug}`}
+                className="group p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-lg"
+              >
+                <div className="flex flex-col h-full">
+                  <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 mb-2 flex items-center justify-between">
+                    {cat.name}
+                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                  </h3>
+                  {cat.description && (
+                    <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
+                      {cat.description}
+                    </p>
+                  )}
+                </div>
+              </Link>
             ))}
           </div>
         </section>

@@ -16,7 +16,7 @@ export default function Footer() {
         {/* Brand + Copyright */}
         <div className="flex flex-col items-center gap-3">
           <Image
-            src="/logo.svg"
+            src="/brand/logo.svg"
             alt="Envoyou Logo"
             width={36}
             height={36}

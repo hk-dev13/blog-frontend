@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import Link from 'next/link';
-import { FileText, LogOut, LayoutDashboard, Plus, Loader2, MessageSquare, ExternalLink } from 'lucide-react';
+import { FileText, LogOut, LayoutDashboard, Plus, Loader2, MessageSquare, ExternalLink, Search } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { token, user, logout } = useAppStore();
@@ -47,7 +47,10 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Posts', href: '/admin/posts', icon: FileText },
     { name: 'Comments', href: '/admin/comments', icon: MessageSquare },
+    { name: 'Tags', href: '/admin/tags', icon: Search, adminOnly: true },
   ];
+
+  const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === 'admin');
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex">
@@ -70,7 +73,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
           </Link>
 
           <nav className="space-y-1">
-            {navItems.map((item) => {
+            {filteredNavItems.map((item) => {
               const isActive = pathname === item.href || pathname.startsWith(`${item.href}/`);
               return (
                 <Link

@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
 import { PostGridSkeleton, CategoryPillsSkeleton } from '@/components/shared/Skeletons';
 import { serverFetchPaginated, serverFetch } from '@/lib/serverApi';
-import { Post, Tag } from '@/types';
+import { Post, Tag, Category } from '@/types';
 import HomeContent from '@/components/home/HomeContent';
 
 // ISR — revalidate every 300 seconds (5 min)
@@ -16,17 +16,20 @@ export default async function Home() {
   let latestMeta = { page: 1, limit: 6, total: 0, totalPages: 0 };
   let trendingData: Post[] = [];
   let tagsData: Tag[] = [];
+  let categoriesData: Category[] = [];
 
   try {
-    const [latestRes, trendingRes, tags] = await Promise.all([
+    const [latestRes, trendingRes, tags, categories] = await Promise.all([
       serverFetchPaginated<Post>('/posts?limit=6', { revalidate: 300 }),
       serverFetchPaginated<Post>('/posts?limit=4&sort=views&order=desc', { revalidate: 300 }),
       serverFetch<Tag[]>('/tags', { revalidate: 3600 }),
+      serverFetch<Category[]>('/categories', { revalidate: 3600 }),
     ]);
     latestData = latestRes.data;
     latestMeta = latestRes.meta;
     trendingData = trendingRes.data;
     tagsData = tags;
+    categoriesData = categories;
   } catch (err) {
     console.error('[Homepage] Failed to fetch initial data:', err);
   }
@@ -46,6 +49,7 @@ export default async function Home() {
         initialMeta={latestMeta}
         trendingPosts={trendingData}
         tags={tagsData}
+        categories={categoriesData}
       />
     </Suspense>
   );

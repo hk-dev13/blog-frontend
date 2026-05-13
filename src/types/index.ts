@@ -9,12 +9,15 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  description?: string;
+  meta_description?: string;
 }
 
 export interface Tag {
   id: string;
   name: string;
   slug: string;
+  post_count?: number;
 }
 
 export interface Post {

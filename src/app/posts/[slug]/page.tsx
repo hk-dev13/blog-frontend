@@ -109,7 +109,7 @@ export default async function PostPage({ params }: Props) {
       '@type': 'Organization',
       name: 'Envoyou',
       url: SITE_URL,
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/logo.svg` },
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/brand/logo.svg` },
     },
     keywords: post.tags?.map(t => t.name).join(', ') || '',
     articleSection: post.categories?.[0]?.name || '',
@@ -223,8 +223,8 @@ export default async function PostPage({ params }: Props) {
 
                 {/* Prose Wrapper for Typography */}
                 <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
-                  <ReactMarkdown 
-                    remarkPlugins={[remarkGfm]} 
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeSlug, rehypeHighlight]}
                     components={{
                       a: ({ node, href, children, ...props }) => {
