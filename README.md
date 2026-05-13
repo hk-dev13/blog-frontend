@@ -108,5 +108,5 @@ Proyek ini berada di bawah lisensi [MIT](LICENSE).
 ---
 
 <div align="center">
-  Dibuat dengan ❤️ oleh <b>Envoyou Team</b>
+  Dibuat dengan ❤️ oleh <b>Husni Kusuma</b> untuk <b>Envoyou</b>
 </div>

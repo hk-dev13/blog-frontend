@@ -48,6 +48,14 @@ export default function Navbar() {
         </Link>
 
         <div className="flex items-center gap-4">
+          {/* About link — hidden on mobile */}
+          <Link
+            href="/about"
+            className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+          >
+            About
+          </Link>
+
           <form onSubmit={handleSearch} className="relative hidden sm:block">
             <input
               type="text"
