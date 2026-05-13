@@ -8,6 +8,10 @@ import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
 import Placeholder from '@tiptap/extension-placeholder';
+import { Table } from '@tiptap/extension-table';
+import { TableRow } from '@tiptap/extension-table-row';
+import { TableHeader } from '@tiptap/extension-table-header';
+import { TableCell } from '@tiptap/extension-table-cell';
 import { Markdown } from 'tiptap-markdown';
 import { useEffect, useCallback, useRef } from 'react';
 import {
@@ -84,6 +88,10 @@ export default function RichTextEditor({
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Highlight.configure({ multicolor: false }),
       Placeholder.configure({ placeholder }),
+      Table.configure({ resizable: true }),
+      TableRow,
+      TableHeader,
+      TableCell,
       Markdown.configure({ html: false, transformCopiedText: true }),
     ],
     content: value,          // initial content — markdown string
@@ -231,6 +239,12 @@ export default function RichTextEditor({
         {/* Link */}
         <TB onClick={setLink} active={editor.isActive('link')} title="Link">
           <Link2 className={ic} />
+        </TB>
+        <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
+
+        {/* Table */}
+        <TB onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table">
+          <span className="font-bold text-[10px]">TBL</span>
         </TB>
 
         <ModeToggle />
