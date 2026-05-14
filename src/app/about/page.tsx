@@ -51,7 +51,7 @@ export default function AboutPage() {
         <div className="relative shrink-0 group">
           <div className="absolute -inset-1 rounded-full bg-gradient-to-br from-primary-400 to-primary-700 opacity-70 blur-md group-hover:opacity-90 transition-opacity duration-500" />
           <Image
-            src="https://cdn.envoyou.com/admin/husniKusuma.jpeg"
+            src="https://cdn.envoyou.com/admin/husniKusumaEnvoyou.webp"
             alt="Foto Husni Kusuma"
             width={160}
             height={160}
