@@ -24,6 +24,8 @@ interface PaginatedResponse<T> {
 
 interface Post {
   slug: string;
+  author_id?: string;
+  author?: { id: string; slug?: string };
   updated_at?: string;
   published_at?: string;
 }
@@ -134,17 +136,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('[sitemap] Tags fetch failed:', e);
   }
   // ── 5. Author pages (unique authors from posts) ────────────
-  const authorIds = new Set<string>();
   let authorRoutes: MetadataRoute.Sitemap = [];
   try {
     const { data: postsWithAuthors } = await serverFetch<any[]>('/posts?limit=100&status=published');
     const list = Array.isArray(postsWithAuthors) ? postsWithAuthors : [];
-    
+    const seenSlugs = new Set<string>();
+
     for (const p of list) {
-      if (p.author_id && !authorIds.has(p.author_id)) {
-        authorIds.add(p.author_id);
+      const authorSlug = p.author?.slug;
+      if (authorSlug && !seenSlugs.has(authorSlug)) {
+        seenSlugs.add(authorSlug);
         authorRoutes.push({
-          url: `${BASE_URL}/author/${p.author_id}`,
+          url: `${BASE_URL}/author/${authorSlug}`,
           lastModified: new Date(),
           changeFrequency: 'weekly' as const,
           priority: 0.6,
