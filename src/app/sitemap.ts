@@ -121,20 +121,10 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('[sitemap] Categories fetch failed:', e);
   }
 
-  // ── 4. Tag filter pages ───────────────────────────────────
-  let tagRoutes: MetadataRoute.Sitemap = [];
-  try {
-    const { data: list } = await serverFetch<Tag[]>('/tags');
-    const tags = Array.isArray(list) ? list : [];
-    tagRoutes = tags.map((tag: Tag) => ({
-      url: `${BASE_URL}/?tag=${tag.slug}`,
-      lastModified: new Date(tag.updated_at || new Date()),
-      changeFrequency: 'monthly' as const,
-      priority: 0.6,
-    }));
-  } catch (e) {
-    console.error('[sitemap] Tags fetch failed:', e);
-  }
+  // ── 4. Tag pages intentionally excluded from sitemap ─────────
+  // /?tag=* URLs are parameterized views of the homepage.
+  // They are disallowed in robots.txt and set to noindex via metadata.
+  // Submitting them here would signal importance to Google — counterproductive.
   // ── 5. Author pages (unique authors from posts) ────────────
   let authorRoutes: MetadataRoute.Sitemap = [];
   try {
@@ -158,5 +148,5 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     console.error('[sitemap] Author pages fetch failed:', e);
   }
 
-  return [...staticRoutes, ...postRoutes, ...categoryRoutes, ...tagRoutes, ...authorRoutes];
+  return [...staticRoutes, ...postRoutes, ...categoryRoutes, ...authorRoutes];
 }

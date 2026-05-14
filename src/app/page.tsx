@@ -3,12 +3,28 @@ import { PostGridSkeleton, CategoryPillsSkeleton } from '@/components/shared/Ske
 import { serverFetchPaginated, serverFetch } from '@/lib/serverApi';
 import { Post, Tag, Category } from '@/types';
 import HomeContent from '@/components/home/HomeContent';
+import type { Metadata } from 'next';
 
 // ISR — revalidate every 300 seconds (5 min)
 export const revalidate = 300;
 
 // Allow dynamic rendering when API is unreachable at build time
 export const dynamic = 'force-dynamic';
+
+// ── SEO: noindex + canonical for parameterised tag views ─────────────
+// /?tag=ai is a filtered view of the homepage, not a unique page.
+// Tell Google the canonical is always '/' to avoid duplicate content.
+export async function generateMetadata(
+  { searchParams }: { searchParams: Promise<{ tag?: string }> }
+): Promise<Metadata> {
+  const { tag } = await searchParams;
+  if (!tag) return {};   // Normal homepage — no special metadata needed
+
+  return {
+    robots: { index: false, follow: true },
+    alternates: { canonical: 'https://blog.envoyou.com' },
+  };
+}
 
 export default async function Home() {
   // ── Parallel fetch — keeps TTFB low ─────────────────────────
