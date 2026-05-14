@@ -151,7 +151,7 @@ export default async function PostPage({ params }: Props) {
             </h1>
 
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
-              <Link href={`/author/${post.author_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <Link href={`/author/${post.author?.slug || post.author_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 {post.author?.avatar_url ? (
                   <Image src={post.author.avatar_url} alt={post.author.name} width={32} height={32} className="rounded-full object-cover" />
                 ) : (
