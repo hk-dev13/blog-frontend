@@ -9,11 +9,11 @@ import {
 export const metadata: Metadata = {
   title: 'Tentang Saya',
   description:
-    'Husni Kusuma — builder, developer, dan eksplorator teknologi dari Jawa Timur. Pelajari kisah di balik Envoyou dan bagaimana platform ini lahir.',
+    'Husni Kusuma — builder, developer, dan eksplorator teknologi. Pelajari kisah di balik Envoyou dan bagaimana platform ini lahir.',
   openGraph: {
     title: 'Tentang Saya | Envoyou',
     description:
-      'Husni Kusuma — builder, developer, dan eksplorator teknologi dari Jawa Timur.',
+      'Husni Kusuma — builder, developer, dan eksplorator teknologi.',
     images: ['https://cdn.envoyou.com/admin/husniKusuma.jpeg'],
   },
 };
