@@ -1,7 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
-import { serverFetchPaginated } from '@/lib/serverApi';
-import { Post } from '@/types';
+import { serverFetch, serverFetchPaginated } from '@/lib/serverApi';
+import { Post, User } from '@/types';
 import AuthorPageContent from './AuthorPageContent';
 
 export const revalidate = 300;
@@ -15,10 +15,9 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const authorName = decodeURIComponent(slug).replace(/-/g, ' ');
 
   try {
-    const res = await serverFetchPaginated<Post>(`/posts?limit=1&author=${slug}`, { revalidate: 300 });
-    const author = res.data[0]?.author;
-    const name = author?.name || authorName;
-    const bio = author?.bio || `Articles by ${name} on Envoyou.`;
+    const author = await serverFetch<User>(`/users/${slug}`, { revalidate: 300 });
+    const name = author.name || authorName;
+    const bio = author.short_bio || author.bio || `Articles by ${name} on Envoyou.`;
 
     return {
       title: name,
@@ -38,16 +37,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 export default async function AuthorPage({ params }: Props) {
   const { slug } = await params;
 
+  let author: User;
   let postsRes;
   try {
-    postsRes = await serverFetchPaginated<Post>(`/posts?limit=9&author=${slug}`, { revalidate: 300 });
+    [author, postsRes] = await Promise.all([
+      serverFetch<User>(`/users/${slug}`, { revalidate: 300 }),
+      serverFetchPaginated<Post>(`/posts?limit=9&author=${slug}`, { revalidate: 300 }),
+    ]);
   } catch {
     notFound();
   }
-
-  // Extract author from first post
-  const author = postsRes.data[0]?.author;
-  if (!author) notFound();
 
   return (
     <AuthorPageContent

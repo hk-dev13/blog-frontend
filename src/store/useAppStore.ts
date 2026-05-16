@@ -5,6 +5,9 @@ interface User {
   id: string;
   email: string;
   role: string;
+  name?: string;
+  slug?: string;
+  avatar_url?: string | null;
 }
 
 interface AppState {
@@ -13,6 +16,7 @@ interface AppState {
   token: string | null;
   user: User | null;
   setAuth: (token: string, user: User) => void;
+  updateUser: (user: Partial<User>) => void;
   logout: () => void;
 }
 
@@ -24,6 +28,9 @@ export const useAppStore = create<AppState>()(
       token: null,
       user: null,
       setAuth: (token, user) => set({ token, user }),
+      updateUser: (user) => set((state) => ({
+        user: state.user ? { ...state.user, ...user } : null,
+      })),
       logout: () => set({ token: null, user: null }),
     }),
     {

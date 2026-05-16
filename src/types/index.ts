@@ -1,9 +1,16 @@
 export interface User {
   id: string;
   name: string;
-  slug?: string;
-  bio?: string;
-  avatar_url?: string;
+  email?: string;
+  role?: 'admin' | 'author' | string;
+  slug: string;
+  bio?: string | null;
+  short_bio?: string | null;
+  full_bio?: string | null;
+  social_links?: Record<string, string>;
+  avatar_url?: string | null;
+  created_at?: string;
+  updated_at?: string;
 }
 
 export interface Category {

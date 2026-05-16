@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import Link from 'next/link';
-import { FileText, LogOut, LayoutDashboard, Plus, Loader2, MessageSquare, ExternalLink, Search } from 'lucide-react';
+import { FileText, LogOut, LayoutDashboard, Plus, Loader2, MessageSquare, ExternalLink, Search, UserRound } from 'lucide-react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const { token, user, logout } = useAppStore();
@@ -46,6 +46,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: 'Dashboard', href: '/admin', icon: LayoutDashboard },
     { name: 'Posts', href: '/admin/posts', icon: FileText },
+    { name: 'Author', href: '/admin/author', icon: UserRound },
     { name: 'Comments', href: '/admin/comments', icon: MessageSquare },
     { name: 'Tags', href: '/admin/tags', icon: Search, adminOnly: true },
   ];

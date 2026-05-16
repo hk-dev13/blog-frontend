@@ -4,9 +4,17 @@ import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import PostCard from '@/components/shared/PostCard';
 import { Post, User } from '@/types';
-import { Loader2, BookOpen } from 'lucide-react';
+import { Code2, Globe, Image as ImageIcon, Link2, Loader2, BookOpen, MessageSquare } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+
+const socialFields = [
+  { key: 'website', label: 'Website', icon: Globe },
+  { key: 'github', label: 'GitHub', icon: Code2 },
+  { key: 'linkedin', label: 'LinkedIn', icon: Link2 },
+  { key: 'x', label: 'X', icon: MessageSquare },
+  { key: 'instagram', label: 'Instagram', icon: ImageIcon },
+] as const;
 
 interface Props {
   author: User;
@@ -44,6 +52,9 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
 
   // Calculate total views
   const totalViews = posts.reduce((acc, post) => acc + (post.views || 0), 0);
+  const shortBio = author.short_bio || author.bio;
+  const socialLinks = author.social_links || {};
+  const visibleSocialLinks = socialFields.filter(field => socialLinks[field.key]);
 
   return (
     <div className="container mx-auto px-4 py-12 md:py-20 max-w-5xl">
@@ -71,11 +82,32 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
           {author.name}
         </h1>
 
-        {/* Bio */}
-        {author.bio && (
+        {/* Short Bio */}
+        {shortBio && (
           <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-6">
-            {author.bio}
+            {shortBio}
           </p>
+        )}
+
+        {/* Social Links */}
+        {visibleSocialLinks.length > 0 && (
+          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+            {visibleSocialLinks.map((field) => {
+              const Icon = field.icon;
+              return (
+                <a
+                  key={field.key}
+                  href={socialLinks[field.key]}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                >
+                  <Icon className="w-4 h-4" />
+                  {field.label}
+                </a>
+              );
+            })}
+          </div>
         )}
 
         {/* Stats */}
@@ -90,6 +122,19 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
           </div>
         </div>
       </header>
+
+      {author.full_bio && (
+        <section className="mb-16 max-w-3xl mx-auto">
+          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 md:p-8">
+            <h2 className="text-xl font-serif font-bold text-slate-900 dark:text-white mb-4">
+              About {author.name}
+            </h2>
+            <p className="text-slate-600 dark:text-slate-300 leading-7 whitespace-pre-line">
+              {author.full_bio}
+            </p>
+          </div>
+        </section>
+      )}
 
       {/* Articles */}
       <section>
