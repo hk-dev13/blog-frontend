@@ -2,6 +2,7 @@
 
 import PostCard from '@/components/shared/PostCard';
 import CategoryPills from '@/components/shared/CategoryPills';
+import CategoryIcon from '@/components/shared/CategoryIcon';
 import { Post, Tag, Category } from '@/types';
 import { Loader2, ArrowRight, LayoutGrid } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
@@ -104,12 +105,17 @@ export default function HomeContent({
               <Link
                 key={cat.id}
                 href={`/categories/${cat.slug}`}
-                className="group p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-500 dark:hover:border-primary-500 transition-all duration-300 hover:shadow-lg"
+                className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60"
               >
                 <div className="flex flex-col h-full">
-                  <h3 className="text-lg font-bold text-slate-900 dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400 mb-2 flex items-center justify-between">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-600 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-400">
+                      <CategoryIcon category={cat} className="h-5 w-5" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 -translate-x-2 text-primary-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100 dark:text-primary-400" />
+                  </div>
+                  <h3 className="mb-2 text-lg font-bold text-slate-900 transition-colors dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
                     {cat.name}
-                    <ArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
                   </h3>
                   {cat.description && (
                     <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">

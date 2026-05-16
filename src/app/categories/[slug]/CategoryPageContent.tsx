@@ -2,8 +2,9 @@
 
 import { useState, useCallback } from 'react';
 import PostCard from '@/components/shared/PostCard';
+import CategoryIcon from '@/components/shared/CategoryIcon';
 import { Post, Category } from '@/types';
-import { Loader2, BookOpen, Zap } from 'lucide-react';
+import { Loader2, BookOpen, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
@@ -57,91 +58,61 @@ export default function CategoryPageContent({ category, allCategories = [], init
   }, [isLoadingMore, hasMore, meta, slug]);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-white to-slate-100 dark:from-slate-950 dark:via-slate-900 dark:to-slate-950">
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
       {/* Hero Section */}
-      <section className="container mx-auto px-4 py-16 md:py-24 max-w-5xl">
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
-          {/* Main Content */}
-          <div className="md:col-span-2">
-            {/* Badge */}
-            <div className="flex items-center gap-2 mb-6">
-              <span className="inline-block px-4 py-2 text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full flex items-center gap-2">
-                <BookOpen className="w-4 h-4" />
-                Category
-              </span>
-              {meta.total > 0 && (
-                <span className="inline-block px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-800 rounded-full">
-                  {meta.total} {meta.total === 1 ? 'Article' : 'Articles'}
+      <section className="container mx-auto max-w-5xl px-4 py-10 md:py-16">
+        <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-12 shadow-2xl shadow-slate-950/10 md:px-10 md:py-16">
+          <div className="absolute inset-0 bg-[radial-gradient(circle_at_22%_0%,rgba(13,135,207,0.32),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
+          <div className="relative z-10 grid gap-10 md:grid-cols-[1fr_auto] md:items-end">
+            <div className="max-w-3xl">
+              <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-white/10 bg-white/[0.06] text-primary-300">
+                <CategoryIcon category={category} className="h-8 w-8" />
+              </div>
+              <div className="mb-4 flex flex-wrap items-center gap-2">
+                <span className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3.5 py-2 text-xs font-semibold uppercase tracking-wider text-primary-200">
+                  <BookOpen className="h-4 w-4" />
+                  Category
                 </span>
+                {meta.total > 0 && (
+                  <span className="rounded-full border border-white/10 bg-white/[0.06] px-3.5 py-2 text-xs font-medium text-slate-300">
+                    {meta.total} {meta.total === 1 ? 'Article' : 'Articles'}
+                  </span>
+                )}
+              </div>
+
+              <h1 className="mb-6 font-serif text-4xl font-bold leading-tight text-white md:text-6xl">
+                {category.name}
+              </h1>
+
+              {category.description && (
+                <p className="max-w-2xl text-base leading-8 text-slate-200 md:text-lg">
+                  {category.description}
+                </p>
+              )}
+
+              {category.meta_description && !category.description && (
+                <p className="max-w-2xl text-base leading-8 text-slate-300 md:text-lg">
+                  {category.meta_description}
+                </p>
               )}
             </div>
 
-            {/* Title */}
-            <h1 className="text-5xl md:text-6xl font-serif font-bold text-slate-900 dark:text-white mb-6 leading-tight">
-              {category.name}
-            </h1>
-
-            {/* Description */}
-            {category.description && (
-              <p className="text-xl text-slate-700 dark:text-slate-200 mb-6 leading-relaxed">
-                {category.description}
-              </p>
-            )}
-
-            {/* Meta Description */}
-            {category.meta_description && !category.description && (
-              <p className="text-lg text-slate-600 dark:text-slate-300 mb-6">
-                {category.meta_description}
-              </p>
-            )}
-
-            {/* Stats */}
-            <div className="flex flex-wrap gap-4 md:gap-8 text-sm">
-              <div>
-                <p className="text-slate-600 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">Total Articles</p>
-                <p className="text-2xl font-bold text-slate-900 dark:text-white">{meta.total}</p>
+            <div className="grid min-w-44 grid-cols-2 gap-3 text-sm md:grid-cols-1">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-400">Total Articles</p>
+                <p className="text-2xl font-bold text-white">{meta.total}</p>
               </div>
               {initialPosts.length > 0 && (
-                <div>
-                  <p className="text-slate-600 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">First Article</p>
-                  <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
+                <div className="rounded-2xl border border-white/10 bg-white/[0.06] p-4">
+                  <p className="mb-1 text-xs font-medium uppercase tracking-wider text-slate-400">First Article</p>
+                  <p className="font-medium text-slate-100">
                     {firstArticleDateFormatter.format(new Date(initialPosts[0].published_at || initialPosts[0].created_at))}
                   </p>
                 </div>
               )}
             </div>
           </div>
-
-          {/* Side Info Card */}
-          <div className="md:col-span-1">
-            <div className="bg-white dark:bg-slate-800 rounded-xl p-6 shadow-lg border border-slate-200 dark:border-slate-700 sticky top-20">
-              <div className="flex items-center gap-3 mb-4">
-                <div className="w-10 h-10 rounded-full bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                  <Zap className="w-5 h-5 text-primary-600 dark:text-primary-400" />
-                </div>
-                <h3 className="font-semibold text-slate-900 dark:text-white">Quick Stats</h3>
-              </div>
-              <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">Category</span>
-                  <span className="font-medium text-slate-900 dark:text-white">{category.name}</span>
-                </div>
-                <div className="h-px bg-slate-200 dark:bg-slate-700" />
-                <div className="flex justify-between">
-                  <span className="text-slate-600 dark:text-slate-400">Total Posts</span>
-                  <span className="font-bold text-primary-600 dark:text-primary-400">{meta.total}</span>
-                </div>
-                {hasMore && (
-                  <div className="pt-2">
-                    <p className="text-xs text-slate-500 dark:text-slate-400">
-                      {meta.totalPages} pages of content
-                    </p>
-                  </div>
-                )}
-              </div>
-            </div>
-          </div>
-        </div>
+        </header>
       </section>
 
       {/* Posts Section */}
@@ -194,7 +165,7 @@ export default function CategoryPageContent({ category, allCategories = [], init
 
       {/* Cross-Category Navigation (CTA) */}
       {otherCategories.length > 0 && (
-        <section className="bg-slate-50 dark:bg-slate-900/50 border-t border-slate-200 dark:border-slate-800">
+        <section className="border-t border-slate-100 bg-white dark:border-slate-800 dark:bg-slate-900/50">
           <div className="container mx-auto px-4 py-20 max-w-5xl">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-white mb-4">
@@ -209,9 +180,15 @@ export default function CategoryPageContent({ category, allCategories = [], init
                 <Link
                   key={cat.id}
                   href={`/categories/${cat.slug}`}
-                  className="group p-6 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-primary-500 transition-all duration-300 shadow-sm hover:shadow-md"
+                  className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60"
                 >
-                  <h3 className="font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary-600 transition-colors">
+                  <div className="mb-4 flex items-center justify-between gap-3">
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-600 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-400">
+                      <CategoryIcon category={cat} className="h-5 w-5" />
+                    </div>
+                    <ArrowRight className="h-4 w-4 -translate-x-2 text-primary-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100 dark:text-primary-400" />
+                  </div>
+                  <h3 className="font-bold text-slate-900 dark:text-white mb-2 group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
                     {cat.name}
                   </h3>
                   {cat.description && (
