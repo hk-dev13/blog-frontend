@@ -80,10 +80,10 @@ export default function RichTextEditor({
         heading: { levels: [1, 2, 3] },
         code: { HTMLAttributes: { class: 'font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-sm' } },
         codeBlock: { HTMLAttributes: { class: 'font-mono bg-slate-900 text-slate-100 p-4 rounded-lg text-sm overflow-x-auto' } },
-        blockquote: { HTMLAttributes: { class: 'border-l-4 border-primary-400 pl-4 italic text-slate-600 dark:text-slate-400' } },
+        blockquote: { HTMLAttributes: { class: '' } },
       }),
       Underline,
-      Link.configure({ openOnClick: false, HTMLAttributes: { class: 'text-primary-600 underline' } }),
+      Link.configure({ openOnClick: false, HTMLAttributes: { class: 'no-underline' } }),
       Image,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Highlight.configure({ multicolor: false }),
@@ -97,7 +97,7 @@ export default function RichTextEditor({
     content: value,          // initial content — markdown string
     editorProps: {
       attributes: {
-        class: 'prose prose-slate dark:prose-invert max-w-none min-h-[400px] px-4 py-4 focus:outline-none text-sm leading-relaxed',
+        class: 'prose prose-lg prose-slate dark:prose-invert prose-headings:font-serif prose-a:text-primary-600 max-w-none min-h-[400px] px-4 py-6 focus:outline-none leading-relaxed',
       },
     },
     onUpdate: ({ editor }) => {

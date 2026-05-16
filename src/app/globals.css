@@ -42,3 +42,27 @@ body {
     display: none; /* Chrome, Safari and Opera */
   }
 }
+
+/* ── Global Blockquote Design System ── */
+.prose blockquote {
+  position: relative;
+  background-color: color-mix(in srgb, var(--color-slate-100) 50%, transparent);
+  border-left: 4px solid var(--color-amber-500);
+  padding: 1.5rem 2rem;
+  border-radius: 0 0.75rem 0.75rem 0;
+  margin: 2rem 0;
+  font-style: italic;
+  color: var(--color-slate-700);
+  quotes: none;
+}
+
+.dark .prose blockquote {
+  background-color: color-mix(in srgb, var(--color-slate-800) 50%, transparent);
+  color: var(--color-slate-300);
+}
+
+/* Remove Tailwind Typography automatic quotes */
+.prose blockquote p::before,
+.prose blockquote p::after {
+  content: none !important;
+}

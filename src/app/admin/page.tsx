@@ -4,7 +4,8 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import Link from 'next/link';
-import { FileText, Eye, TrendingUp, PenLine, Loader2, Heart, Mail } from 'lucide-react';
+import { format } from 'date-fns';
+import { FileText, Eye, TrendingUp, PenLine, Loader2, Calendar, Clock } from 'lucide-react';
 import ViewsChart from '@/components/admin/ViewsChart';
 
 export default function AdminDashboardPage() {
@@ -24,6 +25,7 @@ export default function AdminDashboardPage() {
   const posts = data?.data || [];
   const totalPosts = posts.length;
   const publishedPosts = posts.filter(p => p.status === 'published').length;
+  const scheduledPosts = posts.filter(p => p.status === 'scheduled').length;
   const draftPosts = posts.filter(p => p.status === 'draft').length;
   const totalViews = posts.reduce((sum, p) => sum + (p.views || 0), 0);
   const recentPosts = posts.slice(0, 5);
@@ -31,6 +33,7 @@ export default function AdminDashboardPage() {
   const stats = [
     { label: 'Total Posts', value: totalPosts, icon: FileText, color: 'bg-blue-500' },
     { label: 'Published', value: publishedPosts, icon: TrendingUp, color: 'bg-green-500' },
+    { label: 'Scheduled', value: scheduledPosts, icon: Calendar, color: 'bg-orange-500' },
     { label: 'Drafts', value: draftPosts, icon: PenLine, color: 'bg-yellow-500' },
     { label: 'Total Views', value: totalViews, icon: Eye, color: 'bg-purple-500' },
   ];
@@ -40,7 +43,7 @@ export default function AdminDashboardPage() {
       <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Dashboard</h1>
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (
           <div key={stat.label} className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6 flex items-center gap-4">
             <div className={`${stat.color} p-3 rounded-lg`}>
@@ -75,13 +78,24 @@ export default function AdminDashboardPage() {
               <div key={post.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50 dark:hover:bg-slate-700/50 transition-colors">
                 <div className="min-w-0 flex-1">
                   <p className="text-sm font-medium text-slate-900 dark:text-white truncate">{post.title}</p>
-                  <p className="text-xs text-slate-500 dark:text-slate-400 mt-0.5">/{post.slug}</p>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <p className="text-xs text-slate-500 dark:text-slate-400">/{post.slug}</p>
+                    <span className="text-[10px] text-slate-300 dark:text-slate-600">•</span>
+                    <p className="text-xs text-slate-400">
+                      {post.status === 'published' || post.status === 'scheduled'
+                        ? format(new Date(post.published_at || post.created_at), 'MMM d, yyyy')
+                        : format(new Date(post.created_at), 'MMM d, yyyy')
+                      }
+                    </p>
+                  </div>
                 </div>
                 <div className="flex items-center gap-4 ml-4">
                   <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
                     post.status === 'published'
                       ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
+                      : post.status === 'scheduled'
+                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
+                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
                   }`}>
                     {post.status}
                   </span>

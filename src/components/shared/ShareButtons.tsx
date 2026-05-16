@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Link2, Check } from 'lucide-react';
 
 // ── Simple SVG icons (no external library) ──────────────────
@@ -65,7 +65,11 @@ export default function ShareButtons({ url, title }: ShareButtonsProps) {
   };
 
   // ── Mobile: native share button ──────────────────────────────
-  const supportsNativeShare = typeof navigator !== 'undefined' && !!navigator.share;
+  const [supportsNativeShare, setSupportsNativeShare] = useState(false);
+
+  useEffect(() => {
+    setSupportsNativeShare(typeof navigator !== 'undefined' && !!navigator.share);
+  }, []);
 
   return (
     <div className="flex items-center gap-3 flex-wrap">

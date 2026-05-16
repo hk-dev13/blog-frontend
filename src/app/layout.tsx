@@ -91,12 +91,11 @@ export default function RootLayout({
           }}
         />
 
-        {/* Google AdSense */}
-        <Script
+        {/* Google AdSense — Use plain script to avoid data-nscript attribute issues */}
+        <script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3002282783853213"
           crossOrigin="anonymous"
-          strategy="afterInteractive"
         />
 
         {/* 3. Gunakan tag <script> biasa (huruf kecil) untuk Schema SEO */}

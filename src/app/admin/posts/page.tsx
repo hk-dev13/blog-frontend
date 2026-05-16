@@ -255,6 +255,8 @@ export default function AdminPostsPage() {
                               <div>{format(new Date(post.published_at), 'MMM d, yyyy')}</div>
                               <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">{format(new Date(post.published_at), 'HH:mm')} WIB</div>
                             </div>
+                          ) : post.status === 'published' && post.published_at ? (
+                            format(new Date(post.published_at), 'MMM d, yyyy')
                           ) : (
                             format(new Date(post.created_at), 'MMM d, yyyy')
                           )}
