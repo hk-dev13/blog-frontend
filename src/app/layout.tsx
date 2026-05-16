@@ -25,6 +25,7 @@ import Providers from "./providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import Navbar from "@/components/layout/Navbar";
 import Footer from "@/components/layout/Footer";
+import AdSenseLoader from "@/components/shared/AdSenseLoader";
 
 const inter = Inter({
   variable: "--font-sans",
@@ -63,14 +64,6 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
-      <head>
-        {/* Google AdSense account verification and Auto Ads loader */}
-        <script
-          async
-          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
-          crossOrigin="anonymous"
-        />
-      </head>
       {/* 1. Tambahkan suppressHydrationWarning di body */}
       <body
         className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300"
@@ -87,6 +80,7 @@ export default function RootLayout({
         </ThemeProvider>
 
         {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
+        <AdSenseLoader client={ADSENSE_CLIENT} />
 
         {/* 2. Ubah format Clarity menggunakan dangerouslySetInnerHTML */}
         <Script
