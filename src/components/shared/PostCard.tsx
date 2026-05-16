@@ -1,9 +1,15 @@
 import Link from 'next/link';
-import { format } from 'date-fns';
 import { Clock, Eye } from 'lucide-react';
 import { Post, Category } from '@/types';
 
 import Image from 'next/image';
+
+const postDateFormatter = new Intl.DateTimeFormat('en-US', {
+  month: 'short',
+  day: 'numeric',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
 
 interface PostCardProps {
   post: Post;
@@ -16,7 +22,7 @@ export default function PostCard({ post, featured = false, priority = false, act
   // Safe default values
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80';
   const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
-  const formattedDate = format(publishDate, 'MMM d, yyyy');
+  const formattedDate = postDateFormatter.format(publishDate);
   const categories = post.categories ?? [];
   const primaryCategory = activeCategorySlug
     ? categories.find((category) => category.slug === activeCategorySlug) ?? categories[0]

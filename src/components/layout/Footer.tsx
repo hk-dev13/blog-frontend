@@ -17,7 +17,7 @@ const NAV_LINKS = [
 ];
 
 export default function Footer() {
-  const currentYear = new Date().getFullYear();
+  const currentYear = new Date().getUTCFullYear();
 
   return (
     <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 mt-auto">

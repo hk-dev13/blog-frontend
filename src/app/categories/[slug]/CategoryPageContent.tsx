@@ -7,6 +7,11 @@ import { Loader2, BookOpen, Zap } from 'lucide-react';
 import Link from 'next/link';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+const firstArticleDateFormatter = new Intl.DateTimeFormat('id-ID', {
+  year: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+});
 
 interface CategoryWithDesc extends Category {
   description?: string;
@@ -100,10 +105,7 @@ export default function CategoryPageContent({ category, allCategories = [], init
                 <div>
                   <p className="text-slate-600 dark:text-slate-400 text-xs uppercase tracking-wider mb-1">First Article</p>
                   <p className="text-sm text-slate-700 dark:text-slate-300 font-medium">
-                    {new Date(initialPosts[0].published_at || initialPosts[0].created_at).toLocaleDateString('id-ID', {
-                      year: 'numeric',
-                      month: 'short',
-                    })}
+                    {firstArticleDateFormatter.format(new Date(initialPosts[0].published_at || initialPosts[0].created_at))}
                   </p>
                 </div>
               )}

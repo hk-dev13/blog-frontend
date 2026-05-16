@@ -57,13 +57,15 @@ export function PostGridSkeleton({ count = 4, featured = false }: { count?: numb
 }
 
 export function CategoryPillsSkeleton() {
+  const widths = [72, 88, 64, 96, 80, 68];
+
   return (
     <div className="flex items-center gap-3 overflow-hidden pb-4">
       {Array.from({ length: 6 }).map((_, i) => (
         <div
           key={i}
           className="h-9 rounded-full bg-slate-200 dark:bg-slate-800 animate-pulse"
-          style={{ width: `${60 + Math.random() * 40}px` }}
+          style={{ width: `${widths[i]}px` }}
         />
       ))}
     </div>

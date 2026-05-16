@@ -13,6 +13,8 @@ import { generateSlug, getContentStats, useAutosave } from '@/lib/editorUtils';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 
+const numberFormatter = new Intl.NumberFormat('en-US');
+
 export default function CreatePostPage() {
   const router = useRouter();
   const token = useAppStore(state => state.token);
@@ -435,10 +437,10 @@ export default function CreatePostPage() {
               <div className="flex items-center gap-4 px-1 py-1 text-xs text-slate-400">
                 <span className="flex items-center gap-1">
                   <AlignLeft className="w-3.5 h-3.5" />
-                  {contentStats.words.toLocaleString()} words
+                  {numberFormatter.format(contentStats.words)} words
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">·</span>
-                <span>{contentStats.chars.toLocaleString()} characters</span>
+                <span>{numberFormatter.format(contentStats.chars)} characters</span>
                 <span className="text-slate-300 dark:text-slate-600">·</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />

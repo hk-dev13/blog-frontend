@@ -10,6 +10,12 @@ interface DailyView {
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
 const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const numberFormatter = new Intl.NumberFormat('en-US');
+const chartDateFormatter = new Intl.DateTimeFormat('id-ID', {
+  day: 'numeric',
+  month: 'short',
+  timeZone: 'UTC',
+});
 
 export default function ViewsChart() {
   const [data, setData] = useState<DailyView[]>([]);
@@ -81,9 +87,9 @@ export default function ViewsChart() {
         <div className="flex gap-4 text-xs text-slate-500 dark:text-slate-400">
           <span className="flex items-center gap-1">
             <span className="w-2 h-2 rounded-full bg-primary-500 inline-block" />
-            {totalViews.toLocaleString()} views
+            {numberFormatter.format(totalViews)} views
           </span>
-          <span>{totalVisitors.toLocaleString()} unique</span>
+          <span>{numberFormatter.format(totalVisitors)} unique</span>
         </div>
       </div>
 
@@ -91,10 +97,7 @@ export default function ViewsChart() {
       <div className="flex items-end gap-1.5 h-48">
         {data.map((day) => {
           const height = (day.view_count / maxViews) * 100;
-          const label = new Date(day.view_date + 'T00:00:00').toLocaleDateString('id-ID', {
-            day: 'numeric',
-            month: 'short',
-          });
+          const label = chartDateFormatter.format(new Date(day.view_date + 'T00:00:00Z'));
 
           return (
             <div key={day.view_date} className="flex-1 flex flex-col items-center group">

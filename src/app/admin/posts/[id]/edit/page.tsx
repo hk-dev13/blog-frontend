@@ -13,6 +13,13 @@ import { generateSlug, getContentStats, useAutosave } from '@/lib/editorUtils';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 
+const numberFormatter = new Intl.NumberFormat('en-US');
+const revisionDateFormatter = new Intl.DateTimeFormat('id-ID', {
+  dateStyle: 'medium',
+  timeStyle: 'short',
+  timeZone: 'UTC',
+});
+
 export default function EditPostPage() {
   const router = useRouter();
   const params = useParams();
@@ -528,10 +535,10 @@ export default function EditPostPage() {
               <div className="flex items-center gap-4 px-1 py-1 text-xs text-slate-400">
                 <span className="flex items-center gap-1">
                   <AlignLeft className="w-3.5 h-3.5" />
-                  {contentStats.words.toLocaleString()} words
+                  {numberFormatter.format(contentStats.words)} words
                 </span>
                 <span className="text-slate-300 dark:text-slate-600">·</span>
-                <span>{contentStats.chars.toLocaleString()} characters</span>
+                <span>{numberFormatter.format(contentStats.chars)} characters</span>
                 <span className="text-slate-300 dark:text-slate-600">·</span>
                 <span className="flex items-center gap-1">
                   <Clock className="w-3.5 h-3.5" />
@@ -735,7 +742,7 @@ export default function EditPostPage() {
                             v{rev.revision_number} — {rev.title}
                           </p>
                           <p className="text-xs text-slate-400 mt-0.5">
-                            {new Date(rev.created_at).toLocaleString('id-ID', { dateStyle: 'medium', timeStyle: 'short' })}
+                            {revisionDateFormatter.format(new Date(rev.created_at))}
                           </p>
                         </div>
                         <button

@@ -7,6 +7,7 @@ import { Post, User } from '@/types';
 import { Code2, Globe, Image as ImageIcon, Link2, Loader2, BookOpen, MessageSquare } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+const numberFormatter = new Intl.NumberFormat('en-US');
 
 const socialFields = [
   { key: 'website', label: 'Website', icon: Globe },
@@ -118,7 +119,7 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
           </div>
           <div className="flex items-center gap-1.5">
             <span>👁</span>
-            <span>{totalViews.toLocaleString()} total views</span>
+            <span>{numberFormatter.format(totalViews)} total views</span>
           </div>
         </div>
       </header>
