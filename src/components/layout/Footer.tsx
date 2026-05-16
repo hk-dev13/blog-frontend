@@ -37,7 +37,7 @@ export default function Footer() {
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2.5 w-fit group">
               <Image
-                src="/brand/logo.svg"
+                src="/brand/logo-500.svg"
                 alt="Envoyou Logo"
                 width={32}
                 height={32}

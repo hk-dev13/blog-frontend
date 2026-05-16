@@ -35,7 +35,7 @@ export default function Navbar() {
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
           <Image
-            src="/brand/logo.svg"
+            src="/brand/logo-500.svg"
             alt="Envoyou Logo"
             width={36}
             height={36}

@@ -102,14 +102,14 @@ export default async function PostPage({ params }: Props) {
       '@type': 'Person',
       name: post.author?.name || 'Husni Kusuma',
       url: SITE_URL,
-      image: post.author?.avatar_url || 'https://cdn.envoyou.com/admin/avatarHusniKusuma.jpeg',
+      image: post.author?.avatar_url || 'https://cdn.envoyou.com/admin/husniKusumaEnvoyou.webp',
       description: 'Self-taught Fullstack Developer & Data Analyst enthusiast. Founder of Envoyou.',
     },
     publisher: {
       '@type': 'Organization',
       name: 'Envoyou',
       url: SITE_URL,
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/brand/logo.svg` },
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/brand/logo-500.svg` },
     },
     keywords: post.tags?.map(t => t.name).join(', ') || '',
     articleSection: post.categories?.[0]?.name || '',
@@ -153,7 +153,14 @@ export default async function PostPage({ params }: Props) {
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
               <Link href={`/author/${post.author?.slug || post.author_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 {post.author?.avatar_url ? (
-                  <Image src={post.author.avatar_url} alt={post.author.name} width={32} height={32} className="rounded-full object-cover" />
+                  <Image 
+                    src={post.author.avatar_url} 
+                    alt={post.author.name} 
+                    width={32} 
+                    height={32} 
+                    className="rounded-full object-cover w-8 h-8"
+                    style={{ width: '32px', height: '32px' }}
+                  />
                 ) : (
                   <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold">
                     {post.author?.name?.charAt(0) || 'A'}
