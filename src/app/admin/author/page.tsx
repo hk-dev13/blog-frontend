@@ -7,7 +7,7 @@ import { fetchApi } from '@/lib/api';
 import { generateSlug } from '@/lib/editorUtils';
 import { useAppStore } from '@/store/useAppStore';
 import { User } from '@/types';
-import { BookOpen, Code2, Globe, Image as ImageIcon, Link2, Loader2, Lock, MessageSquare, RotateCcw, Save, Upload, Unlock, UserRound } from 'lucide-react';
+import { BookOpen, Image as ImageIcon, Loader2, Lock, RotateCcw, Save, Upload, Unlock, UserRound } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
 
@@ -21,12 +21,64 @@ type AuthorForm = {
 };
 
 const socialFields = [
-  { key: 'website', label: 'Website', icon: Globe, placeholder: 'https://envoyou.com' },
-  { key: 'github', label: 'GitHub', icon: Code2, placeholder: 'https://github.com/username' },
-  { key: 'linkedin', label: 'LinkedIn', icon: Link2, placeholder: 'https://linkedin.com/in/username' },
-  { key: 'x', label: 'X / Twitter', icon: MessageSquare, placeholder: 'https://x.com/username' },
-  { key: 'instagram', label: 'Instagram', icon: ImageIcon, placeholder: 'https://instagram.com/username' },
+  {
+    key: 'website',
+    label: 'Website',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/web.svg',
+    iconClassName: 'text-primary-600 dark:text-primary-400',
+    placeholder: 'https://envoyou.com',
+  },
+  {
+    key: 'github',
+    label: 'GitHub',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/github.svg',
+    iconClassName: 'text-slate-800 dark:text-white',
+    placeholder: 'https://github.com/username',
+  },
+  {
+    key: 'linkedin',
+    label: 'LinkedIn',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/linkedin.svg',
+    iconClassName: 'text-[#0A66C2] dark:text-[#7AB8FF]',
+    placeholder: 'https://linkedin.com/in/username',
+  },
+  {
+    key: 'x',
+    label: 'X / Twitter',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/x-twitter.svg',
+    iconClassName: 'text-slate-950 dark:text-white',
+    placeholder: 'https://x.com/username',
+  },
+  {
+    key: 'instagram',
+    label: 'Instagram',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/instagram.svg',
+    iconClassName: 'text-[#E4405F] dark:text-[#FF8AB3]',
+    placeholder: 'https://instagram.com/username',
+  },
 ] as const;
+
+function SocialIcon({
+  src,
+  label,
+  className,
+}: {
+  src: string;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      title={label}
+      className={`inline-block shrink-0 bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain] ${className || ''}`}
+      style={{
+        maskImage: `url(${src})`,
+        WebkitMaskImage: `url(${src})`,
+      }}
+    />
+  );
+}
 
 export default function AdminAuthorPage() {
   const { data: author, isLoading, error } = useQuery({
@@ -282,24 +334,25 @@ function AuthorProfileForm({ author }: { author: User }) {
           <div>
             <h2 className="text-sm font-medium text-slate-700 dark:text-slate-300 mb-3">Social Links</h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-              {socialFields.map((field) => {
-                const Icon = field.icon;
-                return (
-                  <div key={field.key}>
-                    <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{field.label}</label>
-                    <div className="relative">
-                      <Icon className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                      <input
-                        type="url"
-                        value={formData.social_links[field.key] || ''}
-                        onChange={event => setSocialLink(field.key, event.target.value)}
-                        className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
-                        placeholder={field.placeholder}
-                      />
-                    </div>
+              {socialFields.map((field) => (
+                <div key={field.key}>
+                  <label className="block text-xs font-medium text-slate-500 dark:text-slate-400 mb-1">{field.label}</label>
+                  <div className="relative">
+                    <SocialIcon
+                      src={field.iconUrl}
+                      label={field.label}
+                      className={`absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 ${field.iconClassName}`}
+                    />
+                    <input
+                      type="url"
+                      value={formData.social_links[field.key] || ''}
+                      onChange={event => setSocialLink(field.key, event.target.value)}
+                      className="w-full pl-10 pr-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                      placeholder={field.placeholder}
+                    />
                   </div>
-                );
-              })}
+                </div>
+              ))}
             </div>
           </div>
         </div>
@@ -420,15 +473,16 @@ function AuthorProfileForm({ author }: { author: User }) {
                 </div>
                 {activeSocialLinks.length > 0 && (
                   <div className="flex flex-wrap gap-2 pt-1">
-                    {activeSocialLinks.map((field) => {
-                      const Icon = field.icon;
-                      return (
-                        <span key={field.key} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
-                          <Icon className="w-3.5 h-3.5" />
-                          {field.label}
-                        </span>
-                      );
-                    })}
+                    {activeSocialLinks.map((field) => (
+                      <span key={field.key} className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 dark:border-slate-700 px-2.5 py-1 text-xs font-medium text-slate-600 dark:text-slate-300">
+                        <SocialIcon
+                          src={field.iconUrl}
+                          label={field.label}
+                          className={`h-3.5 w-3.5 ${field.iconClassName}`}
+                        />
+                        {field.label}
+                      </span>
+                    ))}
                   </div>
                 )}
               </div>
