@@ -4,7 +4,7 @@ import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import PostCard from '@/components/shared/PostCard';
 import { Post, User } from '@/types';
-import { Loader2, BookOpen } from 'lucide-react';
+import { Loader2, BookOpen, Eye } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
 const numberFormatter = new Intl.NumberFormat('en-US');
@@ -101,13 +101,16 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
   // Calculate total views
   const totalViews = posts.reduce((acc, post) => acc + (post.views || 0), 0);
   const shortBio = author.short_bio || author.bio;
+  const longBio = author.full_bio;
   const socialLinks = author.social_links || {};
   const visibleSocialLinks = socialFields.filter(field => socialLinks[field.key]);
 
   return (
-    <div className="container mx-auto px-4 py-12 md:py-20 max-w-5xl">
+    <div className="container mx-auto px-4 py-10 md:py-16 max-w-5xl">
       {/* Author Header */}
-      <header className="text-center mb-16">
+      <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-12 text-center shadow-2xl shadow-slate-950/10 md:px-10 md:py-16 mb-16">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_0%,rgba(13,135,207,0.28),transparent_34%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
+        <div className="relative z-10 mx-auto flex max-w-3xl flex-col items-center">
         {/* Avatar */}
         <div className="mb-6 flex justify-center">
           {author.avatar_url ? (
@@ -116,42 +119,49 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
               alt={author.name}
               width={120}
               height={120}
-              className="w-[120px] h-[120px] rounded-full object-cover ring-4 ring-white dark:ring-slate-800 shadow-xl"
+              className="w-[120px] h-[120px] rounded-full object-cover ring-4 ring-white/15 shadow-2xl"
             />
           ) : (
-            <div className="w-[120px] h-[120px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-4xl font-bold shadow-xl">
+            <div className="w-[120px] h-[120px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-4xl font-bold shadow-2xl ring-4 ring-white/15">
               {author.name.charAt(0)}
             </div>
           )}
         </div>
 
         {/* Name */}
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-slate-900 dark:text-white mb-3">
+        <h1 className="text-3xl md:text-5xl font-serif font-bold text-white mb-4">
           {author.name}
         </h1>
 
         {/* Short Bio */}
         {shortBio && (
-          <p className="text-lg text-slate-600 dark:text-slate-300 max-w-2xl mx-auto mb-6">
+          <p className="text-base md:text-lg text-slate-100 max-w-2xl mx-auto leading-8">
             {shortBio}
+          </p>
+        )}
+
+        {/* Long Bio */}
+        {longBio && (
+          <p className="mt-3 text-sm md:text-base text-slate-400 max-w-2xl mx-auto leading-7">
+            {longBio}
           </p>
         )}
 
         {/* Social Links */}
         {visibleSocialLinks.length > 0 && (
-          <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <div className="mt-8 flex flex-wrap items-center justify-center gap-2">
             {visibleSocialLinks.map((field) => (
               <a
                 key={field.key}
                 href={socialLinks[field.key]}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.06] px-3.5 py-2 text-sm font-medium text-slate-200 hover:border-primary-400 hover:bg-primary-500/10 hover:text-white transition-colors"
               >
                 <SocialIcon
                   src={field.iconUrl}
                   label={field.label}
-                  className={`h-4 w-4 ${field.iconClassName}`}
+                  className="h-4 w-4 text-white"
                 />
                 {field.label}
               </a>
@@ -160,30 +170,18 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
         )}
 
         {/* Stats */}
-        <div className="flex items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
-          <div className="flex items-center gap-1.5">
+        <div className="mt-8 flex flex-wrap items-center justify-center gap-3 text-sm text-slate-300">
+          <div className="flex items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-2">
             <BookOpen className="w-4 h-4" />
             <span>{meta.total} {meta.total === 1 ? 'article' : 'articles'}</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <span>👁</span>
+          <div className="flex items-center gap-2 rounded-full bg-white/[0.06] px-3.5 py-2">
+            <Eye className="w-4 h-4" />
             <span>{numberFormatter.format(totalViews)} total views</span>
           </div>
         </div>
+        </div>
       </header>
-
-      {author.full_bio && (
-        <section className="mb-16 max-w-3xl mx-auto">
-          <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl p-6 md:p-8">
-            <h2 className="text-xl font-serif font-bold text-slate-900 dark:text-white mb-4">
-              About {author.name}
-            </h2>
-            <p className="text-slate-600 dark:text-slate-300 leading-7 whitespace-pre-line">
-              {author.full_bio}
-            </p>
-          </div>
-        </section>
-      )}
 
       {/* Articles */}
       <section>
