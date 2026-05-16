@@ -4,18 +4,65 @@ import { useState, useCallback } from 'react';
 import Image from 'next/image';
 import PostCard from '@/components/shared/PostCard';
 import { Post, User } from '@/types';
-import { Code2, Globe, Image as ImageIcon, Link2, Loader2, BookOpen, MessageSquare } from 'lucide-react';
+import { Loader2, BookOpen } from 'lucide-react';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
 const numberFormatter = new Intl.NumberFormat('en-US');
 
 const socialFields = [
-  { key: 'website', label: 'Website', icon: Globe },
-  { key: 'github', label: 'GitHub', icon: Code2 },
-  { key: 'linkedin', label: 'LinkedIn', icon: Link2 },
-  { key: 'x', label: 'X', icon: MessageSquare },
-  { key: 'instagram', label: 'Instagram', icon: ImageIcon },
+  {
+    key: 'website',
+    label: 'Website',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/web.svg',
+    iconClassName: 'text-primary-600 dark:text-primary-400',
+  },
+  {
+    key: 'github',
+    label: 'GitHub',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/github.svg',
+    iconClassName: 'text-slate-800 dark:text-white',
+  },
+  {
+    key: 'linkedin',
+    label: 'LinkedIn',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/linkedin.svg',
+    iconClassName: 'text-[#0A66C2] dark:text-[#7AB8FF]',
+  },
+  {
+    key: 'x',
+    label: 'X',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/x-twitter.svg',
+    iconClassName: 'text-slate-950 dark:text-white',
+  },
+  {
+    key: 'instagram',
+    label: 'Instagram',
+    iconUrl: 'https://cdn.envoyou.com/iconSosmed/instagram.svg',
+    iconClassName: 'text-[#E4405F] dark:text-[#FF8AB3]',
+  },
 ] as const;
+
+function SocialIcon({
+  src,
+  label,
+  className,
+}: {
+  src: string;
+  label: string;
+  className?: string;
+}) {
+  return (
+    <span
+      aria-hidden="true"
+      title={label}
+      className={`inline-block shrink-0 bg-current [mask-position:center] [mask-repeat:no-repeat] [mask-size:contain] [-webkit-mask-position:center] [-webkit-mask-repeat:no-repeat] [-webkit-mask-size:contain] ${className || ''}`}
+      style={{
+        maskImage: `url(${src})`,
+        WebkitMaskImage: `url(${src})`,
+      }}
+    />
+  );
+}
 
 interface Props {
   author: User;
@@ -93,21 +140,22 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
         {/* Social Links */}
         {visibleSocialLinks.length > 0 && (
           <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
-            {visibleSocialLinks.map((field) => {
-              const Icon = field.icon;
-              return (
-                <a
-                  key={field.key}
-                  href={socialLinks[field.key]}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                >
-                  <Icon className="w-4 h-4" />
-                  {field.label}
-                </a>
-              );
-            })}
+            {visibleSocialLinks.map((field) => (
+              <a
+                key={field.key}
+                href={socialLinks[field.key]}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="group inline-flex items-center gap-2 rounded-full border border-slate-200 dark:border-slate-700 px-3 py-1.5 text-sm font-medium text-slate-600 dark:text-slate-300 hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+              >
+                <SocialIcon
+                  src={field.iconUrl}
+                  label={field.label}
+                  className={`h-4 w-4 ${field.iconClassName}`}
+                />
+                {field.label}
+              </a>
+            ))}
           </div>
         )}
 
