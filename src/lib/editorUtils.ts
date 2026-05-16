@@ -74,7 +74,7 @@ export function useAutosave(
         }
       }
     } catch {/* ignore */}
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+   
   }, [key, enabled]);
 
   // Autosave every 30 seconds

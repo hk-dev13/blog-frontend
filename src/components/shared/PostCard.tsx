@@ -84,7 +84,7 @@ export default function PostCard({ post, featured = false, priority = false, act
         
         <div className="mt-auto flex items-center gap-3">
           {post.author?.avatar_url ? (
-            <Image src={post.author.avatar_url} alt={post.author.name} width={32} height={32} className="rounded-full object-cover" />
+            <Image src={post.author.avatar_url} alt={post.author.name} width={32} height={32} className="w-[32px] h-[32px] rounded-full object-cover" />
           ) : (
             <div className="w-8 h-8 rounded-full bg-slate-200 dark:bg-slate-700 flex items-center justify-center text-slate-500 font-bold text-xs">
               {post.author?.name?.charAt(0) || 'A'}

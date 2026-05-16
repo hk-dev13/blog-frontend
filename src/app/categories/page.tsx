@@ -38,7 +38,9 @@ export default async function CategoriesPage() {
   try {
     categories = await serverFetch<CategoryWithCount[]>('/categories', { revalidate: 3600 });
   } catch (err) {
-    console.error('[CategoriesPage] Failed to fetch categories:', err);
+    if (process.env.NODE_ENV !== 'production') {
+      console.error('[CategoriesPage] Failed to fetch categories:', err);
+    }
   }
 
   return (

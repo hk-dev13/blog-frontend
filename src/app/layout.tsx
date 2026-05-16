@@ -5,6 +5,7 @@ import Script from "next/script";
 import "./globals.css";
 
 const SITE_URL = 'https://blog.envoyou.com';
+const ADSENSE_CLIENT = 'ca-pub-3002282783853213';
 
 const websiteSchema = {
   '@context': 'https://schema.org',
@@ -50,6 +51,9 @@ export const metadata: Metadata = {
       'application/rss+xml': `${SITE_URL}/feed.xml`,
     },
   },
+  other: {
+    'google-adsense-account': ADSENSE_CLIENT,
+  },
 };
 
 export default function RootLayout({
@@ -59,6 +63,14 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="id" className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Google AdSense account verification and Auto Ads loader */}
+        <script
+          async
+          src={`https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${ADSENSE_CLIENT}`}
+          crossOrigin="anonymous"
+        />
+      </head>
       {/* 1. Tambahkan suppressHydrationWarning di body */}
       <body
         className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300"
@@ -89,13 +101,6 @@ export default function RootLayout({
               })(window, document, "clarity", "script", "wn8pjbjmp3");
             `
           }}
-        />
-
-        {/* Google AdSense — Use plain script to avoid data-nscript attribute issues */}
-        <script
-          async
-          src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3002282783853213"
-          crossOrigin="anonymous"
         />
 
         {/* 3. Gunakan tag <script> biasa (huruf kecil) untuk Schema SEO */}

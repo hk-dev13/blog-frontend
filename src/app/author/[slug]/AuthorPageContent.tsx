@@ -68,7 +68,7 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
               alt={author.name}
               width={120}
               height={120}
-              className="rounded-full object-cover ring-4 ring-white dark:ring-slate-800 shadow-xl"
+              className="w-[120px] h-[120px] rounded-full object-cover ring-4 ring-white dark:ring-slate-800 shadow-xl"
             />
           ) : (
             <div className="w-[120px] h-[120px] rounded-full bg-gradient-to-br from-primary-400 to-primary-600 flex items-center justify-center text-white text-4xl font-bold shadow-xl">

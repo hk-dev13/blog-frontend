@@ -7,11 +7,9 @@ import { Tag } from '@/types';
 import { 
   Search, 
   Plus, 
-  MoreVertical, 
   Edit2, 
   Trash2, 
   Hash, 
-  ExternalLink, 
   Loader2, 
   AlertCircle,
   X,
@@ -37,32 +35,13 @@ export default function TagManagerPage() {
   const [sourceTag, setSourceTag] = useState<Tag | null>(null);
   const [targetTagId, setTargetTagId] = useState('');
 
-  // Access control
-  if (user && user.role !== 'admin') {
-    return (
-      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
-        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
-          <AlertCircle className="w-8 h-8 text-red-600" />
-        </div>
-        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Access Denied</h1>
-        <p className="text-slate-500 mt-2">Only administrators can access the Tag Manager.</p>
-        <button 
-          onClick={() => router.push('/admin')}
-          className="mt-6 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
-        >
-          Back to Dashboard
-        </button>
-      </div>
-    );
-  }
-
   // Fetch tags
   const { data: tagsData, isLoading } = useQuery({
     queryKey: ['tags'],
     queryFn: () => fetchPaginatedApi<Tag>('/tags?limit=200'),
   });
 
-  const tags = tagsData?.data || [];
+  const tags = useMemo(() => tagsData?.data || [], [tagsData?.data]);
 
   // Filter tags
   const filteredTags = useMemo(() => {
@@ -156,6 +135,25 @@ export default function TagManagerPage() {
     setTargetTagId('');
     setIsMergeModalOpen(true);
   };
+
+  // Access control
+  if (user && user.role !== 'admin') {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[60vh] text-center">
+        <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-4">
+          <AlertCircle className="w-8 h-8 text-red-600" />
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900 dark:text-white">Access Denied</h1>
+        <p className="text-slate-500 mt-2">Only administrators can access the Tag Manager.</p>
+        <button 
+          onClick={() => router.push('/admin')}
+          className="mt-6 px-6 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
+        >
+          Back to Dashboard
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">

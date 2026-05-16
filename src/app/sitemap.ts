@@ -126,7 +126,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // They are disallowed in robots.txt and set to noindex via metadata.
   // Submitting them here would signal importance to Google — counterproductive.
   // ── 5. Author pages (unique authors from posts) ────────────
-  let authorRoutes: MetadataRoute.Sitemap = [];
+  const authorRoutes: MetadataRoute.Sitemap = [];
   try {
     const { data: postsWithAuthors } = await serverFetch<any[]>('/posts?limit=100&status=published');
     const list = Array.isArray(postsWithAuthors) ? postsWithAuthors : [];

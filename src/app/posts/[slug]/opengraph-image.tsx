@@ -1,7 +1,6 @@
 import { ImageResponse } from 'next/og';
 
 // ── Route config ───────────────────────────────────────────────
-export const runtime = 'edge';
 export const alt = 'Blog post open graph image';
 export const size = { width: 1200, height: 630 };
 export const contentType = 'image/png';
@@ -12,7 +11,6 @@ type Props = {
 };
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
-const SITE_URL = 'https://blog.envoyou.com';
 
 // ── Brand colors ───────────────────────────────────────────────
 const BRAND_BLUE = '#0B79C2';
@@ -240,7 +238,6 @@ export default async function Image({ params }: Props) {
           >
             {/* Avatar */}
             {avatarUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={avatarUrl}
                 width={48}

@@ -441,8 +441,10 @@ function AuthorProfileForm({ author }: { author: User }) {
 }
 
 function cleanSocialLinks(links: Record<string, string>) {
+  const allowedKeys = new Set(socialFields.map(field => field.key));
   return Object.fromEntries(
     Object.entries(links)
+      .filter(([key]) => allowedKeys.has(key as (typeof socialFields)[number]['key']))
       .map(([key, value]) => [key, value.trim()])
       .filter(([, value]) => value)
   );

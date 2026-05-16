@@ -5,7 +5,6 @@ import { fetchApi } from '@/lib/api';
 import { Post } from '@/types';
 import { format } from 'date-fns';
 import { Clock, Eye, RefreshCw } from 'lucide-react';
-import CategoryPills from '@/components/shared/CategoryPills';
 import PostCard from '@/components/shared/PostCard';
 import ShareButtons from '@/components/shared/ShareButtons';
 import LikeButton from '@/components/shared/LikeButton';
@@ -30,7 +29,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     const resolvedParams = await params;
     const post = await fetchApi<Post>(`/posts/${resolvedParams.slug}`);
 
-    // URL served by opengraph-image.tsx (Next.js edge function)
+    // URL served by opengraph-image.tsx
     const ogImageUrl = `${SITE_URL}/posts/${resolvedParams.slug}/opengraph-image`;
     const title = post.meta_title || post.title;
     const description = post.meta_description || post.excerpt || '';
@@ -56,7 +55,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         images: [ogImageUrl],
       },
     };
-  } catch (error) {
+  } catch {
     return { title: 'Post Not Found' };
   }
 }
@@ -77,7 +76,7 @@ export default async function PostPage({ params }: Props) {
     } catch {
       // Silently ignore — related is non-critical
     }
-  } catch (error) {
+  } catch {
     notFound();
   }
 
@@ -234,13 +233,13 @@ export default async function PostPage({ params }: Props) {
                     remarkPlugins={[remarkGfm]}
                     rehypePlugins={[rehypeSlug, rehypeHighlight]}
                     components={{
-                      a: ({ node, href, children, ...props }) => {
+                      a: ({ href, children, ...props }) => {
                         let isExternal = false;
                         if (href && href.startsWith('http')) {
                           try {
                             const url = new URL(href);
                             isExternal = url.hostname !== 'envoyou.com' && !url.hostname.endsWith('.envoyou.com');
-                          } catch (e) {
+                          } catch {
                             isExternal = false;
                           }
                         }

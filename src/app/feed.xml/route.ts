@@ -6,7 +6,7 @@ const FEED_URL = `${SITE_URL}/feed.xml`;
 
 export async function GET() {
   // Fetch all published posts
-  let allPosts: Post[] = [];
+  const allPosts: Post[] = [];
   try {
     let page = 1;
     const limit = 100;
