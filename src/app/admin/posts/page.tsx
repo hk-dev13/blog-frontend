@@ -16,6 +16,7 @@ export default function AdminPostsPage() {
   const [search, setSearch] = useState('');
   const [debouncedSearch, setDebouncedSearch] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
+  const [languageFilter, setLanguageFilter] = useState('');
   const [searchTimeout, setSearchTimeout] = useState<NodeJS.Timeout | null>(null);
   const [selectedIds, setSelectedIds] = useState<Set<string>>(new Set());
 
@@ -34,17 +35,23 @@ export default function AdminPostsPage() {
     setPage(1);
   };
 
+  const handleLanguageChange = (value: string) => {
+    setLanguageFilter(value);
+    setPage(1);
+  };
+
   const buildQuery = () => {
     const params = new URLSearchParams();
     params.set('page', String(page));
     params.set('limit', String(LIMIT));
     if (debouncedSearch) params.set('search', debouncedSearch);
     if (statusFilter) params.set('status', statusFilter);
+    if (languageFilter) params.set('language', languageFilter);
     return params.toString();
   };
 
   const { data, isLoading } = useQuery({
-    queryKey: ['admin-posts', page, debouncedSearch, statusFilter],
+    queryKey: ['admin-posts', page, debouncedSearch, statusFilter, languageFilter],
     queryFn: () => fetchPaginatedApi<Post>(`/posts/admin/list?${buildQuery()}`),
   });
 
@@ -144,6 +151,15 @@ export default function AdminPostsPage() {
           <option value="draft">Draft</option>
           <option value="scheduled">Scheduled</option>
         </select>
+        <select
+          value={languageFilter}
+          onChange={e => handleLanguageChange(e.target.value)}
+          className="px-4 py-2.5 text-sm bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none min-w-[120px] appearance-none cursor-pointer"
+        >
+          <option value="">All Lang</option>
+          <option value="id">ID</option>
+          <option value="en">EN</option>
+        </select>
 
         {/* Bulk Action */}
         {someSelected && (
@@ -180,6 +196,7 @@ export default function AdminPostsPage() {
                     </th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Title</th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Category</th>
+                    <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Lang</th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</th>
                     <th scope="col" className="px-4 py-3 text-left text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Views</th>
@@ -189,7 +206,7 @@ export default function AdminPostsPage() {
                 <tbody className="bg-white dark:bg-slate-800 divide-y divide-slate-200 dark:divide-slate-700">
                   {posts.length === 0 ? (
                     <tr>
-                      <td colSpan={7} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
+                      <td colSpan={8} className="px-6 py-12 text-center text-sm text-slate-500 dark:text-slate-400">
                         {debouncedSearch || statusFilter
                           ? 'No posts match your filters.'
                           : 'No posts found. Create your first post!'}
@@ -209,6 +226,16 @@ export default function AdminPostsPage() {
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="text-sm font-medium text-slate-900 dark:text-white max-w-[200px] truncate">{post.title}</div>
                           <div className="text-xs text-slate-500 dark:text-slate-400">/{post.slug}</div>
+                        </td>
+                        <td className="px-4 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="rounded-md border border-slate-200 px-2 py-0.5 text-xs font-semibold uppercase text-slate-600 dark:border-slate-700 dark:text-slate-300">
+                              {post.language || 'id'}
+                            </span>
+                            <span className="text-xs text-slate-400">
+                              {(post.translations as any)?.id && (post.translations as any)?.en ? 'linked' : 'solo'}
+                            </span>
+                          </div>
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex flex-wrap gap-1">
@@ -268,7 +295,7 @@ export default function AdminPostsPage() {
                           <div className="flex items-center justify-end gap-3">
                             {post.status === 'published' && (
                               <Link 
-                                href={`/posts/${post.slug}`}
+                                href={`/${post.language || 'id'}/posts/${post.slug}`}
                                 target="_blank"
                                 className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
                                 title="View Public Page"

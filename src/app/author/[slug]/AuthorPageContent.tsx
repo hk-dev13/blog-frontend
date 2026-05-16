@@ -5,6 +5,7 @@ import Image from 'next/image';
 import PostCard from '@/components/shared/PostCard';
 import { Post, User } from '@/types';
 import { Loader2, BookOpen, Eye } from 'lucide-react';
+import { Locale } from '@/lib/i18n';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
 const numberFormatter = new Intl.NumberFormat('en-US');
@@ -69,9 +70,10 @@ interface Props {
   initialPosts: Post[];
   initialMeta: { page: number; limit: number; total: number; totalPages: number };
   slug: string;
+  locale?: Locale;
 }
 
-export default function AuthorPageContent({ author, initialPosts, initialMeta, slug }: Props) {
+export default function AuthorPageContent({ author, initialPosts, initialMeta, slug, locale = 'id' }: Props) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [meta, setMeta] = useState(initialMeta);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -84,7 +86,7 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
     try {
       const nextPage = meta.page + 1;
       const res = await fetch(
-        `${API_URL}/posts?author=${slug}&limit=${meta.limit}&page=${nextPage}`,
+        `${API_URL}/posts?author=${slug}&limit=${meta.limit}&page=${nextPage}&language=${locale}`,
       );
       const json = await res.json();
       if (json.success) {
@@ -96,7 +98,7 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, hasMore, meta, slug]);
+  }, [isLoadingMore, hasMore, meta, slug, locale]);
 
   // Calculate total views
   const totalViews = posts.reduce((acc, post) => acc + (post.views || 0), 0);
@@ -192,7 +194,7 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
         {posts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
             {posts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard key={post.id} post={post} locale={locale} />
             ))}
           </div>
         ) : (

@@ -3,6 +3,7 @@ import { notFound } from 'next/navigation';
 import { serverFetch, serverFetchPaginated } from '@/lib/serverApi';
 import { Post, Category } from '@/types';
 import CategoryPageContent from './CategoryPageContent';
+import { Locale } from '@/lib/i18n';
 
 export const revalidate = 300;
 
@@ -17,10 +18,9 @@ interface CategoryWithDesc extends Category {
   post_count?: number;
 }
 
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const { slug } = await params;
+export async function generateCategoryMetadata(slug: string, locale: Locale): Promise<Metadata> {
   try {
-    const categories = await serverFetch<CategoryWithDesc[]>('/categories', { revalidate: 300 });
+    const categories = await serverFetch<CategoryWithDesc[]>(`/categories?language=${locale}`, { revalidate: 300 });
     const category = categories.find((c) => c.slug === slug);
     if (!category) return { title: 'Category Not Found' };
 
@@ -34,7 +34,10 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `${title} | Envoyou`,
         description,
         type: 'website',
-        url: `https://blog.envoyou.com/categories/${slug}`,
+        url: `https://blog.envoyou.com/${locale}/categories/${slug}`,
+      },
+      alternates: {
+        canonical: `https://blog.envoyou.com/${locale}/categories/${slug}`,
       },
     };
   } catch {
@@ -42,13 +45,16 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function CategoryPage({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params;
+  return generateCategoryMetadata(slug, 'id');
+}
 
+export async function CategoryPageView({ slug, locale = 'id' }: { slug: string; locale?: Locale }) {
   // Parallel fetch
   const [categories, postsRes] = await Promise.all([
-    serverFetch<CategoryWithDesc[]>('/categories', { revalidate: 300 }),
-    serverFetchPaginated<Post>(`/posts?category=${slug}&limit=6`, { revalidate: 300 }),
+    serverFetch<CategoryWithDesc[]>(`/categories?language=${locale}`, { revalidate: 300 }),
+    serverFetchPaginated<Post>(`/posts?category=${slug}&limit=6&language=${locale}`, { revalidate: 300 }),
   ]);
 
   const category = categories.find((c) => c.slug === slug);
@@ -61,6 +67,12 @@ export default async function CategoryPage({ params }: Props) {
       initialPosts={postsRes.data}
       initialMeta={postsRes.meta}
       slug={slug}
+      locale={locale}
     />
   );
+}
+
+export default async function CategoryPage({ params }: Props) {
+  const { slug } = await params;
+  return <CategoryPageView slug={slug} locale="id" />;
 }

@@ -7,6 +7,7 @@ import PostCard from '@/components/shared/PostCard';
 import { Search as SearchIcon, Loader2 } from 'lucide-react';
 import { PostGridSkeleton } from '@/components/shared/Skeletons';
 import { Post } from '@/types';
+import { Locale } from '@/lib/i18n';
 
 // Utility to highlight keyword in text
 const HighlightedText = ({ text, highlight }: { text: string; highlight: string }) => {
@@ -34,10 +35,10 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
 };
 
 // Modified PostCard to support highlighting
-const HighlightedPostCard = ({ post, query }: { post: Post; query: string }) => {
+const HighlightedPostCard = ({ post, query, locale }: { post: Post; query: string; locale: Locale }) => {
   return (
     <div className="relative group">
-      <PostCard post={post} />
+      <PostCard post={post} locale={locale} />
       {query && post.excerpt && (
         <div className="absolute inset-x-0 bottom-0 bg-white/95 dark:bg-slate-900/95 backdrop-blur-sm p-6 transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300 rounded-b-2xl border-t border-slate-100 dark:border-slate-800 pointer-events-none">
           <p className="text-sm text-slate-600 dark:text-slate-300 line-clamp-3">
@@ -49,7 +50,7 @@ const HighlightedPostCard = ({ post, query }: { post: Post; query: string }) => 
   );
 };
 
-function SearchContent() {
+export function SearchContent({ locale = 'id' }: { locale?: Locale }) {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
@@ -78,7 +79,7 @@ function SearchContent() {
   }, [inputValue]);
 
   // Fetch search results
-  const { data, isLoading } = useSearch(debouncedQuery);
+  const { data, isLoading } = useSearch(debouncedQuery, locale);
   const results = data?.data || [];
 
   return (
@@ -125,7 +126,7 @@ function SearchContent() {
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 overflow-hidden pt-4 pb-12">
               {results.map((post) => (
-                <HighlightedPostCard key={post.id} post={post} query={debouncedQuery} />
+                <HighlightedPostCard key={post.id} post={post} query={debouncedQuery} locale={locale} />
               ))}
             </div>
           </div>
@@ -145,14 +146,14 @@ function SearchContent() {
   );
 }
 
-export default function SearchPage() {
+export default function SearchPage({ locale = 'id' }: { locale?: Locale }) {
   return (
     <Suspense fallback={
       <div className="flex justify-center items-center min-h-screen">
         <Loader2 className="w-10 h-10 animate-spin text-primary-500" />
       </div>
     }>
-      <SearchContent />
+      <SearchContent locale={locale} />
     </Suspense>
   );
 }

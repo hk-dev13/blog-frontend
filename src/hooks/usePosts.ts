@@ -18,18 +18,18 @@ export function usePosts(params?: Record<string, string | number | boolean>) {
   });
 }
 
-export function usePost(slug: string) {
+export function usePost(slug: string, language = 'id') {
   return useQuery({
-    queryKey: ['post', slug],
-    queryFn: () => fetchApi<Post>(`/posts/${slug}`),
+    queryKey: ['post', slug, language],
+    queryFn: () => fetchApi<Post>(`/posts/${slug}?language=${language}`),
     enabled: !!slug,
   });
 }
 
-export function useSearch(query: string) {
+export function useSearch(query: string, language = 'id') {
   return useQuery({
-    queryKey: ['search', query],
-    queryFn: () => fetchPaginatedApi<Post>(`/search?q=${encodeURIComponent(query)}`),
+    queryKey: ['search', query, language],
+    queryFn: () => fetchPaginatedApi<Post>(`/search?q=${encodeURIComponent(query)}&language=${language}`),
     enabled: !!query && query.length > 2,
     staleTime: 5 * 60 * 1000, // Cache searches for 5 mins
   });
@@ -43,10 +43,10 @@ export function useTags() {
   });
 }
 
-export function useCategories() {
+export function useCategories(language = 'id') {
   return useQuery({
-    queryKey: ['categories'],
-    queryFn: () => fetchApi<Category[]>('/categories'),
+    queryKey: ['categories', language],
+    queryFn: () => fetchApi<Category[]>(`/categories?language=${language}`),
     staleTime: 60 * 60 * 1000, // 1 hour
   });
 }

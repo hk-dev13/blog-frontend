@@ -16,6 +16,7 @@ import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
 import ReadingProgress from '@/components/shared/ReadingProgress';
 import TableOfContents from '@/components/shared/TableOfContents';
+import { getOppositeLocale, Locale } from '@/lib/i18n';
 
 // Dynamic params
 type Props = {
@@ -23,14 +24,13 @@ type Props = {
 };
 
 // Generate SEO Metadata dynamically
-export async function generateMetadata({ params }: Props): Promise<Metadata> {
+export async function generatePostMetadata(slug: string, locale: Locale): Promise<Metadata> {
   const SITE_URL = 'https://blog.envoyou.com';
   try {
-    const resolvedParams = await params;
-    const post = await fetchApi<Post>(`/posts/${resolvedParams.slug}`);
+    const post = await fetchApi<Post>(`/posts/${slug}?language=${locale}`);
 
     // URL served by opengraph-image.tsx
-    const ogImageUrl = `${SITE_URL}/posts/${resolvedParams.slug}/opengraph-image`;
+    const ogImageUrl = `${SITE_URL}/${locale}/posts/${slug}/opengraph-image`;
     const title = post.meta_title || post.title;
     const description = post.meta_description || post.excerpt || '';
 
@@ -41,12 +41,19 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title,
         description,
         type: 'article',
-        url: `${SITE_URL}/posts/${resolvedParams.slug}`,
+        url: `${SITE_URL}/${locale}/posts/${slug}`,
         publishedTime: post.published_at,
         modifiedTime: post.updated_at,
         authors: post.author?.name ? [post.author.name] : [],
         tags: post.tags?.map(t => t.name),
         images: [{ url: ogImageUrl, width: 1200, height: 630, alt: title }],
+      },
+      alternates: {
+        canonical: `${SITE_URL}/${locale}/posts/${slug}`,
+        languages: {
+          ...(post.translations?.id?.slug ? { id: `${SITE_URL}/id/posts/${post.translations.id.slug}` } : {}),
+          ...(post.translations?.en?.slug ? { en: `${SITE_URL}/en/posts/${post.translations.en.slug}` } : {}),
+        },
       },
       twitter: {
         card: 'summary_large_image',
@@ -60,18 +67,22 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-export default async function PostPage({ params }: Props) {
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const resolvedParams = await params;
+  return generatePostMetadata(resolvedParams.slug, 'id');
+}
+
+export async function PostPageView({ slug, locale = 'id' }: { slug: string; locale?: Locale }) {
   let post: Post;
   let relatedPosts: Post[] = [];
 
   try {
     // Note: This API call should ideally increment view count on the backend.
-    post = await fetchApi<Post>(`/posts/${resolvedParams.slug}`);
+    post = await fetchApi<Post>(`/posts/${slug}?language=${locale}`);
 
     // Use backend's dedicated related endpoint (single optimized query)
     try {
-      const related = await fetchApi<Post[]>(`/posts/${resolvedParams.slug}/related`);
+      const related = await fetchApi<Post[]>(`/posts/${slug}/related?language=${locale}`);
       relatedPosts = (related || []).slice(0, 2);
     } catch {
       // Silently ignore — related is non-critical
@@ -84,7 +95,12 @@ export default async function PostPage({ params }: Props) {
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80';
 
   const SITE_URL = 'https://blog.envoyou.com';
-  const postUrl = `${SITE_URL}/posts/${post.slug}`;
+  const postUrl = `${SITE_URL}/${locale}/posts/${post.slug}`;
+  const oppositeLocale = getOppositeLocale(locale);
+  const oppositeTranslation = post.translations?.[oppositeLocale];
+  const languageHref = oppositeTranslation?.slug
+    ? `/${oppositeLocale}/posts/${oppositeTranslation.slug}`
+    : `/${oppositeLocale}?notice=translation-missing`;
 
   // ── JSON-LD: Article Schema ──────────────────────────────
   const articleSchema = {
@@ -119,12 +135,12 @@ export default async function PostPage({ params }: Props) {
     '@context': 'https://schema.org',
     '@type': 'BreadcrumbList',
     itemListElement: [
-      { '@type': 'ListItem', position: 1, name: 'Home', item: SITE_URL },
+      { '@type': 'ListItem', position: 1, name: 'Home', item: `${SITE_URL}/${locale}` },
       ...(post.categories?.[0] ? [{
         '@type': 'ListItem',
         position: 2,
         name: post.categories[0].name,
-        item: `${SITE_URL}/categories/${post.categories[0].slug}`,
+        item: `${SITE_URL}/${locale}/categories/${post.categories[0].slug}`,
       }] : []),
       { '@type': 'ListItem', position: post.categories?.[0] ? 3 : 2, name: post.title, item: postUrl },
     ],
@@ -140,9 +156,9 @@ export default async function PostPage({ params }: Props) {
           {/* Header Section */}
           <header className="container mx-auto px-4 py-12 md:py-20 max-w-4xl text-center">
             {post.categories && post.categories.length > 0 && (
-              <span className="inline-block px-3 py-1 mb-6 text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full">
+              <Link href={`/${locale}/categories/${post.categories[0].slug}`} className="inline-block px-3 py-1 mb-6 text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full">
                 {post.categories[0].name}
-              </span>
+              </Link>
             )}
 
             <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 dark:text-white leading-tight mb-8">
@@ -150,7 +166,7 @@ export default async function PostPage({ params }: Props) {
             </h1>
 
             <div className="flex flex-wrap items-center justify-center gap-6 text-sm text-slate-500 dark:text-slate-400">
-              <Link href={`/author/${post.author?.slug || post.author_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
+              <Link href={`/${locale}/author/${post.author?.slug || post.author_id}`} className="flex items-center gap-2 hover:opacity-80 transition-opacity">
                 {post.author?.avatar_url ? (
                   <Image 
                     src={post.author.avatar_url} 
@@ -195,6 +211,14 @@ export default async function PostPage({ params }: Props) {
                 <Eye className="w-4 h-4" />
                 <span>{post.views || 0} views</span>
               </div>
+            </div>
+            <div className="mt-6 flex justify-center">
+              <Link
+                href={languageHref}
+                className="rounded-full border border-slate-200 px-4 py-2 text-sm font-medium text-slate-600 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary-400 dark:hover:text-primary-400"
+              >
+                {oppositeLocale === 'en' ? 'Read in English' : 'Baca dalam Bahasa Indonesia'}
+              </Link>
             </div>
           </header>
 
@@ -293,7 +317,7 @@ export default async function PostPage({ params }: Props) {
               <h2 className="text-3xl font-serif font-bold text-slate-900 dark:text-white mb-8 text-center">Related Articles</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                 {relatedPosts.map(post => (
-                  <PostCard key={post.id} post={post} />
+                  <PostCard key={post.id} post={post} locale={locale} />
                 ))}
               </div>
             </div>
@@ -302,4 +326,9 @@ export default async function PostPage({ params }: Props) {
       </main>
     </>
   );
+}
+
+export default async function PostPage({ params }: Props) {
+  const resolvedParams = await params;
+  return <PostPageView slug={resolvedParams.slug} locale="id" />;
 }

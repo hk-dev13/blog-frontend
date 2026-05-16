@@ -4,6 +4,7 @@ import { serverFetch } from '@/lib/serverApi';
 import { Category } from '@/types';
 import { Layers, ArrowRight, BookOpen } from 'lucide-react';
 import CategoryIcon from '@/components/shared/CategoryIcon';
+import { Locale } from '@/lib/i18n';
 
 export const revalidate = 3600;
 
@@ -21,11 +22,11 @@ interface CategoryWithCount extends Category {
   post_count?: number;
 }
 
-export default async function CategoriesPage() {
+export async function CategoriesPageView({ locale = 'id' }: { locale?: Locale }) {
   let categories: CategoryWithCount[] = [];
 
   try {
-    categories = await serverFetch<CategoryWithCount[]>('/categories', { revalidate: 3600 });
+    categories = await serverFetch<CategoryWithCount[]>(`/categories?language=${locale}`, { revalidate: 3600 });
   } catch (err) {
     if (process.env.NODE_ENV !== 'production') {
       console.error('[CategoriesPage] Failed to fetch categories:', err);
@@ -68,7 +69,7 @@ export default async function CategoriesPage() {
           {featuredCategory && (
             <Link
               key={featuredCategory.id}
-              href={`/categories/${featuredCategory.slug}`}
+              href={`/${locale}/categories/${featuredCategory.slug}`}
               className="group grid gap-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:grid-cols-[auto_1fr_auto] md:items-center md:p-8"
             >
               <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-600 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-400">
@@ -111,7 +112,7 @@ export default async function CategoriesPage() {
               {secondaryCategories.map((cat) => (
                 <Link
                   key={cat.id}
-                  href={`/categories/${cat.slug}`}
+                  href={`/${locale}/categories/${cat.slug}`}
                   className="group flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:hover:border-primary-500/60 hover:shadow-xl hover:shadow-primary-500/10"
                 >
                   <div>
@@ -152,4 +153,8 @@ export default async function CategoriesPage() {
 
     </main>
   );
+}
+
+export default async function CategoriesPage() {
+  return <CategoriesPageView locale="id" />;
 }

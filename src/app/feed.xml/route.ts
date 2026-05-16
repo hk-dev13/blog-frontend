@@ -12,7 +12,7 @@ export async function GET() {
     const limit = 100;
     while (true) {
       const res = await serverFetchPaginated<Post>(
-        `/posts?limit=${limit}&page=${page}&status=published`,
+        `/posts?limit=${limit}&page=${page}&language=id`,
         { revalidate: 1800 },
       );
       allPosts.push(...res.data);
@@ -29,7 +29,7 @@ export async function GET() {
 
   const items = allPosts.map((post) => {
     const pubDate = new Date(post.published_at || post.created_at).toUTCString();
-    const postUrl = `${SITE_URL}/posts/${post.slug}`;
+    const postUrl = `${SITE_URL}/id/posts/${post.slug}`;
     const categories = post.categories?.map((c) => `<category>${escapeXml(c.name)}</category>`).join('\n        ') || '';
     const coverImage = post.cover_image
       ? `<enclosure url="${escapeXml(post.cover_image)}" type="image/jpeg" length="0" />`
@@ -54,7 +54,7 @@ export async function GET() {
 >
   <channel>
 <title>Envoyou — Wawasan Teknologi, AI, dan Bisnis Modern</title>
-    <link>${SITE_URL}</link>
+    <link>${SITE_URL}/id</link>
     <description>Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.</description>
     <language>id</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
@@ -62,7 +62,7 @@ export async function GET() {
     <image>
       <url>${SITE_URL}/brand/logo-500.svg</url>
       <title>Envoyou</title>
-      <link>${SITE_URL}</link>
+      <link>${SITE_URL}/id</link>
     </image>
 ${items}
   </channel>

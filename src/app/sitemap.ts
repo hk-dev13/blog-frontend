@@ -24,6 +24,7 @@ interface PaginatedResponse<T> {
 
 interface Post {
   slug: string;
+  language?: 'id' | 'en';
   author_id?: string;
   author?: { id: string; slug?: string };
   updated_at?: string;
@@ -47,9 +48,7 @@ async function fetchAllPosts(): Promise<Post[]> {
   const limit = 100;
 
   while (true) {
-    const { data: posts, meta } = await serverFetch<Post[]>(
-      `/posts?limit=${limit}&page=${page}&status=published`
-    );
+    const { data: posts, meta } = await serverFetch<Post[]>(`/posts?limit=${limit}&page=${page}`);
     
     if (Array.isArray(posts)) {
       all.push(...posts);
@@ -66,30 +65,32 @@ async function fetchAllPosts(): Promise<Post[]> {
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── 1. Static routes ──────────────────────────────────────
   const staticRoutes: MetadataRoute.Sitemap = [
-    {
-      url: BASE_URL,
-      lastModified: new Date(),
-      changeFrequency: 'daily',
-      priority: 1.0,
-    },
-    {
-      url: `${BASE_URL}/about`,
-      lastModified: new Date(),
-      changeFrequency: 'monthly',
-      priority: 0.8,
-    },
-    {
-      url: `${BASE_URL}/categories`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.7,
-    },
-    {
-      url: `${BASE_URL}/search`,
-      lastModified: new Date(),
-      changeFrequency: 'weekly',
-      priority: 0.5,
-    },
+    ...(['id', 'en'] as const).flatMap((locale) => [
+      {
+        url: `${BASE_URL}/${locale}`,
+        lastModified: new Date(),
+        changeFrequency: 'daily' as const,
+        priority: 1.0,
+      },
+      {
+        url: `${BASE_URL}/${locale}/about`,
+        lastModified: new Date(),
+        changeFrequency: 'monthly' as const,
+        priority: 0.8,
+      },
+      {
+        url: `${BASE_URL}/${locale}/categories`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.7,
+      },
+      {
+        url: `${BASE_URL}/${locale}/search`,
+        lastModified: new Date(),
+        changeFrequency: 'weekly' as const,
+        priority: 0.5,
+      },
+    ]),
   ];
 
   // ── 2. Published posts ────────────────────────────────────
@@ -97,7 +98,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   try {
     const posts = await fetchAllPosts();
     postRoutes = posts.map((post) => ({
-      url: `${BASE_URL}/posts/${post.slug}`,
+      url: `${BASE_URL}/${post.language || 'id'}/posts/${post.slug}`,
       lastModified: new Date(post.updated_at || post.published_at || new Date()),
       changeFrequency: 'weekly' as const,
       priority: 0.8,
@@ -109,10 +110,12 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── 3. Category filter pages ──────────────────────────────
   let categoryRoutes: MetadataRoute.Sitemap = [];
   try {
-    const { data: list } = await serverFetch<Category[]>('/categories');
-    const categories = Array.isArray(list) ? list : [];
-    categoryRoutes = categories.map((cat: Category) => ({
-      url: `${BASE_URL}/categories/${cat.slug}`,
+    const allCategories = await Promise.all((['id', 'en'] as const).map(async (locale) => {
+      const { data: list } = await serverFetch<Category[]>(`/categories?language=${locale}`);
+      return (Array.isArray(list) ? list : []).map((cat) => ({ ...cat, language: locale }));
+    }));
+    categoryRoutes = allCategories.flat().map((cat: Category & { language?: 'id' | 'en' }) => ({
+      url: `${BASE_URL}/${cat.language || 'id'}/categories/${cat.slug}`,
       lastModified: new Date(cat.updated_at || new Date()),
       changeFrequency: 'weekly' as const,
       priority: 0.7,
@@ -128,16 +131,17 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   // ── 5. Author pages (unique authors from posts) ────────────
   const authorRoutes: MetadataRoute.Sitemap = [];
   try {
-    const { data: postsWithAuthors } = await serverFetch<any[]>('/posts?limit=100&status=published');
+    const { data: postsWithAuthors } = await serverFetch<any[]>('/posts?limit=100');
     const list = Array.isArray(postsWithAuthors) ? postsWithAuthors : [];
     const seenSlugs = new Set<string>();
 
     for (const p of list) {
       const authorSlug = p.author?.slug;
-      if (authorSlug && !seenSlugs.has(authorSlug)) {
-        seenSlugs.add(authorSlug);
+      const key = `${p.language || 'id'}:${authorSlug}`;
+      if (authorSlug && !seenSlugs.has(key)) {
+        seenSlugs.add(key);
         authorRoutes.push({
-          url: `${BASE_URL}/author/${authorSlug}`,
+          url: `${BASE_URL}/${p.language || 'id'}/author/${authorSlug}`,
           lastModified: new Date(),
           changeFrequency: 'weekly' as const,
           priority: 0.6,

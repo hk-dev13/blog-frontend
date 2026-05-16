@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { Clock, Eye } from 'lucide-react';
 import { Post, Category } from '@/types';
+import { Locale } from '@/lib/i18n';
 
 import Image from 'next/image';
 
@@ -16,9 +17,10 @@ interface PostCardProps {
   featured?: boolean;
   priority?: boolean;
   activeCategorySlug?: string;
+  locale?: Locale;
 }
 
-export default function PostCard({ post, featured = false, priority = false, activeCategorySlug }: PostCardProps) {
+export default function PostCard({ post, featured = false, priority = false, activeCategorySlug, locale = 'id' }: PostCardProps) {
   // Safe default values
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=800&q=80';
   const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
@@ -38,7 +40,7 @@ export default function PostCard({ post, featured = false, priority = false, act
   return (
     <article className={`group flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:shadow-xl hover:shadow-primary-500/10 hover:-translate-y-1 ${featured ? 'md:flex-row' : ''}`}>
       <div className={`relative overflow-hidden ${featured ? 'md:w-1/2 min-h-[300px]' : 'w-full aspect-[16/9]'}`}>
-        <Link href={`/posts/${post.slug}`} className="absolute inset-0 z-0">
+        <Link href={`/${locale}/posts/${post.slug}`} className="absolute inset-0 z-0">
           <Image 
             src={imageUrl} 
             alt={post.cover_image_alt || post.title}
@@ -53,7 +55,7 @@ export default function PostCard({ post, featured = false, priority = false, act
             {badgeCategories.map((category) => (
               <Link
                 key={category.slug}
-                href={`/categories/${category.slug}`}
+                href={`/${locale}/categories/${category.slug}`}
                 className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-primary-500 text-white rounded-full shadow-sm hover:bg-primary-600 transition-colors"
               >
                 {category.name}
@@ -76,7 +78,7 @@ export default function PostCard({ post, featured = false, priority = false, act
           </div>
         </div>
         
-        <Link href={`/posts/${post.slug}`} className="block group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
+        <Link href={`/${locale}/posts/${post.slug}`} className="block group-hover:text-primary-600 dark:group-hover:text-primary-400 transition-colors">
           <h2 className={`font-serif font-bold text-slate-900 dark:text-white mb-3 leading-snug ${featured ? 'text-2xl md:text-3xl lg:text-4xl' : 'text-xl'}`}>
             {post.title}
           </h2>

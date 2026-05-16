@@ -6,6 +6,7 @@ import CategoryIcon from '@/components/shared/CategoryIcon';
 import { Post, Category } from '@/types';
 import { Loader2, BookOpen, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
+import { Locale } from '@/lib/i18n';
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
 const firstArticleDateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -26,9 +27,10 @@ interface Props {
   initialPosts: Post[];
   initialMeta: { page: number; limit: number; total: number; totalPages: number };
   slug: string;
+  locale?: Locale;
 }
 
-export default function CategoryPageContent({ category, allCategories = [], initialPosts, initialMeta, slug }: Props) {
+export default function CategoryPageContent({ category, allCategories = [], initialPosts, initialMeta, slug, locale = 'id' }: Props) {
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [meta, setMeta] = useState(initialMeta);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
@@ -43,7 +45,7 @@ export default function CategoryPageContent({ category, allCategories = [], init
     try {
       const nextPage = meta.page + 1;
       const res = await fetch(
-        `${API_URL}/posts?category=${slug}&limit=${meta.limit}&page=${nextPage}`,
+        `${API_URL}/posts?category=${slug}&limit=${meta.limit}&page=${nextPage}&language=${locale}`,
       );
       const json = await res.json();
       if (json.success) {
@@ -55,7 +57,7 @@ export default function CategoryPageContent({ category, allCategories = [], init
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, hasMore, meta, slug]);
+  }, [isLoadingMore, hasMore, meta, slug, locale]);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
@@ -125,7 +127,7 @@ export default function CategoryPageContent({ category, allCategories = [], init
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
               {posts.map((post) => (
-                <PostCard key={post.id} post={post} activeCategorySlug={slug} />
+                <PostCard key={post.id} post={post} activeCategorySlug={slug} locale={locale} />
               ))}
             </div>
           </>
@@ -179,7 +181,7 @@ export default function CategoryPageContent({ category, allCategories = [], init
               {otherCategories.map((cat) => (
                 <Link
                   key={cat.id}
-                  href={`/categories/${cat.slug}`}
+                  href={`/${locale}/categories/${cat.slug}`}
                   className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60"
                 >
                   <div className="mb-4 flex items-center justify-between gap-3">

@@ -29,6 +29,7 @@ export default function EditPostPage() {
   
   // Form state
   const [title, setTitle] = useState('');
+  const [language, setLanguage] = useState<'id' | 'en'>('id');
   const [slug, setSlug] = useState('');
   const [slugLocked, setSlugLocked] = useState(false);
   const [excerpt, setExcerpt] = useState('');
@@ -90,6 +91,7 @@ export default function EditPostPage() {
   useEffect(() => {
     if (post) {
       setTitle(post.title || '');
+      setLanguage((post.language as 'id' | 'en') || 'id');
       setSlug(post.slug || '');
       setSlugLocked(true);
       setExcerpt(post.excerpt || '');
@@ -168,8 +170,8 @@ export default function EditPostPage() {
 
   // Fetch categories and tags
   const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => fetchPaginatedApi<Category>('/categories?limit=50'),
+    queryKey: ['categories', language],
+    queryFn: () => fetchPaginatedApi<Category>(`/categories?limit=50&language=${language}`),
   });
 
   const { data: tagsData } = useQuery({
@@ -179,6 +181,7 @@ export default function EditPostPage() {
 
   // Build the post payload
   const buildPayload = () => ({
+    language,
     title,
     slug: slug || undefined,
     excerpt,
@@ -207,6 +210,20 @@ export default function EditPostPage() {
       queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
       queryClient.invalidateQueries({ queryKey: ['admin-post', postId] });
     }
+  });
+
+  const createTranslationMutation = useMutation({
+    mutationFn: (targetLanguage: 'id' | 'en') =>
+      fetchApi<Post>(`/posts/${postId}/translation`, {
+        method: 'POST',
+        body: JSON.stringify({ language: targetLanguage }),
+      }),
+    onSuccess: (translation) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-posts'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-post', postId] });
+      alert('Translation draft created. Linked routes were queued for revalidation.');
+      router.push(`/admin/posts/${translation.id}/edit`);
+    },
   });
 
   // Update without changing status
@@ -260,7 +277,13 @@ export default function EditPostPage() {
 
   // Taxonomy Mutations
   const createCategoryMutation = useMutation({
-    mutationFn: (name: string) => fetchApi<Category>('/categories', { method: 'POST', body: JSON.stringify({ name }) }),
+    mutationFn: (name: string) => fetchApi<Category>('/categories', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        translations: [{ language, name, slug: generateSlug(name) }],
+      }),
+    }),
     onSuccess: (newCat) => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       setSelectedCategories(prev => [...prev, newCat.id]);
@@ -357,6 +380,14 @@ export default function EditPostPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={() => createTranslationMutation.mutate(language === 'id' ? 'en' : 'id')}
+            disabled={createTranslationMutation.isPending || Boolean((post.translations as any)?.[language === 'id' ? 'en' : 'id'])}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-primary-600 dark:text-primary-400 bg-white dark:bg-slate-800 border border-primary-200 dark:border-primary-900/60 rounded-lg hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors disabled:opacity-50"
+          >
+            {createTranslationMutation.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+            Create {language === 'id' ? 'EN' : 'ID'} Translation
+          </button>
           
           {/* Main Action Button varies based on status */}
           {post.status === 'published' ? (
@@ -458,6 +489,18 @@ export default function EditPostPage() {
         {/* Main Editor Area */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Language</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'id' | 'en')}
+                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+              >
+                <option value="id">Indonesian</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
               <input

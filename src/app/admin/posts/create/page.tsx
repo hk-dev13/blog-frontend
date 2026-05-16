@@ -22,6 +22,7 @@ export default function CreatePostPage() {
 
   // Form state
   const [title, setTitle] = useState('');
+  const [language, setLanguage] = useState<'id' | 'en'>('id');
   const [slug, setSlug] = useState('');
   const [slugLocked, setSlugLocked] = useState(false);
   const [excerpt, setExcerpt] = useState('');
@@ -111,8 +112,8 @@ export default function CreatePostPage() {
 
   // Fetch categories and tags
   const { data: categoriesData } = useQuery({
-    queryKey: ['categories'],
-    queryFn: () => fetchPaginatedApi<Category>('/categories?limit=50'),
+    queryKey: ['categories', language],
+    queryFn: () => fetchPaginatedApi<Category>(`/categories?limit=50&language=${language}`),
   });
 
   const { data: tagsData } = useQuery({
@@ -122,6 +123,7 @@ export default function CreatePostPage() {
 
   // Build the post payload
   const buildPayload = () => ({
+    language,
     title,
     slug: slugLocked && slug ? slug : undefined,
     excerpt,
@@ -190,7 +192,13 @@ export default function CreatePostPage() {
 
   // Taxonomy Mutations
   const createCategoryMutation = useMutation({
-    mutationFn: (name: string) => fetchApi<Category>('/categories', { method: 'POST', body: JSON.stringify({ name }) }),
+    mutationFn: (name: string) => fetchApi<Category>('/categories', {
+      method: 'POST',
+      body: JSON.stringify({
+        name,
+        translations: [{ language, name, slug: generateSlug(name) }],
+      }),
+    }),
     onSuccess: (newCat) => {
       queryClient.invalidateQueries({ queryKey: ['categories'] });
       setSelectedCategories(prev => [...prev, newCat.id]);
@@ -357,6 +365,18 @@ export default function CreatePostPage() {
         {/* Main Editor Area */}
         <div className="lg:col-span-2 space-y-6">
           <div className="bg-white dark:bg-slate-800 p-6 rounded-xl border border-slate-200 dark:border-slate-700 space-y-4">
+            <div>
+              <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Language</label>
+              <select
+                value={language}
+                onChange={(e) => setLanguage(e.target.value as 'id' | 'en')}
+                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+              >
+                <option value="id">Indonesian</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
               <input

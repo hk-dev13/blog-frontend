@@ -4,6 +4,7 @@ import PostCard from '@/components/shared/PostCard';
 import CategoryPills from '@/components/shared/CategoryPills';
 import CategoryIcon from '@/components/shared/CategoryIcon';
 import { Post, Tag, Category } from '@/types';
+import { Locale } from '@/lib/i18n';
 import { Loader2, ArrowRight, LayoutGrid } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useState, useCallback } from 'react';
@@ -15,6 +16,8 @@ interface HomeContentProps {
   trendingPosts: Post[];
   tags: Tag[];
   categories?: Category[];
+  locale?: Locale;
+  notice?: string;
 }
 
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
@@ -25,6 +28,8 @@ export default function HomeContent({
   trendingPosts,
   tags,
   categories = [],
+  locale = 'id',
+  notice,
 }: HomeContentProps) {
   const searchParams = useSearchParams();
   const activeTag = searchParams.get('tag') || undefined;
@@ -43,7 +48,7 @@ export default function HomeContent({
       const nextPage = meta.page + 1;
       const tagParam = activeTag ? `&tag=${activeTag}` : '';
       const res = await fetch(
-        `${API_URL}/posts?limit=${meta.limit}&page=${nextPage}${tagParam}`,
+        `${API_URL}/posts?limit=${meta.limit}&page=${nextPage}&language=${locale}${tagParam}`,
       );
       const json = await res.json();
       if (json.success) {
@@ -55,7 +60,7 @@ export default function HomeContent({
     } finally {
       setIsLoadingMore(false);
     }
-  }, [isLoadingMore, hasMore, meta, activeTag]);
+  }, [isLoadingMore, hasMore, meta, activeTag, locale]);
 
   // ── Derive featured post (only when no tag filter) ──────────
   const featuredPost = !activeTag && posts.length > 0 ? posts[0] : null;
@@ -63,11 +68,16 @@ export default function HomeContent({
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-16">
+      {notice && (
+        <div className="rounded-2xl border border-primary-500/20 bg-primary-50 px-5 py-4 text-sm text-primary-700 dark:border-primary-400/20 dark:bg-primary-900/20 dark:text-primary-300">
+          {notice}
+        </div>
+      )}
       {/* Featured Post Hero Section */}
       {featuredPost && (
         <section>
           <h2 className="sr-only">Featured Article</h2>
-          <PostCard post={featuredPost} featured={true} priority={true} />
+          <PostCard post={featuredPost} featured={true} priority={true} locale={locale} />
         </section>
       )}
 
@@ -81,7 +91,7 @@ export default function HomeContent({
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {trendingPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard key={post.id} post={post} locale={locale} />
             ))}
           </div>
         </section>
@@ -104,7 +114,7 @@ export default function HomeContent({
             {categories.map((cat) => (
               <Link
                 key={cat.id}
-                href={`/categories/${cat.slug}`}
+                href={`/${locale}/categories/${cat.slug}`}
                 className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60"
               >
                 <div className="flex flex-col h-full">
@@ -132,7 +142,7 @@ export default function HomeContent({
       {/* Latest Feed & Tag Filter */}
       <section>
         <div className="mb-8">
-          <CategoryPills tags={tags} currentTagSlug={activeTag} />
+          <CategoryPills tags={tags} currentTagSlug={activeTag} locale={locale} />
         </div>
 
         <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-6">
@@ -144,7 +154,7 @@ export default function HomeContent({
         {feedPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
             {feedPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
+              <PostCard key={post.id} post={post} locale={locale} />
             ))}
           </div>
         ) : (

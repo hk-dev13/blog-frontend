@@ -1,27 +1,66 @@
-'use client';
+ 'use client';
 
 import Link from 'next/link';
 import Image from 'next/image';
 import { Search, Moon, Sun } from 'lucide-react';
 import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
+import { usePathname } from 'next/navigation';
 import { useState, useEffect, FormEvent } from 'react';
+import { getOppositeLocale, isLocale, Locale, stripLocale } from '@/lib/i18n';
+import { fetchApi } from '@/lib/api';
 
 export default function Navbar() {
   const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
+  const [, maybeLocale] = pathname.split('/');
+  const locale: Locale = isLocale(maybeLocale) ? maybeLocale : 'id';
+  const oppositeLocale = getOppositeLocale(locale);
+  const defaultOppositePath = `/${oppositeLocale}${stripLocale(pathname) === '/' ? '' : stripLocale(pathname)}`;
+  const [oppositePath, setOppositePath] = useState(defaultOppositePath);
 
   // Avoid hydration mismatch by waiting for mount
   useEffect(() => {
     setMounted(true);
-  }, []);
+
+    // If we're on a post detail page (/[locale]/posts/[slug]), try to fetch
+    // the post data and use its `translations` mapping to compute the
+    // correct counterpart slug instead of naively swapping the locale prefix.
+    (async () => {
+      try {
+        const postMatch = pathname.match(/^\/(id|en)\/posts\/([^/]+)\/?$/);
+        if (postMatch) {
+          const [, curLocale, slug] = postMatch;
+          const opposite = getOppositeLocale(curLocale as Locale);
+
+          try {
+            const post = await fetchApi<any>(`/posts/${slug}?language=${curLocale}`);
+            const oppositeTranslation = post?.translations?.[opposite];
+            if (oppositeTranslation?.slug) {
+              setOppositePath(`/${opposite}/posts/${oppositeTranslation.slug}`);
+            } else {
+              setOppositePath(`/${opposite}?notice=translation-missing`);
+            }
+          } catch {
+            // If fetching fails, keep default computed oppositePath
+            setOppositePath(defaultOppositePath);
+          }
+        } else {
+          setOppositePath(defaultOppositePath);
+        }
+      } catch {
+        setOppositePath(defaultOppositePath);
+      }
+    })();
+  }, [pathname]);
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();
     if (searchQuery.trim()) {
-      router.push(`/search?q=${encodeURIComponent(searchQuery)}`);
+      router.push(`/${locale}/search?q=${encodeURIComponent(searchQuery)}`);
     }
   };
 
@@ -33,7 +72,7 @@ export default function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-        <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
+        <Link href={`/${locale}`} className="flex items-center gap-2 transition-transform hover:scale-105">
           <Image
             src="/brand/logo-500.svg"
             alt="Envoyou Logo"
@@ -50,7 +89,7 @@ export default function Navbar() {
         <div className="flex items-center gap-4">
           {/* About link — hidden on mobile */}
           <Link
-            href="/about"
+            href={`/${locale}/about`}
             className="hidden sm:block text-sm font-medium text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
           >
             About
@@ -67,8 +106,15 @@ export default function Navbar() {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
           </form>
 
-          <Link href="/search" className="sm:hidden p-2 text-slate-600 dark:text-slate-300">
+          <Link href={`/${locale}/search`} className="sm:hidden p-2 text-slate-600 dark:text-slate-300">
             <Search className="h-5 w-5" />
+          </Link>
+
+          <Link
+            href={oppositePath}
+            className="rounded-full border border-slate-200 px-3 py-1.5 text-xs font-semibold uppercase text-slate-600 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-300 dark:hover:border-primary-400 dark:hover:text-primary-400"
+          >
+            {oppositeLocale}
           </Link>
 
           <button

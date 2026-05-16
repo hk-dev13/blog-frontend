@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { headers } from "next/headers";
 import { Inter, Lora } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
@@ -57,13 +58,16 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const requestHeaders = await headers();
+  const locale = requestHeaders.get('x-envoyou-locale') === 'en' ? 'en' : 'id';
+
   return (
-    <html lang="id" className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
+    <html lang={locale} className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
       {/* 1. Tambahkan suppressHydrationWarning di body */}
       <body
         className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300"

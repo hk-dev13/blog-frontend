@@ -17,8 +17,10 @@ export interface Category {
   id: string;
   name: string;
   slug: string;
+  language?: 'id' | 'en';
   description?: string;
   meta_description?: string;
+  post_count?: number;
 }
 
 export interface Tag {
@@ -31,6 +33,8 @@ export interface Tag {
 export interface Post {
   id: string;
   author_id: string;
+  language?: 'id' | 'en';
+  translation_group_id?: string;
   title: string;
   slug: string;
   content: string;
@@ -49,6 +53,7 @@ export interface Post {
   author?: User;
   categories?: Category[];
   tags?: Tag[];
+  translations?: Partial<Record<'id' | 'en', { id?: string; slug: string; status?: string }>>;
   rank?: number; // From search
 }
 
