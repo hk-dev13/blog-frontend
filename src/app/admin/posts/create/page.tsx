@@ -1,15 +1,13 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
-import ReactMarkdown from 'react-markdown';
-import remarkGfm from 'remark-gfm';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Bold, Italic, Heading2, Link2, ImagePlus, Code2, List, Quote, Plus, X, Lock, Unlock, Clock, AlignLeft, Star } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { generateSlug, getContentStats, useAutosave } from '@/lib/editorUtils';
+import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from '@/lib/editorUtils';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 
@@ -30,7 +28,6 @@ export default function CreatePostPage() {
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
-  const [isPreview, setIsPreview] = useState(false);
   const [showPublishMenu, setShowPublishMenu] = useState(false);
   const [showScheduler, setShowScheduler] = useState(false);
   const [scheduleDate, setScheduleDate] = useState('');
@@ -61,53 +58,11 @@ export default function CreatePostPage() {
       setMetaTitle(mt); setMetaDescription(md);
       if (s) { setSlug(s); setSlugLocked(true); }
     },
+    () => {
+      setAutosaveIndicator('saved');
+      setTimeout(() => setAutosaveIndicator('idle'), 2500);
+    },
   );
-
-  // Trigger autosave indicator on content change
-  const triggerSavedIndicator = useCallback(() => {
-    setAutosaveIndicator('saved');
-    const t = setTimeout(() => setAutosaveIndicator('idle'), 2500);
-    return () => clearTimeout(t);
-  }, []);
-
-  // Insert markdown syntax at cursor position
-  const insertMarkdown = useCallback((before: string, after: string = '', placeholder: string = '') => {
-    const textarea = contentRef.current;
-    if (!textarea) return;
-
-    const start = textarea.selectionStart;
-    const end = textarea.selectionEnd;
-    const selected = content.substring(start, end);
-    const text = selected || placeholder;
-    const newContent = content.substring(0, start) + before + text + after + content.substring(end);
-
-    setContent(newContent);
-
-    // Restore cursor position after React re-render
-    requestAnimationFrame(() => {
-      textarea.focus();
-      const cursorPos = selected
-        ? start + before.length + text.length + after.length
-        : start + before.length;
-      const cursorEnd = selected
-        ? start + before.length + text.length + after.length
-        : start + before.length + text.length;
-      textarea.setSelectionRange(cursorPos, cursorEnd);
-    });
-  }, [content]);
-
-  const toolbarButtons = [
-    { icon: Bold, label: 'Bold', action: () => insertMarkdown('**', '**', 'bold text') },
-    { icon: Italic, label: 'Italic', action: () => insertMarkdown('*', '*', 'italic text') },
-    { icon: Heading2, label: 'Heading', action: () => insertMarkdown('## ', '', 'heading') },
-    { divider: true },
-    { icon: Link2, label: 'Link', action: () => insertMarkdown('[', '](url)', 'link text') },
-    { icon: ImagePlus, label: 'Image', action: () => insertMarkdown('![', '](url)', 'alt text') },
-    { icon: Code2, label: 'Code', action: () => insertMarkdown('`', '`', 'code') },
-    { divider: true },
-    { icon: List, label: 'List', action: () => insertMarkdown('- ', '', 'list item') },
-    { icon: Quote, label: 'Quote', action: () => insertMarkdown('> ', '', 'quote') },
-  ] as const;
 
   // Fetch categories and tags
   const { data: categoriesData } = useQuery({
@@ -156,8 +111,7 @@ export default function CreatePostPage() {
     if (!title || !content) { alert('Title and content are required'); return; }
     setIsSaving(true);
     try {
-      const post = await fetchApi<any>('/posts', { method: 'POST', body: JSON.stringify(buildPayload()) });
-      await fetchApi(`/posts/${post.id}/publish`, { method: 'POST', body: JSON.stringify({}) });
+      await fetchApi('/posts/publish', { method: 'POST', body: JSON.stringify(buildPayload()) });
       clearSave();
       router.push('/admin/posts');
     } catch (err: any) {
@@ -173,10 +127,9 @@ export default function CreatePostPage() {
     if (!scheduleDate) { alert('Please select a date and time for scheduling'); return; }
     setIsSaving(true);
     try {
-      const post = await fetchApi<any>('/posts', { method: 'POST', body: JSON.stringify(buildPayload()) });
-      await fetchApi(`/posts/${post.id}/publish`, {
+      await fetchApi('/posts/publish', {
         method: 'POST',
-        body: JSON.stringify({ published_at: new Date(scheduleDate).toISOString() }),
+        body: JSON.stringify({ ...buildPayload(), published_at: new Date(scheduleDate).toISOString() }),
       });
       clearSave();
       router.push('/admin/posts');
@@ -328,7 +281,7 @@ export default function CreatePostPage() {
                   type="datetime-local"
                   value={scheduleDate}
                   onChange={e => setScheduleDate(e.target.value)}
-                  min={new Date().toISOString().slice(0, 16)}
+                  min={getLocalDateTimeMin()}
                   className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
                 />
                 <div className="flex gap-2">
@@ -426,7 +379,7 @@ export default function CreatePostPage() {
 
               <RichTextEditor
                 value={content}
-                onChange={val => { setContent(val); triggerSavedIndicator(); }}
+                onChange={setContent}
                 mode={editorMode}
                 onModeChange={setEditorMode}
                 placeholder="Write your content..."

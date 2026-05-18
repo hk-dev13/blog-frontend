@@ -2,8 +2,6 @@
 
 import { useEditor, EditorContent } from '@tiptap/react';
 import StarterKit from '@tiptap/starter-kit';
-import Underline from '@tiptap/extension-underline';
-import Link from '@tiptap/extension-link';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
 import Highlight from '@tiptap/extension-highlight';
@@ -78,12 +76,11 @@ export default function RichTextEditor({
     extensions: [
       StarterKit.configure({
         heading: { levels: [1, 2, 3] },
+        link: { openOnClick: false, HTMLAttributes: { class: 'no-underline' } },
         code: { HTMLAttributes: { class: 'font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-sm' } },
         codeBlock: { HTMLAttributes: { class: 'font-mono bg-slate-900 text-slate-100 p-4 rounded-lg text-sm overflow-x-auto' } },
         blockquote: { HTMLAttributes: { class: '' } },
       }),
-      Underline,
-      Link.configure({ openOnClick: false, HTMLAttributes: { class: 'no-underline' } }),
       Image,
       TextAlign.configure({ types: ['heading', 'paragraph'] }),
       Highlight.configure({ multicolor: false }),
