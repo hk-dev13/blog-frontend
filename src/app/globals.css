@@ -35,6 +35,19 @@ body {
   font-family: var(--font-sans), sans-serif;
 }
 
+.brand-logo-mark {
+  display: inline-block;
+  background-color: currentColor;
+  -webkit-mask-image: url('/brand/logo_envoyou.svg');
+  mask-image: url('/brand/logo_envoyou.svg');
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-size: contain;
+  mask-size: contain;
+}
+
 @utility hide-scrollbar {
   -ms-overflow-style: none;  /* IE and Edge */
   scrollbar-width: none;  /* Firefox */

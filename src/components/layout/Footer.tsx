@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import Link from 'next/link';
 import { Mail, Rss } from 'lucide-react';
+import LogoMark from '@/components/shared/LogoMark';
 
 const GithubIcon = () => (
   <svg className="w-4 h-4 shrink-0" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
@@ -36,13 +36,7 @@ export default function Footer() {
           {/* Col 1 — Brand */}
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2.5 w-fit group">
-              <Image
-                src="/brand/logo-500.svg"
-                alt="Envoyou Logo"
-                width={32}
-                height={32}
-                className="h-8 w-8 object-contain transition-transform group-hover:scale-110"
-              />
+              <LogoMark className="h-8 w-8 text-primary-600 dark:text-primary-400 transition-transform group-hover:scale-110" />
               <span className="text-lg font-bold font-serif text-primary-600 dark:text-primary-400">
                 Envoyou
               </span>

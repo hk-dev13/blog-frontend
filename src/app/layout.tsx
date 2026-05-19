@@ -44,8 +44,8 @@ export const metadata: Metadata = {
   },
   description: "Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.",
   icons: {
-    icon: '/icon.svg',
-    apple: '/apple-icon.png',
+    icon: '/favicon.svg?v=2.0',
+    apple: '/apple-icon.png?v=2.0',
   },
   alternates: {
     types: {

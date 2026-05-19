@@ -9,7 +9,8 @@ interface DailyView {
 }
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 const numberFormatter = new Intl.NumberFormat('en-US');
 const chartDateFormatter = new Intl.DateTimeFormat('id-ID', {
   day: 'numeric',
@@ -31,8 +32,8 @@ export default function ViewsChart() {
       `${SUPABASE_URL}/rest/v1/post_views_daily?view_date=gte.${since}&order=view_date.asc&select=view_date,view_count,unique_visitors`,
       {
         headers: {
-          apikey: SUPABASE_ANON_KEY,
-          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          apikey: SUPABASE_PUBLISHABLE_KEY,
+          Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
         },
       },
     )
