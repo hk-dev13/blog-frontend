@@ -4,7 +4,8 @@ import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+const SUPABASE_PUBLISHABLE_KEY =
+  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 interface LikeButtonProps {
   postId: string;
@@ -19,8 +20,8 @@ export default function LikeButton({ postId }: LikeButtonProps) {
   useEffect(() => {
     fetch(`${SUPABASE_URL}/functions/v1/post-reactions?post_id=${postId}`, {
       headers: {
-        apikey: SUPABASE_ANON_KEY,
-        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        apikey: SUPABASE_PUBLISHABLE_KEY,
+        Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
       },
     })
       .then((r) => r.json())
@@ -45,8 +46,8 @@ export default function LikeButton({ postId }: LikeButtonProps) {
         {
           method: 'POST',
           headers: {
-            apikey: SUPABASE_ANON_KEY,
-            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+            apikey: SUPABASE_PUBLISHABLE_KEY,
+            Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
           },
         },
       );

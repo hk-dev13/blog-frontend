@@ -107,7 +107,7 @@ export default async function PostPage({ params }: Props) {
       '@type': 'Organization',
       name: 'Envoyou',
       url: SITE_URL,
-      logo: { '@type': 'ImageObject', url: `${SITE_URL}/brand/logo-500.svg` },
+      logo: { '@type': 'ImageObject', url: `${SITE_URL}/brand/logo_envoyou.svg` },
     },
     keywords: post.tags?.map(t => t.name).join(', ') || '',
     articleSection: post.categories?.[0]?.name || '',
