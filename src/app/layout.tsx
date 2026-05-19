@@ -43,10 +43,6 @@ export const metadata: Metadata = {
     template: "%s | Envoyou",
   },
   description: "Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.",
-  icons: {
-    icon: '/favicon.svg?v=2.0',
-    apple: '/apple-icon.png?v=2.0',
-  },
   alternates: {
     types: {
       'application/rss+xml': `${SITE_URL}/feed.xml`,
