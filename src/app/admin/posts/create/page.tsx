@@ -8,6 +8,7 @@ import { Category, Tag } from '@/types';
 import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from '@/lib/editorUtils';
+import { API_URL } from '@/lib/env';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 
@@ -176,7 +177,6 @@ export default function CreatePostPage() {
     const formData = new FormData();
     formData.append('file', file);
     try {
-      const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
       const res = await fetch(`${API_URL}/upload`, {
         method: 'POST',
         headers: { 'Authorization': `Bearer ${token}` },

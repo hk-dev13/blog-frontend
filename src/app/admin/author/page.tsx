@@ -9,7 +9,7 @@ import { useAppStore } from '@/store/useAppStore';
 import { User } from '@/types';
 import { BookOpen, Image as ImageIcon, Loader2, Lock, RotateCcw, Save, Upload, Unlock, UserRound } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+import { API_URL } from '@/lib/env';
 
 type AuthorForm = {
   name: string;

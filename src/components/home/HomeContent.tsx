@@ -17,7 +17,7 @@ interface HomeContentProps {
   categories?: Category[];
 }
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+import { API_URL } from '@/lib/env';
 
 export default function HomeContent({
   initialPosts,

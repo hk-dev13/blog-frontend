@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { serverFetch, serverFetchPaginated } from '@/lib/serverApi';
+import { SITE_URL } from '@/lib/env';
 import { Post, User } from '@/types';
 import AuthorPageContent from './AuthorPageContent';
 
@@ -26,7 +27,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `${name} — Envoyou`,
         description: bio,
         type: 'profile',
-        url: `https://blog.envoyou.com/author/${slug}`,
+        url: `${SITE_URL}/author/${slug}`,
       },
     };
   } catch {

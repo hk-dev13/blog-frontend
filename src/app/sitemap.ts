@@ -1,10 +1,10 @@
 import { MetadataRoute } from 'next';
+import { API_URL, SITE_URL } from '@/lib/env';
 
 export const dynamic = 'force-dynamic';
 export const revalidate = 0;
 
-const BASE_URL = 'https://blog.envoyou.com';
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+const BASE_URL = SITE_URL;
 
 // ── Server-side fetch (no auth token needed for public endpoints) ──
 async function serverFetch<T>(endpoint: string): Promise<{ data: T; meta?: any }> {

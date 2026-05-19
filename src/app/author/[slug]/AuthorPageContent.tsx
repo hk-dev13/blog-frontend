@@ -6,7 +6,7 @@ import PostCard from '@/components/shared/PostCard';
 import { Post, User } from '@/types';
 import { Loader2, BookOpen, Eye } from 'lucide-react';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+import { API_URL } from '@/lib/env';
 const numberFormatter = new Intl.NumberFormat('en-US');
 
 const socialFields = [

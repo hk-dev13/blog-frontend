@@ -1,7 +1,7 @@
 import { serverFetchPaginated } from '@/lib/serverApi';
+import { SITE_URL } from '@/lib/env';
 import { Post } from '@/types';
 
-const SITE_URL = 'https://blog.envoyou.com';
 const FEED_URL = `${SITE_URL}/feed.xml`;
 
 export async function GET() {
