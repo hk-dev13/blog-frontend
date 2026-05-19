@@ -11,16 +11,28 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const router = useRouter();
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
+  const [authHydrated, setAuthHydrated] = useState(false);
 
   useEffect(() => {
     setMounted(true);
+    setAuthHydrated(useAppStore.persist.hasHydrated());
+
+    const unsub = useAppStore.persist.onFinishHydration(() => {
+      setAuthHydrated(true);
+    });
+
+    return () => unsub();
+  }, []);
+
+  useEffect(() => {
+    if (!authHydrated) return;
     if (!token && pathname !== '/admin/login') {
       router.push('/admin/login');
     }
-  }, [token, pathname, router]);
+  }, [authHydrated, token, pathname, router]);
 
   // Don't render until client state is ready to prevent hydration mismatch
-  if (!mounted) {
+  if (!mounted || !authHydrated) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
         <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
