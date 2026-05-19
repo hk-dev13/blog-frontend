@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { fetchApi } from '@/lib/api';
@@ -13,6 +13,13 @@ export default function AdminLoginPage() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const setAuth = useAppStore(state => state.setAuth);
+  const token = useAppStore(state => state.token);
+
+  useEffect(() => {
+    if (token) {
+      router.replace('/admin/posts');
+    }
+  }, [token, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();

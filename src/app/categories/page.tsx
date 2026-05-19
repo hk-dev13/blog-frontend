@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import { serverFetch } from '@/lib/serverApi';
+import { SITE_URL } from '@/lib/env';
 import { Category } from '@/types';
 import { Layers, ArrowRight, BookOpen } from 'lucide-react';
 import CategoryIcon from '@/components/shared/CategoryIcon';
@@ -13,7 +14,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'Categories | Envoyou',
     description: 'Jelajahi semua kategori artikel di Envoyou.',
-    url: 'https://blog.envoyou.com/categories',
+    url: `${SITE_URL}/categories`,
   },
 };
 

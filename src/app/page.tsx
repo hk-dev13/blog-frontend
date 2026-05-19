@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { PostGridSkeleton, CategoryPillsSkeleton } from '@/components/shared/Skeletons';
 import { serverFetchPaginated, serverFetch } from '@/lib/serverApi';
+import { SITE_URL } from '@/lib/env';
 import { Post, Tag, Category } from '@/types';
 import HomeContent from '@/components/home/HomeContent';
 import type { Metadata } from 'next';
@@ -22,7 +23,7 @@ export async function generateMetadata(
 
   return {
     robots: { index: false, follow: true },
-    alternates: { canonical: 'https://blog.envoyou.com' },
+    alternates: { canonical: SITE_URL },
   };
 }
 

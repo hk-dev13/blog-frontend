@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import { Inter, Lora } from "next/font/google";
 import { GoogleAnalytics } from "@next/third-parties/google";
 import Script from "next/script";
+import { SITE_URL } from "@/lib/env";
 import "./globals.css";
 
-const SITE_URL = 'https://blog.envoyou.com';
 const ADSENSE_CLIENT = 'ca-pub-3002282783853213';
 
 const websiteSchema = {

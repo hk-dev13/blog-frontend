@@ -2,6 +2,7 @@ import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { fetchApi } from '@/lib/api';
+import { SITE_URL } from '@/lib/env';
 import { Post } from '@/types';
 import { format } from 'date-fns';
 import { Clock, Eye, RefreshCw } from 'lucide-react';
@@ -24,7 +25,6 @@ type Props = {
 
 // Generate SEO Metadata dynamically
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
-  const SITE_URL = 'https://blog.envoyou.com';
   try {
     const resolvedParams = await params;
     const post = await fetchApi<Post>(`/posts/${resolvedParams.slug}`);
@@ -83,7 +83,6 @@ export default async function PostPage({ params }: Props) {
   const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80';
 
-  const SITE_URL = 'https://blog.envoyou.com';
   const postUrl = `${SITE_URL}/posts/${post.slug}`;
 
   // ── JSON-LD: Article Schema ──────────────────────────────

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { Loader2, Mail, CheckCircle } from 'lucide-react';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 export default function NewsletterForm() {
   const [email, setEmail] = useState('');
@@ -18,7 +19,11 @@ export default function NewsletterForm() {
     try {
       const res = await fetch(`${SUPABASE_URL}/functions/v1/newsletter-subscribe`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          apikey: SUPABASE_ANON_KEY,
+          Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+        },
         body: JSON.stringify({ email: email.trim() }),
       });
 

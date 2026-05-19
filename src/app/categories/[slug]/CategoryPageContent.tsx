@@ -7,7 +7,7 @@ import { Post, Category } from '@/types';
 import { Loader2, BookOpen, ArrowRight } from 'lucide-react';
 import Link from 'next/link';
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL || 'https://api.envoyou.com/api';
+import { API_URL } from '@/lib/env';
 const firstArticleDateFormatter = new Intl.DateTimeFormat('id-ID', {
   year: 'numeric',
   month: 'short',

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { Heart } from 'lucide-react';
 
 const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
+const SUPABASE_ANON_KEY = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
 
 interface LikeButtonProps {
   postId: string;
@@ -16,7 +17,12 @@ export default function LikeButton({ postId }: LikeButtonProps) {
 
   // Fetch initial state
   useEffect(() => {
-    fetch(`${SUPABASE_URL}/functions/v1/post-reactions?post_id=${postId}`)
+    fetch(`${SUPABASE_URL}/functions/v1/post-reactions?post_id=${postId}`, {
+      headers: {
+        apikey: SUPABASE_ANON_KEY,
+        Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+      },
+    })
       .then((r) => r.json())
       .then((data) => {
         setLiked(data.liked);
@@ -36,7 +42,13 @@ export default function LikeButton({ postId }: LikeButtonProps) {
     try {
       const res = await fetch(
         `${SUPABASE_URL}/functions/v1/post-reactions?post_id=${postId}`,
-        { method: 'POST' },
+        {
+          method: 'POST',
+          headers: {
+            apikey: SUPABASE_ANON_KEY,
+            Authorization: `Bearer ${SUPABASE_ANON_KEY}`,
+          },
+        },
       );
       const data = await res.json();
       setLiked(data.liked);

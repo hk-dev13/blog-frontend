@@ -52,6 +52,7 @@ export function useAutosave(
   data: Omit<AutosaveData, 'savedAt'>,
   enabled: boolean,
   onRestore: (data: Omit<AutosaveData, 'savedAt'>) => void,
+  onSaved?: () => void,
 ) {
   const onRestoreRef = useRef(onRestore);
   onRestoreRef.current = onRestore;
@@ -84,14 +85,21 @@ export function useAutosave(
       if (!data.title && !data.content) return; // don't save empty
       try {
         localStorage.setItem(key, JSON.stringify({ ...data, savedAt: Date.now() }));
+        onSaved?.();
       } catch {/* storage quota */}
     }, 30_000);
     return () => clearInterval(interval);
-  }, [key, data, enabled]);
+  }, [key, data, enabled, onSaved]);
 
   const clearSave = useCallback(() => {
     try { localStorage.removeItem(key); } catch {/* */}
   }, [key]);
 
   return { clearSave };
+}
+
+export function getLocalDateTimeMin(): string {
+  const now = new Date();
+  const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
+  return local.toISOString().slice(0, 16);
 }

@@ -1,6 +1,7 @@
 import { Metadata } from 'next';
 import { notFound } from 'next/navigation';
 import { serverFetch, serverFetchPaginated } from '@/lib/serverApi';
+import { SITE_URL } from '@/lib/env';
 import { Post, Category } from '@/types';
 import CategoryPageContent from './CategoryPageContent';
 
@@ -34,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         title: `${title} | Envoyou`,
         description,
         type: 'website',
-        url: `https://blog.envoyou.com/categories/${slug}`,
+        url: `${SITE_URL}/categories/${slug}`,
       },
     };
   } catch {
