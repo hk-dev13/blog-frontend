@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, AlertCircle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from '@/lib/editorUtils';
 import { API_URL } from '@/lib/env';
@@ -37,20 +37,20 @@ export default function CreatePostPage() {
   const [metaDescription, setMetaDescription] = useState('');
   const [coverImageAlt, setCoverImageAlt] = useState('');
   const [seoOpen, setSeoOpen] = useState(false);
-  const [autosaveIndicator, setAutosaveIndicator] = useState<'idle' | 'saved'>('idle');
   const [isFeatured, setIsFeatured] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [canonicalUrl, setCanonicalUrl] = useState('');
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
   const contentRef = useRef<HTMLTextAreaElement>(null);
+  const coverImageInputRef = useRef<HTMLInputElement>(null);
 
   // Live stats
   const contentStats = getContentStats(content);
 
   // Autosave hook
   const autosaveKey = 'editor:create';
-  const { clearSave } = useAutosave(
+  const { clearSave, status: autosaveStatus, lastSavedAt } = useAutosave(
     autosaveKey,
     { title, excerpt, content, metaTitle, metaDescription, slug },
     true,
@@ -59,11 +59,17 @@ export default function CreatePostPage() {
       setMetaTitle(mt); setMetaDescription(md);
       if (s) { setSlug(s); setSlugLocked(true); }
     },
-    () => {
-      setAutosaveIndicator('saved');
-      setTimeout(() => setAutosaveIndicator('idle'), 2500);
-    },
   );
+
+  const autosaveLabel = autosaveStatus === 'saving'
+    ? 'Saving draft...'
+    : autosaveStatus === 'saved'
+      ? `Autosaved${lastSavedAt ? ` at ${new Date(lastSavedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : ''}`
+      : autosaveStatus === 'dirty'
+        ? 'Unsaved changes'
+        : autosaveStatus === 'error'
+          ? 'Autosave failed'
+          : '';
 
   // Fetch categories and tags
   const { data: categoriesData } = useQuery({
@@ -217,9 +223,19 @@ export default function CreatePostPage() {
       <div className="flex justify-between items-center">
         <div>
           <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Create New Post</h1>
-          {autosaveIndicator === 'saved' && (
-            <p className="text-xs text-emerald-500 mt-0.5 flex items-center gap-1">
-              <Save className="w-3 h-3" /> Autosaved
+          {autosaveStatus !== 'idle' && (
+            <p className={`text-xs mt-0.5 flex items-center gap-1 ${
+              autosaveStatus === 'saved'
+                ? 'text-emerald-500'
+                : autosaveStatus === 'error'
+                  ? 'text-red-500'
+                  : 'text-amber-500'
+            }`}>
+              {autosaveStatus === 'saving' && <Loader2 className="w-3 h-3 animate-spin" />}
+              {autosaveStatus === 'saved' && <Save className="w-3 h-3" />}
+              {autosaveStatus === 'dirty' && <Clock className="w-3 h-3" />}
+              {autosaveStatus === 'error' && <AlertCircle className="w-3 h-3" />}
+              {autosaveLabel}
             </p>
           )}
         </div>
@@ -433,9 +449,30 @@ export default function CreatePostPage() {
                 </div>
 
                 {/* File name hint */}
-                <p className="text-xs text-slate-400 truncate" title={coverImageUrl}>
-                  {coverImageUrl.split('/').pop()}
-                </p>
+                <div className="flex items-center justify-between gap-3">
+                  <p className="text-xs text-slate-400 truncate" title={coverImageUrl}>
+                    {coverImageUrl.split('/').pop()}
+                  </p>
+                  <div className="flex items-center gap-2 shrink-0">
+                    <button
+                      type="button"
+                      onClick={() => coverImageInputRef.current?.click()}
+                      disabled={uploadingImage}
+                      className="inline-flex items-center gap-1 rounded-lg border border-slate-200 px-2.5 py-1 text-xs font-medium text-slate-600 transition-colors hover:bg-slate-100 disabled:opacity-50 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-700"
+                    >
+                      {uploadingImage ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3" />}
+                      Change image
+                    </button>
+                    <input
+                      ref={coverImageInputRef}
+                      type="file"
+                      className="hidden"
+                      accept="image/*"
+                      onChange={handleImageUpload}
+                      disabled={uploadingImage}
+                    />
+                  </div>
+                </div>
               </div>
             ) : (
               <label

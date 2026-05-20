@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
 
 // ──────────────────────────────────────────
 // Slug generator (mirror backend logic)
@@ -47,15 +47,22 @@ interface AutosaveData {
   savedAt: number;
 }
 
+export type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
+
 export function useAutosave(
   key: string,
   data: Omit<AutosaveData, 'savedAt'>,
   enabled: boolean,
   onRestore: (data: Omit<AutosaveData, 'savedAt'>) => void,
-  onSaved?: () => void,
 ) {
   const onRestoreRef = useRef(onRestore);
   onRestoreRef.current = onRestore;
+  const [status, setStatus] = useState<AutosaveStatus>('idle');
+  const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
+  const initialRenderRef = useRef(true);
+  const lastSavedSnapshotRef = useRef('');
+  const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const snapshot = useMemo(() => JSON.stringify(data), [data]);
 
   // On mount: check for saved draft and prompt restore
   useEffect(() => {
@@ -67,6 +74,16 @@ export function useAutosave(
       // Only restore if saved within last 24 hours and has content
       const age = Date.now() - saved.savedAt;
       if (age < 86_400_000 && (saved.title || saved.content)) {
+        lastSavedSnapshotRef.current = JSON.stringify({
+          title: saved.title,
+          excerpt: saved.excerpt,
+          content: saved.content,
+          metaTitle: saved.metaTitle,
+          metaDescription: saved.metaDescription,
+          slug: saved.slug,
+        });
+        setLastSavedAt(saved.savedAt);
+        setStatus('saved');
         const mins = Math.round(age / 60000);
         const label = mins < 1 ? 'just now' : mins === 1 ? '1 minute ago' : `${mins} minutes ago`;
         if (confirm(`📝 Found an autosaved draft from ${label}. Restore it?`)) {
@@ -78,24 +95,58 @@ export function useAutosave(
    
   }, [key, enabled]);
 
-  // Autosave every 30 seconds
+  // Autosave after changes settle
   useEffect(() => {
     if (!enabled) return;
-    const interval = setInterval(() => {
-      if (!data.title && !data.content) return; // don't save empty
+    if (initialRenderRef.current) {
+      initialRenderRef.current = false;
+      return;
+    }
+    if (!data.title && !data.content) {
+      setStatus('idle');
+      return;
+    }
+    if (snapshot === lastSavedSnapshotRef.current) {
+      if (status === 'saving' || status === 'dirty') {
+        setStatus('saved');
+      }
+      return;
+    }
+
+    setStatus('dirty');
+
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+    }
+
+    saveTimeoutRef.current = setTimeout(() => {
       try {
-        localStorage.setItem(key, JSON.stringify({ ...data, savedAt: Date.now() }));
-        onSaved?.();
-      } catch {/* storage quota */}
-    }, 30_000);
-    return () => clearInterval(interval);
-  }, [key, data, enabled, onSaved]);
+        setStatus('saving');
+        const savedAt = Date.now();
+        localStorage.setItem(key, JSON.stringify({ ...data, savedAt }));
+        lastSavedSnapshotRef.current = snapshot;
+        setLastSavedAt(savedAt);
+        setStatus('saved');
+      } catch {
+        setStatus('error');
+      }
+    }, 1200);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
+  }, [key, data, enabled, snapshot, status]);
 
   const clearSave = useCallback(() => {
     try { localStorage.removeItem(key); } catch {/* */}
+    lastSavedSnapshotRef.current = '';
+    setLastSavedAt(null);
+    setStatus('idle');
   }, [key]);
 
-  return { clearSave };
+  return { clearSave, status, lastSavedAt };
 }
 
 export function getLocalDateTimeMin(): string {

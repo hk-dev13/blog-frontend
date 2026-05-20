@@ -52,6 +52,23 @@ export interface Post {
   rank?: number; // From search
 }
 
+export interface InternalLinkSuggestion {
+  id: string;
+  title: string;
+  slug: string;
+  path: string;
+  excerpt?: string | null;
+  published_at?: string | null;
+  views: number;
+  score?: number;
+  match_reason?: 'exact_title' | 'title_prefix' | 'slug_prefix' | 'full_text' | 'recommended_latest' | 'recommended_popular';
+}
+
+export interface InternalLinkSuggestionsResponse {
+  recommended: InternalLinkSuggestion[];
+  results: InternalLinkSuggestion[];
+}
+
 export interface Comment {
   id: string;
   post_id: string;
