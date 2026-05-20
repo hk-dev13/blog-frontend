@@ -2,7 +2,7 @@
 
 import Link from '@tiptap/extension-link';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { Editor, Extension, Mark, mergeAttributes } from '@tiptap/core';
+import { Editor, Extension, Mark, mergeAttributes, type MarkdownToken } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
@@ -80,7 +80,7 @@ const MarkdownTable = Table.extend({
   addStorage() {
     return {
       markdown: {
-        serialize(state, node) {
+        serialize(state: any, node: any) {
           const rows: { text: string; isHeader: boolean; align: unknown }[][] = [];
 
           node.forEach((row: any) => {
@@ -177,7 +177,11 @@ const MarkdownUnderline = Mark.create({
     start(src: string) {
       return src.indexOf('++');
     },
-    tokenize(src: string, _tokens: unknown, lexer: { inlineTokens: (content: string) => unknown[] }) {
+    tokenize(
+      src: string,
+      _tokens: MarkdownToken[],
+      lexer: { inlineTokens: (content: string) => MarkdownToken[] }
+    ) {
       const rule = /^(\+\+)([\s\S]+?)(\+\+)/;
       const match = rule.exec(src);
 

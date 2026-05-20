@@ -113,6 +113,21 @@ export default function CreatePostPage() {
     }
   };
 
+  const handlePreview = async () => {
+    if (!title || !content) { alert('Title and content are required'); return; }
+    setIsSaving(true);
+    try {
+      const created = await fetchApi<{ id: string }>('/posts', { method: 'POST', body: JSON.stringify(buildPayload()) });
+      clearSave();
+      window.open(`/preview/posts/${created.id}`, '_blank', 'noopener,noreferrer');
+      router.replace(`/admin/posts/${created.id}/edit`);
+    } catch (err: any) {
+      alert(err.message || 'Failed to open preview');
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
   // Publish Now
   const handlePublishNow = async () => {
     if (!title || !content) { alert('Title and content are required'); return; }
@@ -240,6 +255,14 @@ export default function CreatePostPage() {
           )}
         </div>
         <div className="flex items-center gap-3">
+          <button
+            onClick={handlePreview}
+            disabled={isSaving}
+            className="flex items-center gap-2 px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 bg-white dark:bg-slate-800 border border-slate-300 dark:border-slate-600 rounded-lg hover:bg-slate-50 dark:hover:bg-slate-700 transition-colors disabled:opacity-50"
+          >
+            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
+            Preview
+          </button>
           {/* Save as Draft */}
           <button
             onClick={handleSaveDraft}
