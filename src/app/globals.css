@@ -38,8 +38,8 @@ body {
 .brand-logo-mark {
   display: inline-block;
   background-color: currentColor;
-  -webkit-mask-image: url('/brand/logo_envoyou.svg');
-  mask-image: url('/brand/logo_envoyou.svg');
+  -webkit-mask-image: url('/brand/LogoBaru.svg');
+  mask-image: url('/brand/LogoBaru.svg');
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
   -webkit-mask-position: center;

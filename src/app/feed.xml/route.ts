@@ -53,15 +53,15 @@ export async function GET() {
   xmlns:dc="http://purl.org/dc/elements/1.1/"
 >
   <channel>
-<title>Envoyou — Wawasan Teknologi, AI, dan Bisnis Modern</title>
+    <title>Envoyou Blog — Wawasan Teknologi, AI, dan Bisnis Modern</title>
     <link>${SITE_URL}</link>
     <description>Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.</description>
     <language>id</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${FEED_URL}" rel="self" type="application/rss+xml" />
     <image>
-      <url>${SITE_URL}/brand/logo_envoyou.svg</url>
-      <title>Envoyou</title>
+      <url>${SITE_URL}/brand/LogoBaru.svg</url>
+      <title>Envoyou Blog</title>
       <link>${SITE_URL}</link>
     </image>
 ${items}

@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: 'Categories',
   description: 'Jelajahi semua kategori artikel di Envoyou — dari AI & Teknologi, Bisnis, Investasi, hingga Web3.',
   openGraph: {
-    title: 'Categories | Envoyou',
+    title: 'Categories | Envoyou Blog',
     description: 'Jelajahi semua kategori artikel di Envoyou.',
     url: `${SITE_URL}/categories`,
   },

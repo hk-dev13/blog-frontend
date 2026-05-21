@@ -37,7 +37,7 @@ export default function Footer() {
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2.5 w-fit group">
               <LogoMark className="h-8 w-8 text-primary-600 dark:text-primary-400 transition-transform group-hover:scale-110" />
-              <span className="text-lg font-bold font-serif text-primary-600 dark:text-primary-400">
+              <span className="text-2xl leading-none font-bold font-serif text-primary-600 dark:text-primary-400">
                 Envoyou
               </span>
             </Link>
