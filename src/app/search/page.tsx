@@ -94,8 +94,8 @@ function SearchContent() {
           </div>
           <input
             type="text"
-            className="w-full pl-20 pr-8 py-6 text-xl md:text-2xl rounded-full bg-white dark:bg-slate-900 border-2 border-slate-200 dark:border-slate-700 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none shadow-lg dark:shadow-none transition-all"
-            placeholder="What are you looking for?"
+            className="w-full pl-20 pr-8 py-6 text-xl md:text-2xl rounded-full bg-white dark:bg-slate-950/80 border-2 border-slate-200 dark:border-slate-700/80 focus:border-primary-500 focus:ring-4 focus:ring-primary-500/20 outline-none shadow-lg dark:shadow-[0_0_30px_rgba(0,0,0,0.35)] transition-all"
+            placeholder="Search insights, AI, business, and technology..."
             value={inputValue}
             onChange={(e) => setInputValue(e.target.value)}
             autoFocus
@@ -112,7 +112,7 @@ function SearchContent() {
       <div className="min-h-[400px]">
         {!debouncedQuery || debouncedQuery.length <= 2 ? (
           <div className="text-center text-slate-500 dark:text-slate-400 mt-20">
-            <p className="text-xl">Type at least 3 characters to search</p>
+            <p className="text-xl">Discover articles, insights, and future perspectives.</p>
           </div>
         ) : isLoading ? (
           <div className="mt-8">

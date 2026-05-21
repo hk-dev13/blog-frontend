@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import { fetchApi } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
+import LogoMark from '@/components/shared/LogoMark';
 
 export default function AdminLoginPage() {
   const [email, setEmail] = useState('');
@@ -41,17 +42,26 @@ export default function AdminLoginPage() {
     }
   };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
-      <div className="max-w-md w-full space-y-8 bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700">
-        <div>
-          <h2 className="mt-2 text-center text-3xl font-serif font-extrabold text-slate-900 dark:text-white">
-            Envoyou Admin
-          </h2>
-          <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
-            Sign in to manage your content
-          </p>
+return (
+  <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="max-w-md w-full space-y-8 bg-white dark:bg-slate-800 p-8 rounded-2xl shadow-xl border border-slate-100 dark:border-slate-700">
+
+      <div className="flex flex-col items-center">
+        {/* Logo */}
+        <div className="mb-4">
+          <LogoMark className="w-12 h-12 text-primary-600 dark:text-primary-400" />
         </div>
+
+        {/* Title */}
+        <h2 className="mt-2 text-center text-3xl font-serif font-extrabold text-slate-900 dark:text-white">
+          Envoyou Admin
+        </h2>
+
+        {/* Subtitle */}
+        <p className="mt-2 text-center text-sm text-slate-600 dark:text-slate-400">
+          Sign in to manage your content
+        </p>
+      </div>
         
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (

@@ -60,7 +60,7 @@ export async function GET() {
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${FEED_URL}" rel="self" type="application/rss+xml" />
     <image>
-      <url>${SITE_URL}/brand/logo_envoyou.svg</url>
+      <url>${SITE_URL}/brand/LogoBaru.svg</url>
       <title>Envoyou Blog</title>
       <link>${SITE_URL}</link>
     </image>
