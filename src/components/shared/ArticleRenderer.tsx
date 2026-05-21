@@ -39,9 +39,17 @@ export default function ArticleRenderer({
       <article>
         <header className="container mx-auto px-4 py-12 md:py-20 max-w-4xl text-center">
           {post.categories && post.categories.length > 0 && (
-            <span className="inline-block px-3 py-1 mb-6 text-sm font-semibold uppercase tracking-wider text-primary-600 dark:text-primary-400 bg-primary-50 dark:bg-primary-900/30 rounded-full">
-              {post.categories[0].name}
-            </span>
+            <div className="flex flex-wrap items-center justify-center gap-2 mb-6">
+              {post.categories.map((cat) => (
+                <Link
+                  key={cat.slug}
+                  href={`/categories/${cat.slug}`}
+                  className="inline-block px-3 py-1 text-sm font-semibold uppercase tracking-wider text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 rounded-full transition-colors"
+                >
+                  {cat.name}
+                </Link>
+              ))}
+            </div>
           )}
 
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 dark:text-white leading-tight mb-8">

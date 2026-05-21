@@ -10,7 +10,7 @@ const ADSENSE_CLIENT = 'ca-pub-3002282783853213';
 const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
-  name: 'Envoyou',
+  name: 'Envoyou Blog',
   url: SITE_URL,
   potentialAction: {
     '@type': 'SearchAction',
@@ -39,8 +39,8 @@ const lora = Lora({
 
 export const metadata: Metadata = {
   title: {
-    default: "Envoyou - Wawasan Teknologi, AI, dan Bisnis Modern",
-    template: "%s | Envoyou",
+    default: "Envoyou Blog - Wawasan Teknologi, AI, dan Bisnis Modern",
+    template: "%s | Envoyou Blog",
   },
   description: "Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.",
   alternates: {

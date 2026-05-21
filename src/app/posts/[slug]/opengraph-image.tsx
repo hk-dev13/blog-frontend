@@ -30,7 +30,7 @@ export default async function Image({ params }: Props) {
   }
 
   let post: PostData = {
-    title: 'Envoyou',
+    title: 'Envoyou Blog',
     excerpt: 'Teknologi, Keuangan & Dunia Digital',
     author: { name: 'Husni Kusuma', avatar_url: '' },
     categories: [{ name: 'Blog', slug: 'blog' }],
@@ -175,7 +175,7 @@ export default async function Image({ params }: Props) {
               <div style={{ color: 'white', fontSize: '20px', fontWeight: 700, display: 'flex' }}>E</div>
             </div>
             <span style={{ color: '#94b8d4', fontSize: '20px', fontWeight: 600, letterSpacing: '0.04em', display: 'flex' }}>
-              Envoyou
+              Envoyou Blog
             </span>
 
             {/* Category pill — top right */}

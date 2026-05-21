@@ -11,7 +11,7 @@ export const metadata: Metadata = {
   description:
     'Husni Kusuma — builder, developer, dan eksplorator teknologi. Pelajari kisah di balik Envoyou dan bagaimana platform ini lahir.',
   openGraph: {
-    title: 'Tentang Saya | Envoyou',
+    title: 'Tentang Saya | Envoyou Blog',
     description:
       'Husni Kusuma — builder, developer, dan eksplorator teknologi.',
     images: ['https://cdn.envoyou.com/admin/husniKusuma.jpeg'],
