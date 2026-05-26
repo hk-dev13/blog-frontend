@@ -43,7 +43,7 @@ export default function PostCard({ post, featured = false, priority = false, act
             src={imageUrl} 
             alt={post.cover_image_alt || post.title}
             fill
-            sizes={featured ? "(max-width: 768px) 100vw, 80vw" : "(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"}
+            sizes={featured ? "(max-width: 768px) calc(100vw - 2rem), (max-width: 1280px) 50vw, 42vw" : "(max-width: 768px) calc(100vw - 2rem), (max-width: 1200px) calc(50vw - 2.5rem), 380px"}
             priority={priority}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
@@ -54,7 +54,7 @@ export default function PostCard({ post, featured = false, priority = false, act
               <Link
                 key={category.slug}
                 href={`/categories/${category.slug}`}
-                className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-primary-500 text-white rounded-full shadow-sm hover:bg-primary-600 transition-colors"
+                className="px-3 py-1 text-xs font-semibold uppercase tracking-wider bg-primary-700 text-white rounded-full shadow-sm hover:bg-primary-800 transition-colors"
               >
                 {category.name}
               </Link>

@@ -78,10 +78,9 @@ export default function RootLayout({
         {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
         <AdSenseLoader client={ADSENSE_CLIENT} />
 
-        {/* 2. Ubah format Clarity menggunakan dangerouslySetInnerHTML */}
         <Script
           id="microsoft-clarity"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               (function(c,l,a,r,i,t,y){
@@ -93,7 +92,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* 3. Gunakan tag <script> biasa (huruf kecil) untuk Schema SEO */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}

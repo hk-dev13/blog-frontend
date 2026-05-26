@@ -41,14 +41,14 @@ export default function Footer() {
                 Envoyou
               </span>
             </Link>
-            <p className="text-sm text-slate-500 dark:text-slate-400 leading-relaxed max-w-[220px]">
+            <p className="text-sm text-slate-500 dark:text-slate-300 leading-relaxed max-w-[220px]">
               Wawasan Teknologi, AI, dan Bisnis Modern.
             </p>
           </div>
 
           {/* Col 2 — Navigation */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-4">
               Navigation
             </h3>
             <ul className="space-y-2.5">
@@ -56,7 +56,7 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                   >
                     {label}
                   </Link>
@@ -67,14 +67,14 @@ export default function Footer() {
 
           {/* Col 3 — Contact & RSS */}
           <div>
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-400 dark:text-slate-500 mb-4">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-4">
               Let's Connect
             </h3>
             <ul className="space-y-3">
               <li>
                 <a
                   href="mailto:husnikusuma@envoyou.com"
-                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Mail className="w-4 h-4 shrink-0" />
                   Email
@@ -85,7 +85,7 @@ export default function Footer() {
                   href="/feed.xml"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Rss className="w-4 h-4 shrink-0" />
                   RSS Feed
@@ -96,7 +96,7 @@ export default function Footer() {
                   href="https://github.com/hk-dev13"
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-400 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <GithubIcon />
                   Github
@@ -110,11 +110,11 @@ export default function Footer() {
 
       {/* ── Bottom bar ─────────────────────────────────── */}
       <div className="border-t border-slate-100 dark:border-slate-800 py-5">
-        <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-400 dark:text-slate-600">
+        <div className="container mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs text-slate-500 dark:text-slate-400">
           <span>© {currentYear} Envoyou. All rights reserved.</span>
           <span>
             Made with ❤️ by{' '}
-            <Link href="/about" className="hover:text-primary-500 transition-colors">
+            <Link href="/about" className="text-slate-600 dark:text-slate-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
               Husni Kusuma
             </Link>
           </span>

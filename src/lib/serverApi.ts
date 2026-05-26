@@ -21,6 +21,7 @@ export async function serverFetch<T>(
   const { revalidate = 300 } = opts;
 
   const res = await fetch(`${API_URL}${endpoint}`, {
+    cache: revalidate > 0 ? 'force-cache' : 'no-store',
     next: { revalidate },
   });
 
@@ -42,6 +43,7 @@ export async function serverFetchPaginated<T>(
   const { revalidate = 300 } = opts;
 
   const res = await fetch(`${API_URL}${endpoint}`, {
+    cache: revalidate > 0 ? 'force-cache' : 'no-store',
     next: { revalidate },
   });
 
