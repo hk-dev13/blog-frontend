@@ -6,7 +6,9 @@ import { Post } from '@/types';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Edit, Trash2, Eye, Globe, Lock, Loader2, CalendarClock, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 const LIMIT = 10;
 
@@ -43,7 +45,7 @@ export default function AdminPostsPage() {
     return params.toString();
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-posts', page, debouncedSearch, statusFilter],
     queryFn: () => fetchPaginatedApi<Post>(`/posts/admin/list?${buildQuery()}`),
   });
@@ -80,6 +82,14 @@ export default function AdminPostsPage() {
   const posts = data?.data || [];
   const meta = data?.meta;
   const totalPages = meta?.totalPages || 1;
+
+  if (error instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(error.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (error instanceof Error) {
+    return <AdminLoadError onRetry={() => void refetch()} />;
+  }
 
   const allSelected = posts.length > 0 && posts.every(p => selectedIds.has(p.id));
   const someSelected = selectedIds.size > 0;

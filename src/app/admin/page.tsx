@@ -7,9 +7,11 @@ import Link from 'next/link';
 import { format } from 'date-fns';
 import { FileText, Eye, TrendingUp, PenLine, Loader2, Calendar, Clock } from 'lucide-react';
 import ViewsChart from '@/components/admin/ViewsChart';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 export default function AdminDashboardPage() {
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-dashboard-posts'],
     queryFn: () => fetchPaginatedApi<Post>('/posts/admin/list?limit=100'),
   });
@@ -20,6 +22,14 @@ export default function AdminDashboardPage() {
         <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
       </div>
     );
+  }
+
+  if (error instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(error.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (error instanceof Error) {
+    return <AdminLoadError onRetry={() => void refetch()} />;
   }
 
   const posts = data?.data || [];

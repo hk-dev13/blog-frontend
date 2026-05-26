@@ -8,6 +8,8 @@ import { generateSlug } from '@/lib/editorUtils';
 import { useAppStore } from '@/store/useAppStore';
 import { User } from '@/types';
 import { BookOpen, Image as ImageIcon, Loader2, Lock, RotateCcw, Save, Upload, Unlock, UserRound } from 'lucide-react';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 import { API_URL } from '@/lib/env';
 
@@ -81,7 +83,7 @@ function SocialIcon({
 }
 
 export default function AdminAuthorPage() {
-  const { data: author, isLoading, error } = useQuery({
+  const { data: author, isLoading, error, refetch } = useQuery({
     queryKey: ['current-user'],
     queryFn: () => fetchApi<User>('/users/me'),
   });
@@ -94,11 +96,21 @@ export default function AdminAuthorPage() {
     );
   }
 
-  if (error || !author) {
+  if (error instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(error.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (error instanceof Error) {
+    return <AdminLoadError title="We couldn't load your author profile right now." onRetry={() => void refetch()} />;
+  }
+
+  if (!author) {
     return (
-      <div className="rounded-xl border border-red-200 bg-red-50 p-6 text-sm text-red-700 dark:border-red-900/40 dark:bg-red-900/20 dark:text-red-300">
-        Failed to load author profile.
-      </div>
+      <AdminLoadError
+        title="We couldn't load your author profile right now."
+        description="Please try again in a moment."
+        onRetry={() => void refetch()}
+      />
     );
   }
 

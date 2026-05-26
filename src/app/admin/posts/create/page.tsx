@@ -11,6 +11,8 @@ import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from 
 import { API_URL } from '@/lib/env';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
@@ -72,12 +74,12 @@ export default function CreatePostPage() {
           : '';
 
   // Fetch categories and tags
-  const { data: categoriesData } = useQuery({
+  const { data: categoriesData, error: categoriesError, refetch: refetchCategories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => fetchPaginatedApi<Category>('/categories?limit=50'),
   });
 
-  const { data: tagsData } = useQuery({
+  const { data: tagsData, error: tagsError, refetch: refetchTags } = useQuery({
     queryKey: ['tags'],
     queryFn: () => fetchPaginatedApi<Tag>('/tags?limit=50'),
   });
@@ -232,6 +234,24 @@ export default function CreatePostPage() {
 
   const categories = categoriesData?.data || [];
   const tags = tagsData?.data || [];
+  const setupError = categoriesError ?? tagsError;
+
+  if (setupError instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(setupError.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (setupError instanceof Error) {
+    return (
+      <AdminLoadError
+        title="We couldn't load the editor setup right now."
+        description="Categories or tags could not be loaded. Please try again."
+        onRetry={() => {
+          void refetchCategories();
+          void refetchTags();
+        }}
+      />
+    );
+  }
 
   return (
     <div className="max-w-6xl mx-auto space-y-6">

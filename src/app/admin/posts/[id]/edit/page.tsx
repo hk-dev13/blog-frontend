@@ -11,6 +11,8 @@ import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from 
 import { API_URL } from '@/lib/env';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 const revisionDateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -80,7 +82,7 @@ export default function EditPostPage() {
           : '';
 
   // Fetch post data
-  const { data: postData, isLoading: isPostLoading } = useQuery({
+  const { data: postData, isLoading: isPostLoading, error: postError, refetch: refetchPost } = useQuery({
     queryKey: ['admin-post', postId],
     queryFn: () => fetchApi<Post>(`/posts/admin/${postId}`),
     enabled: !!postId,
@@ -120,7 +122,7 @@ export default function EditPostPage() {
   }, [post]);
 
   // Fetch revisions on demand
-  const { data: revisionsData, isFetching: isRevisionsFetching } = useQuery({
+  const { data: revisionsData, isFetching: isRevisionsFetching, error: revisionsError } = useQuery({
     queryKey: ['post-revisions', postId],
     queryFn: () => fetchApi<PostRevision[]>(`/posts/${postId}/revisions`),
     enabled: showRevisions && !!postId,
@@ -131,12 +133,12 @@ export default function EditPostPage() {
 
 
   // Fetch categories and tags
-  const { data: categoriesData } = useQuery({
+  const { data: categoriesData, error: categoriesError, refetch: refetchCategories } = useQuery({
     queryKey: ['categories'],
     queryFn: () => fetchPaginatedApi<Category>('/categories?limit=50'),
   });
 
-  const { data: tagsData } = useQuery({
+  const { data: tagsData, error: tagsError, refetch: refetchTags } = useQuery({
     queryKey: ['tags'],
     queryFn: () => fetchPaginatedApi<Tag>('/tags?limit=50'),
   });
@@ -302,12 +304,31 @@ export default function EditPostPage() {
 
   const categories = categoriesData?.data || [];
   const tags = tagsData?.data || [];
+  const pageError = postError ?? categoriesError ?? tagsError ?? revisionsError;
 
   if (isPostLoading) {
     return (
       <div className="flex items-center justify-center h-[60vh]">
         <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
       </div>
+    );
+  }
+
+  if (pageError instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(pageError.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (pageError instanceof Error) {
+    return (
+      <AdminLoadError
+        title="We couldn't load this post right now."
+        description="Please try again in a moment."
+        onRetry={() => {
+          void refetchPost();
+          void refetchCategories();
+          void refetchTags();
+        }}
+      />
     );
   }
 
