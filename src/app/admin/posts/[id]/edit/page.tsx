@@ -4,7 +4,7 @@ import { useState, useRef, useEffect } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
-import { Category, Tag, Post } from '@/types';
+import { Category, Tag, Post, PostRevision } from '@/types';
 import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, History, RotateCcw, AlertCircle } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from '@/lib/editorUtils';
@@ -122,7 +122,7 @@ export default function EditPostPage() {
   // Fetch revisions on demand
   const { data: revisionsData, isFetching: isRevisionsFetching } = useQuery({
     queryKey: ['post-revisions', postId],
-    queryFn: () => fetchApi<any[]>(`/posts/${postId}/revisions`),
+    queryFn: () => fetchApi<PostRevision[]>(`/posts/${postId}/revisions`),
     enabled: showRevisions && !!postId,
     staleTime: 30_000,
   });
@@ -326,7 +326,19 @@ export default function EditPostPage() {
     <div className="max-w-6xl mx-auto space-y-6">
       <div className="flex justify-between items-center">
         <div>
-          <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Edit Post</h1>
+          <div className="flex items-center gap-2">
+            <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Edit Post</h1>
+            {post.source === 'eai' && (
+              <span className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                Source: EAI
+              </span>
+            )}
+          </div>
+          {post.source_ref && (
+            <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">
+              Source Ref: <span className="font-mono">{post.source_ref}</span>
+            </p>
+          )}
           {autosaveStatus !== 'idle' && (
             <p className={`text-xs mt-0.5 flex items-center gap-1 ${
               autosaveStatus === 'saved'
@@ -752,7 +764,7 @@ export default function EditPostPage() {
                   <p className="text-xs text-slate-400 p-4 text-center">No revisions yet</p>
                 ) : (
                   <div className="max-h-72 overflow-y-auto divide-y divide-slate-100 dark:divide-slate-700">
-                    {revisions.map((rev: any) => (
+                    {revisions.map((rev) => (
                       <div key={rev.id} className="p-3 flex items-start gap-3 hover:bg-slate-50 dark:hover:bg-slate-900/50 transition-colors">
                         <div className="flex-1 min-w-0">
                           <p className="text-xs font-medium text-slate-700 dark:text-slate-300 truncate">
@@ -761,6 +773,12 @@ export default function EditPostPage() {
                           <p className="text-xs text-slate-400 mt-0.5">
                             {revisionDateFormatter.format(new Date(rev.created_at))}
                           </p>
+                          <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
+                            <span className="rounded-full bg-slate-100 px-2 py-0.5 uppercase tracking-wide dark:bg-slate-700/60">
+                              {rev.source || 'manual_edit'}
+                            </span>
+                            {rev.source_ref && <span className="font-mono">{rev.source_ref}</span>}
+                          </div>
                         </div>
                         <button
                           type="button"
