@@ -31,26 +31,35 @@ export default function AdSenseLoader({
     };
 
     const loadWhenIdle = () => {
-      if ('requestIdleCallback' in window) {
-        const idleId = window.requestIdleCallback(() => {
+      const requestIdleCallback =
+        typeof globalThis.requestIdleCallback === 'function'
+          ? globalThis.requestIdleCallback.bind(globalThis)
+          : null;
+      const cancelIdleCallback =
+        typeof globalThis.cancelIdleCallback === 'function'
+          ? globalThis.cancelIdleCallback.bind(globalThis)
+          : null;
+
+      if (requestIdleCallback && cancelIdleCallback) {
+        const idleId = requestIdleCallback(() => {
           injectScript();
         });
 
-        return () => window.cancelIdleCallback(idleId);
+        return () => cancelIdleCallback(idleId);
       }
 
-      const timeoutId = window.setTimeout(injectScript, minDelayMs);
-      return () => window.clearTimeout(timeoutId);
+      const timeoutId = globalThis.setTimeout(injectScript, minDelayMs);
+      return () => globalThis.clearTimeout(timeoutId);
     };
 
     let cleanup = () => {};
 
     const scheduleLoad = () => {
-      const timeoutId = window.setTimeout(() => {
+      const timeoutId = globalThis.setTimeout(() => {
         cleanup = loadWhenIdle();
       }, minDelayMs);
 
-      cleanup = () => window.clearTimeout(timeoutId);
+      cleanup = () => globalThis.clearTimeout(timeoutId);
     };
 
     if (document.readyState === 'complete') {
