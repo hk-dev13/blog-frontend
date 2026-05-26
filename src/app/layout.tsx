@@ -5,7 +5,7 @@ import Script from "next/script";
 import { SITE_URL } from "@/lib/env";
 import "./globals.css";
 
-const ADSENSE_CLIENT = 'ca-pub-3002282783853213';
+const ADSENSE_CLIENT = 'ca-pub-7820531537340985';
 
 const websiteSchema = {
   '@context': 'https://schema.org',
