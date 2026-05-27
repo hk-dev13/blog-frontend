@@ -7,6 +7,8 @@ import { Comment } from '@/types';
 import { format } from 'date-fns';
 import { Loader2, CheckCircle, XCircle, Search, MessageSquare, ExternalLink } from 'lucide-react';
 import Link from 'next/link';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 interface AdminComment extends Comment {
   post_title: string;
@@ -19,7 +21,7 @@ export default function AdminCommentsPage() {
   const [statusFilter, setStatusFilter] = useState<string>('');
   const limit = 10;
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-comments', page, statusFilter],
     queryFn: () => {
       let url = `/comments/admin/list?page=${page}&limit=${limit}`;
@@ -45,6 +47,14 @@ export default function AdminCommentsPage() {
 
   const comments = data?.data || [];
   const meta = data?.meta;
+
+  if (error instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(error.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (error instanceof Error) {
+    return <AdminLoadError onRetry={() => void refetch()} />;
+  }
 
   return (
     <div className="max-w-7xl mx-auto space-y-6">

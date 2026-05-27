@@ -169,7 +169,7 @@ export default function HomeContent({
               ) : (
                 <>
                   Load More Articles
-                  <span className="text-slate-400 dark:text-slate-500 text-sm">
+                  <span className="text-slate-500 dark:text-slate-300 text-sm">
                     ({meta.total - posts.length} remaining)
                   </span>
                 </>

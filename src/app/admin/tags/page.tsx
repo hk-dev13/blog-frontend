@@ -19,6 +19,8 @@ import {
 import { useAppStore } from '@/store/useAppStore';
 import { useRouter } from 'next/navigation';
 import { generateSlug } from '@/lib/editorUtils';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 export default function TagManagerPage() {
   const { user } = useAppStore();
@@ -36,7 +38,7 @@ export default function TagManagerPage() {
   const [targetTagId, setTargetTagId] = useState('');
 
   // Fetch tags
-  const { data: tagsData, isLoading } = useQuery({
+  const { data: tagsData, isLoading, error, refetch } = useQuery({
     queryKey: ['tags'],
     queryFn: () => fetchPaginatedApi<Tag>('/tags?limit=200'),
   });
@@ -135,6 +137,14 @@ export default function TagManagerPage() {
     setTargetTagId('');
     setIsMergeModalOpen(true);
   };
+
+  if (error instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(error.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (error instanceof Error) {
+    return <AdminLoadError onRetry={() => void refetch()} />;
+  }
 
   // Access control
   if (user && user.role !== 'admin') {

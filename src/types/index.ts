@@ -39,10 +39,14 @@ export interface Post {
   cover_image_alt?: string;
   meta_title?: string;
   meta_description?: string;
+  canonical_url?: string;
   status: 'draft' | 'published' | 'scheduled';
   is_featured: boolean;
   reading_time?: number;
   views: number;
+  source?: string | null;
+  source_ref?: string | null;
+  source_metadata?: Record<string, unknown> | null;
   published_at?: string;
   created_at: string;
   updated_at: string;
@@ -77,4 +81,18 @@ export interface Comment {
   content: string;
   status: 'pending' | 'approved' | 'rejected';
   created_at: string;
+}
+
+export interface PostRevision {
+  id: string;
+  post_id: string;
+  title: string;
+  content: string;
+  excerpt?: string | null;
+  revision_number: number;
+  created_by?: string | null;
+  source?: string;
+  source_ref?: string | null;
+  created_at: string;
+  editor?: { id?: string; name?: string } | null;
 }

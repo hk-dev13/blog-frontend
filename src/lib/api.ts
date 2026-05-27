@@ -43,9 +43,8 @@ export async function fetchApi<T>(
     headers,
   };
 
-  // Add ISR revalidation (60s) for GET requests by default, unless explicitly overridden
   if (!options?.method || options.method === 'GET') {
-    (defaultOptions as any).next = { revalidate: 60, ...(options as any)?.next };
+    defaultOptions.cache = 'no-store';
   }
 
   const res = await fetch(`${API_URL}${endpoint}`, defaultOptions);
@@ -71,7 +70,7 @@ export async function fetchPaginatedApi<T>(
   };
 
   if (!options?.method || options.method === 'GET') {
-    (defaultOptions as any).next = { revalidate: 60, ...(options as any)?.next };
+    defaultOptions.cache = 'no-store';
   }
 
   const res = await fetch(`${API_URL}${endpoint}`, defaultOptions);

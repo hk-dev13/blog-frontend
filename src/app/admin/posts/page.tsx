@@ -6,7 +6,9 @@ import { Post } from '@/types';
 import Link from 'next/link';
 import { format } from 'date-fns';
 import { Edit, Trash2, Eye, Globe, Lock, Loader2, CalendarClock, Search, ChevronLeft, ChevronRight } from 'lucide-react';
-import { useState, useMemo } from 'react';
+import { useState } from 'react';
+import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
+import AdminLoadError from '@/components/admin/AdminLoadError';
 
 const LIMIT = 10;
 
@@ -43,7 +45,7 @@ export default function AdminPostsPage() {
     return params.toString();
   };
 
-  const { data, isLoading } = useQuery({
+  const { data, isLoading, error, refetch } = useQuery({
     queryKey: ['admin-posts', page, debouncedSearch, statusFilter],
     queryFn: () => fetchPaginatedApi<Post>(`/posts/admin/list?${buildQuery()}`),
   });
@@ -80,6 +82,14 @@ export default function AdminPostsPage() {
   const posts = data?.data || [];
   const meta = data?.meta;
   const totalPages = meta?.totalPages || 1;
+
+  if (error instanceof Error && /401|403|Authentication required|Unauthorized|Forbidden/i.test(error.message)) {
+    return <AdminSessionExpired />;
+  }
+
+  if (error instanceof Error) {
+    return <AdminLoadError onRetry={() => void refetch()} />;
+  }
 
   const allSelected = posts.length > 0 && posts.every(p => selectedIds.has(p.id));
   const someSelected = selectedIds.size > 0;
@@ -207,8 +217,18 @@ export default function AdminPostsPage() {
                           />
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
-                          <div className="text-sm font-medium text-slate-900 dark:text-white max-w-[200px] truncate">{post.title}</div>
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm font-medium text-slate-900 dark:text-white max-w-[200px] truncate">{post.title}</div>
+                            {post.source === 'eai' && (
+                              <span className="inline-flex items-center rounded-full bg-sky-100 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-sky-700 dark:bg-sky-900/30 dark:text-sky-300">
+                                EAI
+                              </span>
+                            )}
+                          </div>
                           <div className="text-xs text-slate-500 dark:text-slate-400">/{post.slug}</div>
+                          {post.source_ref && (
+                            <div className="text-[11px] text-slate-400 dark:text-slate-500">{post.source_ref}</div>
+                          )}
                         </td>
                         <td className="px-4 py-4 whitespace-nowrap">
                           <div className="flex flex-wrap gap-1">

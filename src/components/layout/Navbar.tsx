@@ -60,7 +60,11 @@ export default function Navbar() {
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
           </form>
 
-          <Link href="/search" className="sm:hidden p-2 text-slate-600 dark:text-slate-300">
+          <Link
+            href="/search"
+            aria-label="Search articles"
+            className="sm:hidden p-2 text-slate-600 dark:text-slate-300"
+          >
             <Search className="h-5 w-5" />
           </Link>
 

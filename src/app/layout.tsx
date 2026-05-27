@@ -5,7 +5,7 @@ import Script from "next/script";
 import { SITE_URL } from "@/lib/env";
 import "./globals.css";
 
-const ADSENSE_CLIENT = 'ca-pub-3002282783853213';
+const ADSENSE_CLIENT = 'ca-pub-7820531537340985';
 
 const websiteSchema = {
   '@context': 'https://schema.org',
@@ -78,10 +78,9 @@ export default function RootLayout({
         {process.env.NEXT_PUBLIC_GA_ID && <GoogleAnalytics gaId={process.env.NEXT_PUBLIC_GA_ID} />}
         <AdSenseLoader client={ADSENSE_CLIENT} />
 
-        {/* 2. Ubah format Clarity menggunakan dangerouslySetInnerHTML */}
         <Script
           id="microsoft-clarity"
-          strategy="afterInteractive"
+          strategy="lazyOnload"
           dangerouslySetInnerHTML={{
             __html: `
               (function(c,l,a,r,i,t,y){
@@ -93,7 +92,6 @@ export default function RootLayout({
           }}
         />
 
-        {/* 3. Gunakan tag <script> biasa (huruf kecil) untuk Schema SEO */}
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
