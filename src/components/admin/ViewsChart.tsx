@@ -51,10 +51,12 @@ const CustomTooltip = ({ active, payload, label }: any) => {
 };
 
 export default function ViewsChart() {
+  const [isMounted, setIsMounted] = useState(false);
   const [data, setData] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
+    setIsMounted(true);
     const cutoff = new Date();
     cutoff.setDate(cutoff.getDate() - 14);
     const since = cutoff.toISOString().split('T')[0];
@@ -122,7 +124,7 @@ export default function ViewsChart() {
       .finally(() => setIsLoading(false));
   }, []);
 
-  if (isLoading) {
+  if (!isMounted || isLoading) {
     return (
       <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 p-6">
         <div className="h-64 flex items-center justify-center">
@@ -162,8 +164,8 @@ export default function ViewsChart() {
         </div>
       </div>
 
-      <div className="h-64 w-full">
-        <ResponsiveContainer width="100%" height="100%">
+      <div className="w-full" style={{ width: '100%', height: 256, minHeight: 256 }}>
+        <ResponsiveContainer width="100%" height={256} minWidth={0}>
           <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="currentColor" className="text-slate-200 dark:text-slate-700 opacity-50" />
             <XAxis 
