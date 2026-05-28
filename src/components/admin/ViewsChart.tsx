@@ -17,9 +17,7 @@ interface DailyView {
   unique_visitors: number;
 }
 
-const SUPABASE_URL = process.env.NEXT_PUBLIC_SUPABASE_URL!;
-const SUPABASE_PUBLISHABLE_KEY =
-  process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!;
+import { fetchApi } from '@/lib/api';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 const chartDateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -57,47 +55,26 @@ export default function ViewsChart() {
 
   useEffect(() => {
     setIsMounted(true);
-    const cutoff = new Date();
-    cutoff.setDate(cutoff.getDate() - 14);
-    const since = cutoff.toISOString().split('T')[0];
 
-    fetch(
-      `${SUPABASE_URL}/rest/v1/post_views_daily?view_date=gte.${since}&order=view_date.asc&select=view_date,view_count,unique_visitors`,
-      {
-        headers: {
-          apikey: SUPABASE_PUBLISHABLE_KEY,
-          Authorization: `Bearer ${SUPABASE_PUBLISHABLE_KEY}`,
-        },
-      },
-    )
-      .then((r) => r.json())
-      .then((rows: DailyView[]) => {
-        const byDate = new Map<string, DailyView>();
-        for (const row of rows) {
-          const existing = byDate.get(row.view_date);
-          if (existing) {
-            existing.view_count += row.view_count;
-            existing.unique_visitors += row.unique_visitors;
-          } else {
-            byDate.set(row.view_date, { ...row });
-          }
-        }
-        
+    fetchApi<DailyView[]>('/posts/admin/analytics/views?days=14')
+      .then((rows) => {
         // Format data for Recharts
-        const formattedData = Array.from(byDate.values()).map(d => ({
+        const formattedData = rows.map(d => ({
           ...d,
           formattedDate: chartDateFormatter.format(new Date(d.view_date + 'T00:00:00Z')),
         }));
         
         if (formattedData.length === 0) {
-          // Fallback to dummy data so the chart is visible when there's no actual data yet
+          // Fallback to stable deterministic dummy data so the chart is visible when there's no actual data yet
           const dummy = Array.from({ length: 14 }).map((_, i) => {
             const d = new Date();
             d.setDate(d.getDate() - (13 - i));
+            const dayFactor = d.getDay(); // 0-6
+            const baseViews = 25 + dayFactor * 5 + (i % 3) * 8;
             return {
               view_date: d.toISOString().split('T')[0],
-              view_count: Math.floor(Math.random() * 50) + 10,
-              unique_visitors: Math.floor(Math.random() * 30) + 5,
+              view_count: baseViews,
+              unique_visitors: Math.floor(baseViews * 0.6),
               formattedDate: chartDateFormatter.format(d),
             };
           });
@@ -108,14 +85,16 @@ export default function ViewsChart() {
       })
       .catch((e) => {
         console.error("Error fetching chart data:", e);
-        // Fallback to dummy data on error as well for demonstration
+        // Fallback to stable deterministic dummy data on error as well for demonstration
         const dummy = Array.from({ length: 14 }).map((_, i) => {
           const d = new Date();
           d.setDate(d.getDate() - (13 - i));
+          const dayFactor = d.getDay(); // 0-6
+          const baseViews = 25 + dayFactor * 5 + (i % 3) * 8;
           return {
             view_date: d.toISOString().split('T')[0],
-            view_count: Math.floor(Math.random() * 50) + 10,
-            unique_visitors: Math.floor(Math.random() * 30) + 5,
+            view_count: baseViews,
+            unique_visitors: Math.floor(baseViews * 0.6),
             formattedDate: chartDateFormatter.format(d),
           };
         });
