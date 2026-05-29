@@ -11,6 +11,33 @@ interface FetchOptions {
   revalidate?: number;  // ISR seconds, default 300
 }
 
+async function buildFetchError(
+  label: string,
+  endpoint: string,
+  res: Response,
+): Promise<Error> {
+  const cfRay = res.headers.get('cf-ray');
+  const server = res.headers.get('server');
+  const contentType = res.headers.get('content-type');
+  let body = '';
+
+  try {
+    body = (await res.text()).slice(0, 300);
+  } catch {
+    body = '<unable to read response body>';
+  }
+
+  const details = [
+    `${label} ${endpoint} -> ${res.status} ${res.statusText}`,
+    cfRay ? `cf-ray=${cfRay}` : null,
+    server ? `server=${server}` : null,
+    contentType ? `content-type=${contentType}` : null,
+    body ? `body=${body}` : null,
+  ].filter(Boolean);
+
+  return new Error(details.join(' | '));
+}
+
 function buildServerHeaders(): HeadersInit {
   // Some edge security layers (e.g., bot protection) can be overly strict
   // with generic Node/undici user agents during static generation.
@@ -37,7 +64,7 @@ export async function serverFetch<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`[serverFetch] ${endpoint} → ${res.status}`);
+    throw await buildFetchError('[serverFetch]', endpoint, res);
   }
 
   const json = await res.json();
@@ -60,7 +87,7 @@ export async function serverFetchPaginated<T>(
   });
 
   if (!res.ok) {
-    throw new Error(`[serverFetchPaginated] ${endpoint} → ${res.status}`);
+    throw await buildFetchError('[serverFetchPaginated]', endpoint, res);
   }
 
   const json = await res.json();
