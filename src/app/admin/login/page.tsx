@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
-import { fetchApi } from '@/lib/api';
+import { fetchApi, isApiError } from '@/lib/api';
 import { Loader2 } from 'lucide-react';
 import LogoMark from '@/components/shared/LogoMark';
 
@@ -12,6 +12,7 @@ export default function AdminLoginPage() {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [cooldownUntil, setCooldownUntil] = useState<number | null>(null);
   const router = useRouter();
   const setAuth = useAppStore(state => state.setAuth);
   const token = useAppStore(state => state.token);
@@ -21,6 +22,25 @@ export default function AdminLoginPage() {
       router.replace('/admin/posts');
     }
   }, [token, router]);
+
+  const cooldownRemainingSeconds = useMemo(() => {
+    if (!cooldownUntil) return 0;
+    return Math.max(0, Math.ceil((cooldownUntil - Date.now()) / 1000));
+  }, [cooldownUntil]);
+
+  useEffect(() => {
+    if (!cooldownUntil) return;
+    if (cooldownUntil <= Date.now()) {
+      setCooldownUntil(null);
+      return;
+    }
+
+    const timer = window.setInterval(() => {
+      if (cooldownUntil <= Date.now()) setCooldownUntil(null);
+    }, 500);
+
+    return () => window.clearInterval(timer);
+  }, [cooldownUntil]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -36,7 +56,13 @@ export default function AdminLoginPage() {
       setAuth(res.token, res.user);
       router.push('/admin/posts');
     } catch (err: any) {
-      setError(err.message || 'Invalid credentials');
+      if (isApiError(err) && err.status === 429) {
+        const retryAfterSeconds = err.retryAfterSeconds ?? 60;
+        setCooldownUntil(Date.now() + retryAfterSeconds * 1000);
+        setError('Too many attempts. Please try again in a moment.');
+      } else {
+        setError(err?.message || 'Invalid credentials');
+      }
     } finally {
       setIsLoading(false);
     }
@@ -67,7 +93,7 @@ return (
         <form className="mt-8 space-y-6" onSubmit={handleLogin}>
           {error && (
             <div className="bg-red-50 text-red-700 dark:bg-red-900/30 dark:text-red-400 p-3 rounded-lg text-sm text-center">
-              {error}
+              {error}{cooldownRemainingSeconds > 0 ? ` (${cooldownRemainingSeconds}s)` : ''}
             </div>
           )}
           
@@ -103,10 +129,10 @@ return (
           <div>
             <button
               type="submit"
-              disabled={isLoading}
+              disabled={isLoading || cooldownRemainingSeconds > 0}
               className="group relative w-full flex justify-center py-3 px-4 border border-transparent text-sm font-semibold rounded-xl text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors shadow-sm"
             >
-              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Sign in'}
+              {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : cooldownRemainingSeconds > 0 ? `Try again in ${cooldownRemainingSeconds}s` : 'Sign in'}
             </button>
           </div>
         </form>
