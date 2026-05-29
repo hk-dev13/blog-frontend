@@ -21,11 +21,13 @@ import { useRouter } from 'next/navigation';
 import { generateSlug } from '@/lib/editorUtils';
 import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
 import AdminLoadError from '@/components/admin/AdminLoadError';
+import { useToastStore } from '@/store/useToastStore';
 
 export default function TagManagerPage() {
   const { user } = useAppStore();
   const router = useRouter();
   const queryClient = useQueryClient();
+  const pushToast = useToastStore(state => state.push);
   const [searchQuery, setSearchQuery] = useState('');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isMergeModalOpen, setIsMergeModalOpen] = useState(false);
@@ -61,6 +63,7 @@ export default function TagManagerPage() {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
       setIsModalOpen(false);
       resetForm();
+      pushToast({ variant: 'success', title: 'Tag created' });
     }
   });
 
@@ -71,6 +74,7 @@ export default function TagManagerPage() {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
       setIsModalOpen(false);
       resetForm();
+      pushToast({ variant: 'success', title: 'Tag updated' });
     }
   });
 
@@ -78,6 +82,7 @@ export default function TagManagerPage() {
     mutationFn: (id: string) => fetchApi(`/tags/${id}`, { method: 'DELETE' }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['tags'] });
+      pushToast({ variant: 'success', title: 'Tag deleted' });
     }
   });
 
@@ -89,9 +94,10 @@ export default function TagManagerPage() {
       setIsMergeModalOpen(false);
       setSourceTag(null);
       setTargetTagId('');
+      pushToast({ variant: 'success', title: 'Tags merged' });
     },
     onError: (err: any) => {
-      alert(err.message || 'Failed to merge tags');
+      pushToast({ variant: 'error', title: 'Merge failed', description: err?.message || 'Failed to merge tags' });
     }
   });
 
@@ -166,24 +172,32 @@ export default function TagManagerPage() {
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-serif font-bold text-slate-900 dark:text-white">Tag Manager</h1>
-          <p className="text-sm text-slate-500 mt-1">Organize and clean up your content taxonomy.</p>
+    <div className="space-y-8">
+      <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10 md:py-12">
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.14),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
+        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+          <div className="max-w-2xl">
+            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white shadow-lg shadow-white/5">
+              <Hash className="h-5 w-5" />
+            </div>
+            <h1 className="text-3xl font-serif font-bold text-white md:text-4xl">Tag Manager</h1>
+            <p className="mt-2 text-sm leading-6 text-slate-300 md:text-base">
+              Organize, edit, merge, or remove tags safely.
+            </p>
+          </div>
+          <button
+            onClick={handleOpenCreate}
+            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary-400 hover:bg-primary-500/10"
+          >
+            <Plus className="w-4 h-4" />
+            Create Tag
+          </button>
         </div>
-        <button 
-          onClick={handleOpenCreate}
-          className="flex items-center justify-center gap-2 px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white rounded-lg transition-colors font-medium"
-        >
-          <Plus className="w-4 h-4" />
-          Create New Tag
-        </button>
-      </div>
+      </header>
 
-      <div className="bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700 overflow-hidden">
+      <div className="bg-white/80 dark:bg-slate-900/50 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 overflow-hidden shadow-sm">
         {/* Toolbar */}
-        <div className="p-4 border-b border-slate-200 dark:border-slate-700 bg-slate-50/50 dark:bg-slate-900/50 flex flex-col sm:flex-row gap-4">
+        <div className="p-4 border-b border-slate-200/70 dark:border-slate-800/70 bg-slate-50/60 dark:bg-slate-950/40 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
             <input 
@@ -191,7 +205,7 @@ export default function TagManagerPage() {
               placeholder="Search tags by name or slug..." 
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm"
+              className="w-full pl-10 pr-4 py-2 bg-white/70 dark:bg-slate-950/40 border border-slate-200/70 dark:border-slate-800/70 rounded-xl focus:ring-2 focus:ring-primary-500 focus:outline-none text-sm shadow-sm"
             />
           </div>
           <div className="flex items-center gap-2 text-xs text-slate-500 font-medium px-2">
@@ -204,7 +218,7 @@ export default function TagManagerPage() {
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
-              <tr className="bg-slate-50/50 dark:bg-slate-900/50 border-b border-slate-200 dark:border-slate-700">
+              <tr className="bg-slate-50/60 dark:bg-slate-950/40 border-b border-slate-200/70 dark:border-slate-800/70">
                 <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Tag Name</th>
                 <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider">Slug</th>
                 <th className="px-6 py-3 text-xs font-semibold text-slate-500 uppercase tracking-wider text-center">Usage</th>
@@ -284,7 +298,7 @@ export default function TagManagerPage() {
       {/* Create/Edit Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white/90 dark:bg-slate-950/70 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200/70 dark:border-slate-800/70 backdrop-blur">
             <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">
                 {editingTag ? 'Edit Tag' : 'Create New Tag'}
@@ -362,7 +376,7 @@ export default function TagManagerPage() {
       {/* Merge Modal */}
       {isMergeModalOpen && sourceTag && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white dark:bg-slate-800 rounded-xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200">
+          <div className="bg-white/90 dark:bg-slate-950/70 rounded-2xl shadow-xl w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200/70 dark:border-slate-800/70 backdrop-blur">
             <div className="flex items-center justify-between p-6 border-b border-slate-200 dark:border-slate-700">
               <h3 className="text-xl font-bold text-slate-900 dark:text-white">Merge Tag</h3>
               <button onClick={() => setIsMergeModalOpen(false)} className="text-slate-400 hover:text-slate-500">
