@@ -6,7 +6,7 @@ import CategoryIcon from '@/components/shared/CategoryIcon';
 import { Post, Tag, Category } from '@/types';
 import { Loader2, ArrowRight, LayoutGrid } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
 
 interface HomeContentProps {
@@ -18,6 +18,17 @@ interface HomeContentProps {
 }
 
 import { API_URL } from '@/lib/env';
+
+type PaginatedResponse<T> = {
+  success: boolean;
+  data: T[];
+  meta: { page: number; limit: number; total: number; totalPages: number };
+};
+
+type ApiResponse<T> = {
+  success: boolean;
+  data: T;
+};
 
 export default function HomeContent({
   initialPosts,
@@ -33,8 +44,77 @@ export default function HomeContent({
   const [posts, setPosts] = useState<Post[]>(initialPosts);
   const [meta, setMeta] = useState(initialMeta);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
+  const [clientTrendingPosts, setClientTrendingPosts] = useState<Post[]>(trendingPosts);
+  const [clientTags, setClientTags] = useState<Tag[]>(tags);
+  const [clientCategories, setClientCategories] = useState<Category[]>(categories);
+  const [isHydratingInitial, setIsHydratingInitial] = useState(false);
 
   const hasMore = meta.page < meta.totalPages;
+
+  useEffect(() => {
+    const needsClientFallback =
+      posts.length === 0 &&
+      meta.total === 0 &&
+      (clientTrendingPosts.length === 0 || clientTags.length === 0 || clientCategories.length === 0);
+
+    if (!needsClientFallback) return;
+
+    let cancelled = false;
+    const fetchJson = async <T,>(endpoint: string): Promise<T> => {
+      const res = await fetch(`${API_URL}${endpoint}`);
+      if (!res.ok) {
+        throw new Error(`${endpoint} -> ${res.status}`);
+      }
+      return res.json() as Promise<T>;
+    };
+
+    const hydrateFromClient = async () => {
+      setIsHydratingInitial(true);
+      const tagParam = activeTag ? `&tag=${activeTag}` : '';
+      const [latestRes, trendingRes, tagsRes, categoriesRes] = await Promise.allSettled([
+        fetchJson<PaginatedResponse<Post>>(`/posts?limit=${meta.limit || 6}${tagParam}`),
+        fetchJson<PaginatedResponse<Post>>('/posts?limit=4&sort=views&order=desc'),
+        fetchJson<ApiResponse<Tag[]>>('/tags'),
+        fetchJson<ApiResponse<Category[]>>('/categories'),
+      ]);
+
+      if (cancelled) return;
+
+      if (latestRes.status === 'fulfilled' && latestRes.value.success) {
+        setPosts(latestRes.value.data);
+        setMeta(latestRes.value.meta);
+      }
+      if (trendingRes.status === 'fulfilled' && trendingRes.value.success) {
+        setClientTrendingPosts(trendingRes.value.data);
+      }
+      if (tagsRes.status === 'fulfilled' && tagsRes.value.success) {
+        setClientTags(tagsRes.value.data);
+      }
+      if (categoriesRes.status === 'fulfilled' && categoriesRes.value.success) {
+        setClientCategories(categoriesRes.value.data);
+      }
+      setIsHydratingInitial(false);
+    };
+
+    hydrateFromClient().catch((err) => {
+      if (!cancelled) {
+        console.error('Failed to hydrate homepage from client:', err);
+        setIsHydratingInitial(false);
+      }
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [
+    activeTag,
+    clientCategories.length,
+    clientTags.length,
+    clientTrendingPosts.length,
+    meta.limit,
+    meta.total,
+    posts.length,
+  ]);
 
   const loadMore = useCallback(async () => {
     if (isLoadingMore || !hasMore) return;
@@ -72,7 +152,7 @@ export default function HomeContent({
       )}
 
       {/* Trending Section */}
-      {!activeTag && trendingPosts.length > 0 && (
+      {!activeTag && clientTrendingPosts.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-6">
             <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
@@ -80,7 +160,7 @@ export default function HomeContent({
             </h2>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {trendingPosts.map((post) => (
+            {clientTrendingPosts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
           </div>
@@ -88,7 +168,7 @@ export default function HomeContent({
       )}
 
       {/* Browse by Category Section */}
-      {!activeTag && categories.length > 0 && (
+      {!activeTag && clientCategories.length > 0 && (
         <section>
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
@@ -101,7 +181,7 @@ export default function HomeContent({
             </div>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {categories.map((cat) => (
+            {clientCategories.map((cat) => (
               <Link
                 key={cat.id}
                 href={`/categories/${cat.slug}`}
@@ -132,12 +212,12 @@ export default function HomeContent({
       {/* Latest Feed & Tag Filter */}
       <section>
         <div className="mb-8">
-          <CategoryPills tags={tags} currentTagSlug={activeTag} />
+          <CategoryPills tags={clientTags} currentTagSlug={activeTag} />
         </div>
 
         <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-6">
           {activeTag
-            ? `Latest in ${tags.find((t) => t.slug === activeTag)?.name || activeTag}`
+            ? `Latest in ${clientTags.find((t) => t.slug === activeTag)?.name || activeTag}`
             : 'Latest Feed'}
         </h2>
 
@@ -146,6 +226,11 @@ export default function HomeContent({
             {feedPosts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
+          </div>
+        ) : isHydratingInitial ? (
+          <div className="flex justify-center py-12 text-slate-500 dark:text-slate-400">
+            <Loader2 className="mr-2 h-5 w-5 animate-spin" />
+            Loading articles...
           </div>
         ) : (
           <div className="text-center py-12 text-slate-500 dark:text-slate-400">
