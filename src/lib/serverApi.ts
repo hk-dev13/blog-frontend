@@ -11,6 +11,16 @@ interface FetchOptions {
   revalidate?: number;  // ISR seconds, default 300
 }
 
+function buildServerHeaders(): HeadersInit {
+  // Some edge security layers (e.g., bot protection) can be overly strict
+  // with generic Node/undici user agents during static generation.
+  // A stable UA helps reduce false positives without affecting API logic.
+  return {
+    Accept: 'application/json',
+    'User-Agent': 'EnvoyouBlogSSR/1.0 (+https://blog.envoyou.com)',
+  };
+}
+
 /**
  * Fetch a single resource. Backend wraps responses as `{ success, data }`.
  */
@@ -21,6 +31,7 @@ export async function serverFetch<T>(
   const { revalidate = 300 } = opts;
 
   const res = await fetch(`${API_URL}${endpoint}`, {
+    headers: buildServerHeaders(),
     cache: revalidate > 0 ? 'force-cache' : 'no-store',
     next: { revalidate },
   });
@@ -43,6 +54,7 @@ export async function serverFetchPaginated<T>(
   const { revalidate = 300 } = opts;
 
   const res = await fetch(`${API_URL}${endpoint}`, {
+    headers: buildServerHeaders(),
     cache: revalidate > 0 ? 'force-cache' : 'no-store',
     next: { revalidate },
   });
