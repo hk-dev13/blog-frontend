@@ -20,7 +20,7 @@ import {
   List, ListOrdered, Quote, Code, Minus,
   AlignLeft, AlignCenter, AlignRight,
   Link2, Highlighter, Undo2, Redo2,
-  Type, FileCode2,
+  Type, FileCode2, Search, Replace, ChevronLeft, ChevronRight, X,
 } from 'lucide-react';
 
 import InternalLinkPopover from '@/components/admin/InternalLinkPopover';
@@ -288,6 +288,24 @@ const TableAction = ({
   </button>
 );
 
+function getTextMatches(text: string, query: string, caseSensitive: boolean) {
+  if (!query) {
+    return [] as { start: number; end: number }[];
+  }
+
+  const haystack = caseSensitive ? text : text.toLowerCase();
+  const needle = caseSensitive ? query : query.toLowerCase();
+  const matches: { start: number; end: number }[] = [];
+  let index = haystack.indexOf(needle);
+
+  while (index !== -1) {
+    matches.push({ start: index, end: index + query.length });
+    index = haystack.indexOf(needle, index + Math.max(needle.length, 1));
+  }
+
+  return matches;
+}
+
 /* ─────────────────────────────────────────────── main */
 export default function RichTextEditor({
   value,
@@ -303,12 +321,21 @@ export default function RichTextEditor({
   const skipSync = useRef(false);
   const editorRef = useRef<Editor | null>(null);
   const linkButtonRef = useRef<HTMLButtonElement | null>(null);
+  const findInputRef = useRef<HTMLInputElement | null>(null);
+  const replaceInputRef = useRef<HTMLInputElement | null>(null);
+  const markdownTextareaRef = useRef<HTMLTextAreaElement | null>(null);
   const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
   const [activeLinkHref, setActiveLinkHref] = useState<string | null>(null);
   const [linkPrefillQuery, setLinkPrefillQuery] = useState('');
+  const [isFindReplaceOpen, setIsFindReplaceOpen] = useState(false);
+  const [findQuery, setFindQuery] = useState('');
+  const [replaceQuery, setReplaceQuery] = useState('');
+  const [caseSensitiveFind, setCaseSensitiveFind] = useState(false);
+  const [activeMatchIndex, setActiveMatchIndex] = useState(0);
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null);
   const modeShortcutHint = 'Ctrl/Cmd+Alt+M';
   const richTextShortcutHint = 'Ctrl/Cmd+Alt+R';
+  const findReplaceShortcutHint = 'Ctrl/Cmd+F';
   const shortcutHelp = [
     ['Bold', 'Ctrl/Cmd+B'],
     ['Italic', 'Ctrl/Cmd+I'],
@@ -316,15 +343,30 @@ export default function RichTextEditor({
     ['Link', 'Ctrl/Cmd+Shift+K'],
     ['Bullet', 'Ctrl/Cmd+Shift+7'],
     ['Table', 'Ctrl/Cmd+Alt+Shift+T'],
+    ['Find/Replace', findReplaceShortcutHint],
     ['Markdown', modeShortcutHint],
     ['Rich Text', richTextShortcutHint],
   ] as const;
+  const matches = useMemo(() => getTextMatches(value, findQuery, caseSensitiveFind), [caseSensitiveFind, findQuery, value]);
+  const activeMatch = matches[activeMatchIndex] ?? null;
+
+  const openFindReplace = useCallback(() => {
+    setIsFindReplaceOpen(true);
+    requestAnimationFrame(() => {
+      findInputRef.current?.focus();
+      findInputRef.current?.select();
+    });
+  }, []);
 
   const modeShortcuts = useMemo(() => Extension.create({
     name: 'modeShortcuts',
 
     addKeyboardShortcuts() {
       return {
+        'Mod-f': () => {
+          openFindReplace();
+          return true;
+        },
         'Mod-Alt-m': () => {
           onModeChange('markdown');
           return true;
@@ -335,10 +377,119 @@ export default function RichTextEditor({
         },
       };
     },
-  }), [onModeChange]);
+  }), [onModeChange, openFindReplace]);
+
+  const closeFindReplace = useCallback(() => {
+    setIsFindReplaceOpen(false);
+    setActiveMatchIndex(0);
+    if (mode === 'wysiwyg') {
+      editorRef.current?.commands.focus();
+    } else {
+      (contentRef?.current ?? markdownTextareaRef.current)?.focus();
+    }
+  }, [contentRef, mode]);
+
+  const selectMarkdownRange = useCallback((start: number, end: number) => {
+    if (mode !== 'markdown') {
+      return;
+    }
+
+    requestAnimationFrame(() => {
+      const textarea = contentRef?.current ?? markdownTextareaRef.current;
+      if (!textarea) {
+        return;
+      }
+
+      textarea.focus();
+      textarea.setSelectionRange(start, end);
+      const lineHeight = 20;
+      const linesBeforeMatch = value.slice(0, start).split('\n').length - 1;
+      textarea.scrollTop = Math.max(0, linesBeforeMatch * lineHeight - textarea.clientHeight / 2);
+    });
+  }, [contentRef, mode, value]);
+
+  const goToMatch = useCallback((direction: 1 | -1) => {
+    if (!matches.length) {
+      setActiveMatchIndex(0);
+      return;
+    }
+
+    const nextIndex = (activeMatchIndex + direction + matches.length) % matches.length;
+    setActiveMatchIndex(nextIndex);
+    const nextMatch = matches[nextIndex];
+    selectMarkdownRange(nextMatch.start, nextMatch.end);
+  }, [activeMatchIndex, matches, selectMarkdownRange]);
+
+  const replaceMatch = useCallback(() => {
+    const match = matches[activeMatchIndex];
+
+    if (!match) {
+      return;
+    }
+
+    const nextValue = `${value.slice(0, match.start)}${replaceQuery}${value.slice(match.end)}`;
+    onChange(nextValue);
+
+    const nextMatches = getTextMatches(nextValue, findQuery, caseSensitiveFind);
+    const nextIndex = nextMatches.length ? Math.min(activeMatchIndex, nextMatches.length - 1) : 0;
+    setActiveMatchIndex(nextIndex);
+
+    const nextMatch = nextMatches[nextIndex];
+    if (nextMatch) {
+      selectMarkdownRange(nextMatch.start, nextMatch.end);
+    }
+  }, [activeMatchIndex, caseSensitiveFind, findQuery, matches, onChange, replaceQuery, selectMarkdownRange, value]);
+
+  const replaceAllMatches = useCallback(() => {
+    if (!findQuery || !matches.length) {
+      return;
+    }
+
+    let nextValue = '';
+    let cursor = 0;
+
+    matches.forEach(match => {
+      nextValue += value.slice(cursor, match.start);
+      nextValue += replaceQuery;
+      cursor = match.end;
+    });
+
+    nextValue += value.slice(cursor);
+    onChange(nextValue);
+    setActiveMatchIndex(0);
+  }, [findQuery, matches, onChange, replaceQuery, value]);
+
+  useEffect(() => {
+    setActiveMatchIndex(0);
+  }, [caseSensitiveFind, findQuery]);
+
+  useEffect(() => {
+    if (!matches.length) {
+      setActiveMatchIndex(0);
+      return;
+    }
+
+    if (activeMatchIndex >= matches.length) {
+      setActiveMatchIndex(matches.length - 1);
+    }
+  }, [activeMatchIndex, matches.length]);
+
+  useEffect(() => {
+    if (!activeMatch || !isFindReplaceOpen) {
+      return;
+    }
+
+    selectMarkdownRange(activeMatch.start, activeMatch.end);
+  }, [activeMatch, isFindReplaceOpen, selectMarkdownRange]);
 
   const handleMarkdownModeShortcuts = useCallback((event: React.KeyboardEvent<HTMLTextAreaElement>) => {
     const modifierPressed = event.metaKey || event.ctrlKey;
+
+    if (modifierPressed && !event.altKey && event.key.toLowerCase() === 'f') {
+      event.preventDefault();
+      openFindReplace();
+      return;
+    }
 
     if (!modifierPressed || !event.altKey) {
       return;
@@ -356,7 +507,33 @@ export default function RichTextEditor({
       event.preventDefault();
       onModeChange('wysiwyg');
     }
-  }, [onModeChange]);
+  }, [onModeChange, openFindReplace]);
+
+  const handleFindInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      goToMatch(event.shiftKey ? -1 : 1);
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeFindReplace();
+    }
+  }, [closeFindReplace, goToMatch]);
+
+  const handleReplaceInputKeyDown = useCallback((event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === 'Enter') {
+      event.preventDefault();
+      replaceMatch();
+      return;
+    }
+
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      closeFindReplace();
+    }
+  }, [closeFindReplace, replaceMatch]);
 
   const openLinkPopover = useCallback((editorInstance?: Editor | null) => {
     const activeEditor = editorInstance ?? editorRef.current;
@@ -488,15 +665,17 @@ export default function RichTextEditor({
     editorRef.current = editor;
   }, [editor]);
 
-  /* ── sync external value → editor (e.g. autosave restore) ── */
+  /* ── sync external markdown value → editor, even while Markdown mode is active ── */
   useEffect(() => {
-    if (!editor || mode !== 'wysiwyg') return;
+    if (!editor) return;
     const current = (editor.storage as any).markdown.getMarkdown();
     if (current === value) return;
     skipSync.current = true;
-    editor.commands.setContent(value);
-    skipSync.current = false;
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    try {
+      editor.commands.setContent(value);
+    } finally {
+      skipSync.current = false;
+    }
   }, [value, editor]);
 
   const ic = 'w-4 h-4';
@@ -544,6 +723,100 @@ export default function RichTextEditor({
       </button>
     </div>
   );
+
+  const FindReplacePanel = () => {
+    if (!isFindReplaceOpen) {
+      return null;
+    }
+
+    return (
+      <div className="border-x border-b border-slate-200 bg-white px-3 py-3 dark:border-slate-700 dark:bg-slate-900">
+        <div className="flex flex-wrap items-center gap-2">
+          <div className="flex min-w-[180px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-800">
+            <Search className="h-4 w-4 text-slate-400" />
+            <input
+              ref={findInputRef}
+              value={findQuery}
+              onChange={event => setFindQuery(event.target.value)}
+              onKeyDown={handleFindInputKeyDown}
+              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
+              placeholder="Find text"
+            />
+          </div>
+
+          <div className="flex min-w-[180px] flex-1 items-center gap-2 rounded-md border border-slate-200 bg-slate-50 px-2 py-1.5 dark:border-slate-700 dark:bg-slate-800">
+            <Replace className="h-4 w-4 text-slate-400" />
+            <input
+              ref={replaceInputRef}
+              value={replaceQuery}
+              onChange={event => setReplaceQuery(event.target.value)}
+              onKeyDown={handleReplaceInputKeyDown}
+              className="min-w-0 flex-1 bg-transparent text-sm text-slate-900 outline-none placeholder:text-slate-400 dark:text-white"
+              placeholder="Replace with"
+            />
+          </div>
+
+          <div className="flex items-center gap-1">
+            <button
+              type="button"
+              onClick={() => goToMatch(-1)}
+              disabled={!matches.length}
+              title="Previous match (Shift+Enter)"
+              className="rounded-md border border-slate-200 p-1.5 text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <ChevronLeft className="h-4 w-4" />
+            </button>
+            <button
+              type="button"
+              onClick={() => goToMatch(1)}
+              disabled={!matches.length}
+              title="Next match (Enter)"
+              className="rounded-md border border-slate-200 p-1.5 text-slate-500 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+            >
+              <ChevronRight className="h-4 w-4" />
+            </button>
+          </div>
+
+          <button
+            type="button"
+            onClick={replaceMatch}
+            disabled={!activeMatch}
+            className="rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-semibold text-slate-600 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-700 dark:text-slate-300 dark:hover:bg-slate-800"
+          >
+            Replace
+          </button>
+          <button
+            type="button"
+            onClick={replaceAllMatches}
+            disabled={!matches.length}
+            className="rounded-md bg-primary-600 px-2.5 py-1.5 text-xs font-semibold text-white transition-colors hover:bg-primary-700 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Replace all
+          </button>
+          <label className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-500 dark:border-slate-700 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={caseSensitiveFind}
+              onChange={event => setCaseSensitiveFind(event.target.checked)}
+              className="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+            />
+            Aa
+          </label>
+          <span className="min-w-[72px] text-xs font-medium text-slate-500 dark:text-slate-400">
+            {findQuery ? `${matches.length ? activeMatchIndex + 1 : 0}/${matches.length}` : '0/0'}
+          </span>
+          <button
+            type="button"
+            onClick={closeFindReplace}
+            title="Close find and replace"
+            className="rounded-md p-1.5 text-slate-400 transition-colors hover:bg-slate-100 hover:text-slate-700 dark:hover:bg-slate-800 dark:hover:text-white"
+          >
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+    );
+  };
 
   /* ── WYSIWYG toolbar ── */
   const WysiwygToolbar = () => {
@@ -634,6 +907,13 @@ export default function RichTextEditor({
         >
           <Link2 className={ic} />
         </TB>
+        <TB
+          onClick={openFindReplace}
+          active={isFindReplaceOpen}
+          title={`Find and replace (${findReplaceShortcutHint})`}
+        >
+          <Search className={ic} />
+        </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
         {/* Table */}
@@ -719,10 +999,18 @@ export default function RichTextEditor({
         {/* Markdown toolbar header */}
         <div className={stickyToolbarClass}>
           <span className="text-xs text-slate-500 font-medium">Markdown Mode</span>
+          <TB
+            onClick={openFindReplace}
+            active={isFindReplaceOpen}
+            title={`Find and replace (${findReplaceShortcutHint})`}
+          >
+            <Search className={ic} />
+          </TB>
           <ModeToggle />
         </div>
+        <FindReplacePanel />
         <textarea
-          ref={contentRef as React.RefObject<HTMLTextAreaElement>}
+          ref={contentRef ?? markdownTextareaRef}
           value={value}
           onChange={e => onChange(e.target.value)}
           onKeyDown={handleMarkdownModeShortcuts}
@@ -740,6 +1028,7 @@ export default function RichTextEditor({
     <>
       <div className={editorShellClass}>
         <WysiwygToolbar />
+        <FindReplacePanel />
         <div className="rounded-b-lg">
           <EditorContent editor={editor} />
         </div>
