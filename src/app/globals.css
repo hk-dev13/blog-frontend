@@ -22,6 +22,7 @@
 :root {
   --background: #f8fafc; /* slate-50 */
   --foreground: #0f172a; /* slate-900 */
+  --font-serif: Georgia, Cambria, "Times New Roman", Times, serif;
 }
 
 .dark {

@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Inter, Lora } from "next/font/google";
+import { Inter } from "next/font/google";
 import { SITE_URL } from "@/lib/env";
 import "./globals.css";
 
@@ -72,12 +72,6 @@ const inter = Inter({
   subsets: ["latin"],
 });
 
-const lora = Lora({
-  variable: "--font-serif",
-  subsets: ["latin"],
-  preload: false,
-});
-
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: 'Envoyou Blog',
@@ -119,7 +113,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={`${inter.variable} ${lora.variable}`} suppressHydrationWarning>
+    <html lang="id" className={inter.variable} suppressHydrationWarning>
       {/* 1. Tambahkan suppressHydrationWarning di body */}
       <body
         className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300"
