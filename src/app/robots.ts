@@ -33,7 +33,6 @@ export default function robots(): MetadataRoute.Robots {
         disallow: [
           '/api/',
           '/admin/',
-          '/*?tag=*',    // Tag filter pages — duplicate content, noindex via metadata
         ],
       },
     ],

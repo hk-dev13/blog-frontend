@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Mail, Rss } from 'lucide-react';
+import { Globe, Mail } from 'lucide-react';
 import LogoMark from '@/components/shared/LogoMark';
 
 const GithubIcon = () => (
@@ -11,9 +11,17 @@ import NewsletterForm from '@/components/shared/NewsletterForm';
 
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
+  { label: 'Categories', href: '/categories' },
   { label: 'About', href: '/about' },
   { label: 'Search', href: '/search' },
-  { label: 'Categories', href: '/categories' },
+  { label: 'RSS Feed', href: '/feed.xml' },
+];
+
+const TOPIC_LINKS = [
+  { label: 'Technology & AI', href: '/categories/teknologi-ai' },
+  { label: 'Finance & Investment', href: '/categories/keuangan-investasi' },
+  { label: 'Digital Creator', href: '/categories/creator-digital' },
+  { label: 'Data & Insight', href: '/categories/data-insight' },
 ];
 
 export default function Footer() {
@@ -31,7 +39,7 @@ export default function Footer() {
 
       {/* ── Main footer grid ───────────────────────────── */}
       <div className="container mx-auto px-4 py-12">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-10">
+        <div className="grid grid-cols-1 gap-10 sm:grid-cols-2 lg:grid-cols-4">
 
           {/* Col 1 — Brand */}
           <div className="flex flex-col gap-4">
@@ -42,14 +50,14 @@ export default function Footer() {
               </span>
             </Link>
             <p className="text-sm text-slate-500 dark:text-slate-300 leading-relaxed max-w-[220px]">
-              Wawasan Teknologi, AI, dan Bisnis Modern.
+              Wawasan teknologi, AI, strategi digital, dan sistem masa depan.
             </p>
           </div>
 
-          {/* Col 2 — Navigation */}
+          {/* Col 2 — Explore */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-4">
-              Navigation
+              Explore
             </h3>
             <ul className="space-y-2.5">
               {NAV_LINKS.map(({ label, href }) => (
@@ -65,10 +73,29 @@ export default function Footer() {
             </ul>
           </div>
 
-          {/* Col 3 — Contact & RSS */}
+          {/* Col 3 — Topics */}
           <div>
             <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-4">
-              Let's Connect
+              Topics
+            </h3>
+            <ul className="space-y-2.5">
+              {TOPIC_LINKS.map(({ label, href }) => (
+                <li key={href}>
+                  <Link
+                    href={href}
+                    className="text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                  >
+                    {label}
+                  </Link>
+                </li>
+              ))}
+            </ul>
+          </div>
+
+          {/* Col 4 — Connect */}
+          <div>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-slate-500 dark:text-slate-300 mb-4">
+              Connect
             </h3>
             <ul className="space-y-3">
               <li>
@@ -82,17 +109,6 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="/feed.xml"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
-                >
-                  <Rss className="w-4 h-4 shrink-0" />
-                  RSS Feed
-                </a>
-              </li>
-              <li>
-                <a
                   href="https://github.com/hk-dev13"
                   target="_blank"
                   rel="noopener noreferrer"
@@ -100,6 +116,15 @@ export default function Footer() {
                 >
                   <GithubIcon />
                   Github
+                </a>
+              </li>
+              <li>
+                <a
+                  href="https://envoyou.com"
+                  className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                >
+                  <Globe className="w-4 h-4 shrink-0" />
+                  Envoyou Main Site
                 </a>
               </li>
             </ul>

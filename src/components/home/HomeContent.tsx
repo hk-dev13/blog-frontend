@@ -143,27 +143,26 @@ export default function HomeContent({
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-16">
+      {!activeTag && (
+        <section className="max-w-3xl pt-4">
+          <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
+            Envoyou Blog
+          </p>
+          <h1 className="font-serif text-4xl font-bold leading-tight text-slate-950 dark:text-white md:text-5xl">
+            Wawasan teknologi, AI, dan strategi digital masa depan.
+          </h1>
+          <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
+            Riset, analisis, dan panduan praktis tentang artificial intelligence, bisnis modern,
+            cloud infrastructure, dan investasi digital.
+          </p>
+        </section>
+      )}
+
       {/* Featured Post Hero Section */}
       {featuredPost && (
         <section>
           <h2 className="sr-only">Featured Article</h2>
           <PostCard post={featuredPost} featured={true} priority={true} />
-        </section>
-      )}
-
-      {/* Trending Section */}
-      {!activeTag && clientTrendingPosts.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
-              Trending Now
-            </h2>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {clientTrendingPosts.map((post) => (
-              <PostCard key={post.id} post={post} />
-            ))}
-          </div>
         </section>
       )}
 
@@ -263,6 +262,22 @@ export default function HomeContent({
           </div>
         )}
       </section>
+
+      {/* Trending Section */}
+      {!activeTag && clientTrendingPosts.length > 0 && (
+        <section>
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+              Trending Now
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {clientTrendingPosts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        </section>
+      )}
     </div>
   );
 }

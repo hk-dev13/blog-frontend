@@ -22,6 +22,7 @@ export default function CategoryPills({ tags, currentTagSlug }: { tags: Tag[]; c
           <Link
             key={tag.id}
             href={`/?tag=${tag.slug}`}
+            rel="nofollow"
             className={`px-5 py-2 rounded-full text-sm font-medium transition-all duration-300 whitespace-nowrap ${
               currentTagSlug === tag.slug
                 ? 'bg-primary-600 text-white shadow-md shadow-primary-500/20'

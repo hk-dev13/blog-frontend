@@ -7,11 +7,27 @@ import "./globals.css";
 
 const ADSENSE_CLIENT = 'ca-pub-7820531537340985';
 
+const organizationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Organization',
+  '@id': `${SITE_URL}/#organization`,
+  name: 'Envoyou',
+  url: 'https://envoyou.com',
+  logo: `${SITE_URL}/icon.svg`,
+  sameAs: [
+    'https://github.com/hk-dev13',
+  ],
+};
+
 const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
+  '@id': `${SITE_URL}/#website`,
   name: 'Envoyou Blog',
   url: SITE_URL,
+  publisher: {
+    '@id': `${SITE_URL}/#organization`,
+  },
   potentialAction: {
     '@type': 'SearchAction',
     target: {
@@ -20,6 +36,32 @@ const websiteSchema = {
     },
     'query-input': 'required name=search_term_string',
   },
+};
+
+const blogSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'Blog',
+  '@id': `${SITE_URL}/#blog`,
+  name: 'Envoyou Blog',
+  url: SITE_URL,
+  description: 'Wawasan teknologi, kecerdasan buatan, strategi bisnis, dan investasi digital dari Envoyou.',
+  publisher: {
+    '@id': `${SITE_URL}/#organization`,
+  },
+};
+
+const navigationSchema = {
+  '@context': 'https://schema.org',
+  '@type': 'ItemList',
+  '@id': `${SITE_URL}/#site-navigation`,
+  name: 'Envoyou Blog Navigation',
+  itemListElement: [
+    { '@type': 'SiteNavigationElement', position: 1, name: 'Home', url: SITE_URL },
+    { '@type': 'SiteNavigationElement', position: 2, name: 'About', url: `${SITE_URL}/about` },
+    { '@type': 'SiteNavigationElement', position: 3, name: 'Categories', url: `${SITE_URL}/categories` },
+    { '@type': 'SiteNavigationElement', position: 4, name: 'Search', url: `${SITE_URL}/search` },
+    { '@type': 'SiteNavigationElement', position: 5, name: 'RSS Feed', url: `${SITE_URL}/feed.xml` },
+  ],
 };
 import Providers from "./providers";
 import { ThemeProvider } from "@/components/ThemeProvider";
@@ -35,18 +77,38 @@ const inter = Inter({
 const lora = Lora({
   variable: "--font-serif",
   subsets: ["latin"],
+  preload: false,
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
+  applicationName: 'Envoyou Blog',
   title: {
     default: "Envoyou Blog - Wawasan Teknologi, AI, dan Bisnis Modern",
     template: "%s | Envoyou Blog",
   },
   description: "Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.",
   alternates: {
+    canonical: SITE_URL,
     types: {
       'application/rss+xml': `${SITE_URL}/feed.xml`,
     },
+  },
+  openGraph: {
+    type: 'website',
+    siteName: 'Envoyou Blog',
+    title: 'Envoyou Blog - Wawasan Teknologi, AI, dan Bisnis Modern',
+    description: 'Actionable insights and future perspectives seputar AI, teknologi, strategi bisnis, dan investasi digital.',
+    url: SITE_URL,
+  },
+  twitter: {
+    card: 'summary_large_image',
+    title: 'Envoyou Blog - Wawasan Teknologi, AI, dan Bisnis Modern',
+    description: 'Wawasan teknologi, AI, strategi bisnis, dan investasi digital dari Envoyou.',
+  },
+  robots: {
+    index: true,
+    follow: true,
   },
   other: {
     'google-adsense-account': ADSENSE_CLIENT,
@@ -94,7 +156,14 @@ export default function RootLayout({
 
         <script
           type="application/ld+json"
-          dangerouslySetInnerHTML={{ __html: JSON.stringify(websiteSchema) }}
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify([
+              organizationSchema,
+              websiteSchema,
+              blogSchema,
+              navigationSchema,
+            ]),
+          }}
         />
       </body>
     </html>
