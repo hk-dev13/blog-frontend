@@ -45,6 +45,7 @@ export default function PostCard({ post, featured = false, priority = false, act
             fill
             sizes={featured ? "(max-width: 768px) calc(100vw - 2rem), (max-width: 1280px) 50vw, 42vw" : "(max-width: 768px) calc(100vw - 2rem), (max-width: 1200px) calc(50vw - 2.5rem), 380px"}
             priority={priority}
+            fetchPriority={priority ? 'high' : 'auto'}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
           />
         </Link>

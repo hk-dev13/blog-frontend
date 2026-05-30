@@ -139,7 +139,7 @@ export default function Footer() {
           <span>© {currentYear} Envoyou. All rights reserved.</span>
           <span>
             Made with ❤️ by{' '}
-            <Link href="/about" className="text-slate-600 dark:text-slate-300 hover:text-primary-500 dark:hover:text-primary-400 transition-colors">
+            <Link href="/about" className="text-slate-600 underline underline-offset-4 transition-colors hover:text-primary-500 dark:text-slate-300 dark:hover:text-primary-400">
               Husni Kusuma
             </Link>
           </span>
