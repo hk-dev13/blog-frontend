@@ -280,7 +280,7 @@ export default async function Image({ params }: Props) {
                   gap: '6px',
                 }}
               >
-                <span style={{ display: 'flex' }}>📅</span>
+                <span style={{ display: 'flex' }}>🇮🇩</span>
                 <span style={{ display: 'flex' }}>{publishDate}</span>
               </div>
             )}

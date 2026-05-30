@@ -78,7 +78,7 @@ export default function ArticleRenderer({
             <div className="flex items-center gap-3">
               <time dateTime={publishDate.toISOString()}>
                 <span className="sr-only">Published: </span>
-                📅 {format(publishDate, 'MMMM d, yyyy')}
+                🇮🇩 {format(publishDate, 'MMMM d, yyyy')}
               </time>
 
               {post.updated_at && new Date(post.updated_at).getTime() - publishDate.getTime() > 24 * 60 * 60 * 1000 && (
