@@ -288,7 +288,18 @@ const TableAction = ({
   </button>
 );
 
-function getTextMatches(text: string, query: string, caseSensitive: boolean) {
+function isWordCharacter(value: string) {
+  return /[\p{L}\p{N}_]/u.test(value);
+}
+
+function isWholeWordMatch(text: string, start: number, end: number) {
+  const previous = start > 0 ? text[start - 1] : '';
+  const next = end < text.length ? text[end] : '';
+
+  return (!previous || !isWordCharacter(previous)) && (!next || !isWordCharacter(next));
+}
+
+function getTextMatches(text: string, query: string, caseSensitive: boolean, wholeWord: boolean) {
   if (!query) {
     return [] as { start: number; end: number }[];
   }
@@ -299,7 +310,10 @@ function getTextMatches(text: string, query: string, caseSensitive: boolean) {
   let index = haystack.indexOf(needle);
 
   while (index !== -1) {
-    matches.push({ start: index, end: index + query.length });
+    const end = index + query.length;
+    if (!wholeWord || isWholeWordMatch(text, index, end)) {
+      matches.push({ start: index, end });
+    }
     index = haystack.indexOf(needle, index + Math.max(needle.length, 1));
   }
 
@@ -324,6 +338,8 @@ export default function RichTextEditor({
   const findInputRef = useRef<HTMLInputElement | null>(null);
   const replaceInputRef = useRef<HTMLInputElement | null>(null);
   const markdownTextareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const modeRef = useRef(mode);
+  const onModeChangeRef = useRef(onModeChange);
   const [isLinkPopoverOpen, setIsLinkPopoverOpen] = useState(false);
   const [activeLinkHref, setActiveLinkHref] = useState<string | null>(null);
   const [linkPrefillQuery, setLinkPrefillQuery] = useState('');
@@ -331,6 +347,7 @@ export default function RichTextEditor({
   const [findQuery, setFindQuery] = useState('');
   const [replaceQuery, setReplaceQuery] = useState('');
   const [caseSensitiveFind, setCaseSensitiveFind] = useState(false);
+  const [wholeWordFind, setWholeWordFind] = useState(true);
   const [activeMatchIndex, setActiveMatchIndex] = useState(0);
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null);
   const modeShortcutHint = 'Ctrl/Cmd+Alt+M';
@@ -343,14 +360,26 @@ export default function RichTextEditor({
     ['Link', 'Ctrl/Cmd+Shift+K'],
     ['Bullet', 'Ctrl/Cmd+Shift+7'],
     ['Table', 'Ctrl/Cmd+Alt+Shift+T'],
-    ['Find/Replace', findReplaceShortcutHint],
+    ['Find/Replace source', findReplaceShortcutHint],
     ['Markdown', modeShortcutHint],
     ['Rich Text', richTextShortcutHint],
   ] as const;
-  const matches = useMemo(() => getTextMatches(value, findQuery, caseSensitiveFind), [caseSensitiveFind, findQuery, value]);
+  const matches = useMemo(
+    () => getTextMatches(value, findQuery, caseSensitiveFind, wholeWordFind),
+    [caseSensitiveFind, findQuery, value, wholeWordFind]
+  );
   const activeMatch = matches[activeMatchIndex] ?? null;
 
+  useEffect(() => {
+    modeRef.current = mode;
+    onModeChangeRef.current = onModeChange;
+  }, [mode, onModeChange]);
+
   const openFindReplace = useCallback(() => {
+    if (modeRef.current !== 'markdown') {
+      onModeChangeRef.current('markdown');
+    }
+
     setIsFindReplaceOpen(true);
     requestAnimationFrame(() => {
       findInputRef.current?.focus();
@@ -430,7 +459,7 @@ export default function RichTextEditor({
     const nextValue = `${value.slice(0, match.start)}${replaceQuery}${value.slice(match.end)}`;
     onChange(nextValue);
 
-    const nextMatches = getTextMatches(nextValue, findQuery, caseSensitiveFind);
+    const nextMatches = getTextMatches(nextValue, findQuery, caseSensitiveFind, wholeWordFind);
     const nextIndex = nextMatches.length ? Math.min(activeMatchIndex, nextMatches.length - 1) : 0;
     setActiveMatchIndex(nextIndex);
 
@@ -438,7 +467,7 @@ export default function RichTextEditor({
     if (nextMatch) {
       selectMarkdownRange(nextMatch.start, nextMatch.end);
     }
-  }, [activeMatchIndex, caseSensitiveFind, findQuery, matches, onChange, replaceQuery, selectMarkdownRange, value]);
+  }, [activeMatchIndex, caseSensitiveFind, findQuery, matches, onChange, replaceQuery, selectMarkdownRange, value, wholeWordFind]);
 
   const replaceAllMatches = useCallback(() => {
     if (!findQuery || !matches.length) {
@@ -461,7 +490,7 @@ export default function RichTextEditor({
 
   useEffect(() => {
     setActiveMatchIndex(0);
-  }, [caseSensitiveFind, findQuery]);
+  }, [caseSensitiveFind, findQuery, wholeWordFind]);
 
   useEffect(() => {
     if (!matches.length) {
@@ -724,7 +753,7 @@ export default function RichTextEditor({
     </div>
   );
 
-  const FindReplacePanel = () => {
+  const renderFindReplacePanel = () => {
     if (!isFindReplaceOpen) {
       return null;
     }
@@ -801,6 +830,15 @@ export default function RichTextEditor({
               className="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
             />
             Aa
+          </label>
+          <label className="inline-flex items-center gap-1.5 rounded-md border border-slate-200 px-2.5 py-1.5 text-xs font-medium text-slate-500 dark:border-slate-700 dark:text-slate-300">
+            <input
+              type="checkbox"
+              checked={wholeWordFind}
+              onChange={event => setWholeWordFind(event.target.checked)}
+              className="h-3.5 w-3.5 rounded border-slate-300 text-primary-600 focus:ring-primary-500"
+            />
+            Word
           </label>
           <span className="min-w-[72px] text-xs font-medium text-slate-500 dark:text-slate-400">
             {findQuery ? `${matches.length ? activeMatchIndex + 1 : 0}/${matches.length}` : '0/0'}
@@ -910,7 +948,7 @@ export default function RichTextEditor({
         <TB
           onClick={openFindReplace}
           active={isFindReplaceOpen}
-          title={`Find and replace (${findReplaceShortcutHint})`}
+          title={`Find and replace in Markdown source (${findReplaceShortcutHint})`}
         >
           <Search className={ic} />
         </TB>
@@ -1002,13 +1040,13 @@ export default function RichTextEditor({
           <TB
             onClick={openFindReplace}
             active={isFindReplaceOpen}
-            title={`Find and replace (${findReplaceShortcutHint})`}
+            title={`Find and replace in Markdown source (${findReplaceShortcutHint})`}
           >
             <Search className={ic} />
           </TB>
           <ModeToggle />
         </div>
-        <FindReplacePanel />
+        {renderFindReplacePanel()}
         <textarea
           ref={contentRef ?? markdownTextareaRef}
           value={value}
@@ -1028,7 +1066,7 @@ export default function RichTextEditor({
     <>
       <div className={editorShellClass}>
         <WysiwygToolbar />
-        <FindReplacePanel />
+        {renderFindReplacePanel()}
         <div className="rounded-b-lg">
           <EditorContent editor={editor} />
         </div>
