@@ -1,40 +1,11 @@
-import type { Metadata } from 'next';
 import { Suspense } from 'react';
 import { PostGridSkeleton, CategoryPillsSkeleton } from '@/components/shared/Skeletons';
 import { serverFetchPaginated, serverFetch } from '@/lib/serverApi';
-import { SITE_URL } from '@/lib/env';
 import { Post, Tag, Category } from '@/types';
 import HomeContent from '@/components/home/HomeContent';
 
 // ISR — revalidate every 300 seconds (5 min)
 export const revalidate = 300;
-
-type HomeMetadataProps = {
-  searchParams?: Promise<{ tag?: string }> | { tag?: string };
-};
-
-export async function generateMetadata({ searchParams }: HomeMetadataProps): Promise<Metadata> {
-  const params = searchParams ? await searchParams : {};
-
-  if (params.tag) {
-    return {
-      title: `Latest in ${params.tag}`,
-      alternates: {
-        canonical: SITE_URL,
-      },
-      robots: {
-        index: false,
-        follow: true,
-      },
-    };
-  }
-
-  return {
-    alternates: {
-      canonical: SITE_URL,
-    },
-  };
-}
 
 export default async function Home() {
   // Server-render the homepage through ISR so repeat visits can
