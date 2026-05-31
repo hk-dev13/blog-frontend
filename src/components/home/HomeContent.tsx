@@ -4,7 +4,7 @@ import PostCard from '@/components/shared/PostCard';
 import CategoryPills from '@/components/shared/CategoryPills';
 import CategoryIcon from '@/components/shared/CategoryIcon';
 import { Post, Tag, Category } from '@/types';
-import { Loader2, ArrowRight, LayoutGrid } from 'lucide-react';
+import { Loader2, ArrowRight, LayoutGrid, BookOpen, Tags, UserRound } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { useState, useCallback, useEffect } from 'react';
 import Link from 'next/link';
@@ -140,6 +140,7 @@ export default function HomeContent({
   // ── Derive featured post (only when no tag filter) ──────────
   const featuredPost = !activeTag && posts.length > 0 ? posts[0] : null;
   const feedPosts = featuredPost ? posts.slice(1) : posts;
+  const trendingTags = [...clientTags].sort((a, b) => (b.post_count ?? 0) - (a.post_count ?? 0));
 
   return (
     <div className="container mx-auto px-4 py-8 space-y-16">
@@ -196,6 +197,11 @@ export default function HomeContent({
                   <h3 className="mb-2 text-lg font-bold text-slate-900 transition-colors dark:text-white group-hover:text-primary-600 dark:group-hover:text-primary-400">
                     {cat.name}
                   </h3>
+                  {cat.post_count != null && (
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
+                      {cat.post_count} artikel
+                    </p>
+                  )}
                   {cat.description && (
                     <p className="text-sm text-slate-500 dark:text-slate-400 line-clamp-2 leading-relaxed">
                       {cat.description}
@@ -208,17 +214,45 @@ export default function HomeContent({
         </section>
       )}
 
-      {/* Latest Feed & Tag Filter */}
-      <section>
-        <div className="mb-8">
-          <CategoryPills tags={clientTags} currentTagSlug={activeTag} />
-        </div>
+      {!activeTag && (
+        <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:p-8">
+          <div className="max-w-3xl">
+            <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-600 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-400">
+              <BookOpen className="h-5 w-5" />
+            </div>
+            <h2 className="font-serif text-3xl font-bold text-slate-950 dark:text-white">
+              About Envoyou
+            </h2>
+            <div className="mt-5 space-y-4 text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
+              <p>
+                Envoyou adalah publication platform yang berfokus pada Artificial Intelligence,
+                teknologi, data, dan strategi digital.
+              </p>
+              <p>
+                Kami menerbitkan riset, analisis, dan panduan praktis untuk membantu pembaca
+                memahami perubahan teknologi dan bisnis modern.
+              </p>
+            </div>
+            <Link
+              href="/about"
+              className="mt-7 inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-primary-400"
+            >
+              Learn More
+              <ArrowRight className="h-4 w-4" />
+            </Link>
+          </div>
+        </section>
+      )}
 
-        <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white mb-6">
-          {activeTag
-            ? `Latest in ${clientTags.find((t) => t.slug === activeTag)?.name || activeTag}`
-            : 'Latest Feed'}
-        </h2>
+      {/* Latest Feed */}
+      <section>
+        <div className="mb-6 flex items-center justify-between">
+          <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+            {activeTag
+              ? `Latest in ${clientTags.find((t) => t.slug === activeTag)?.name || activeTag}`
+              : 'Latest Feed'}
+          </h2>
+        </div>
 
         {feedPosts.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
@@ -263,6 +297,25 @@ export default function HomeContent({
         )}
       </section>
 
+      {!activeTag && trendingTags.length > 0 && (
+        <section>
+          <div className="mb-5 flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-100 dark:bg-primary-900/30">
+              <Tags className="h-5 w-5 text-primary-600 dark:text-primary-400" />
+            </div>
+            <div>
+              <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
+                Trending Topics
+              </h2>
+              <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
+                Topik yang sedang paling banyak muncul di Envoyou.
+              </p>
+            </div>
+          </div>
+          <CategoryPills tags={trendingTags} currentTagSlug={activeTag} />
+        </section>
+      )}
+
       {/* Trending Section */}
       {!activeTag && clientTrendingPosts.length > 0 && (
         <section>
@@ -275,6 +328,37 @@ export default function HomeContent({
             {clientTrendingPosts.map((post) => (
               <PostCard key={post.id} post={post} />
             ))}
+          </div>
+        </section>
+      )}
+
+      {!activeTag && (
+        <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:p-8">
+          <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+            <div className="flex max-w-2xl gap-4">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-600 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-400">
+                <UserRound className="h-5 w-5" />
+              </div>
+              <div>
+                <p className="mb-2 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
+                  Meet The Author
+                </p>
+                <h2 className="font-serif text-2xl font-bold text-slate-950 dark:text-white">
+                  Husni Kusuma
+                </h2>
+                <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base">
+                  Penulis Envoyou yang membahas AI, teknologi, data, dan strategi digital melalui
+                  riset ringkas, analisis praktis, dan perspektif bisnis modern.
+                </p>
+              </div>
+            </div>
+            <Link
+              href="/author/husni-kusuma"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-primary-400"
+            >
+              View Profile
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </div>
         </section>
       )}

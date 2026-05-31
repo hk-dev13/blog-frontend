@@ -19,6 +19,7 @@ export interface Category {
   slug: string;
   description?: string;
   meta_description?: string;
+  post_count?: number;
 }
 
 export interface Tag {
