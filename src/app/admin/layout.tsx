@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAppStore } from '@/store/useAppStore';
 import Link from 'next/link';
-import { FileText, LogOut, LayoutDashboard, Plus, Loader2, MessageSquare, ExternalLink, Search, UserRound, History, Tag, BarChart3 } from 'lucide-react';
+import { FileText, LogOut, LayoutDashboard, Plus, Loader2, MessageSquare, ExternalLink, Search, UserRound, History, Tag, BarChart3, Settings, Users } from 'lucide-react';
 import AdminCommandPalette from '@/components/admin/AdminCommandPalette';
 import AdminToastViewport from '@/components/admin/AdminToastViewport';
 
@@ -28,7 +28,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
 
   useEffect(() => {
     if (!authHydrated) return;
-    if (!token && pathname !== '/admin/login') {
+    if (!token && pathname !== '/admin/login' && pathname !== '/admin/reset-password') {
       router.push('/admin/login');
     }
   }, [authHydrated, token, pathname, router]);
@@ -43,7 +43,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   }
 
   // If it's the login page, render without sidebar
-  if (pathname === '/admin/login') {
+  if (pathname === '/admin/login' || pathname === '/admin/reset-password') {
     return <>{children}</>;
   }
 
@@ -65,6 +65,8 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
     { name: 'Comments', href: '/admin/comments', icon: MessageSquare },
     { name: 'Activity', href: '/admin/activity', icon: History },
     { name: 'Tags', href: '/admin/tags', icon: Tag, adminOnly: true },
+    { name: 'Users', href: '/admin/users', icon: Users, adminOnly: true },
+    { name: 'Settings', href: '/admin/settings', icon: Settings },
   ];
 
   const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === 'admin');
