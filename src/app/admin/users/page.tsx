@@ -2,7 +2,7 @@
 
 import { FormEvent, useMemo, useState } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { AlertCircle, Copy, KeyRound, Loader2, Mail, Search, ShieldAlert, UserPlus, Users } from 'lucide-react';
+import { AlertCircle, ArrowRightLeft, Ban, Copy, KeyRound, Loader2, Mail, Search, ShieldAlert, Trash2, UserCheck, UserPlus, Users } from 'lucide-react';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { useAppStore } from '@/store/useAppStore';
 import { useToastStore } from '@/store/useToastStore';
@@ -31,7 +31,13 @@ export default function AdminUsersPage() {
   const [search, setSearch] = useState('');
   const [emailTarget, setEmailTarget] = useState<RecoveryTarget | null>(null);
   const [passwordTarget, setPasswordTarget] = useState<RecoveryTarget | null>(null);
+  const [deleteTarget, setDeleteTarget] = useState<RecoveryTarget | null>(null);
+  const [statusTarget, setStatusTarget] = useState<RecoveryTarget | null>(null);
+  const [transferTarget, setTransferTarget] = useState<RecoveryTarget | null>(null);
   const [emailForm, setEmailForm] = useState({ email: '', admin_current_password: '' });
+  const [deleteForm, setDeleteForm] = useState({ confirm_email: '', admin_current_password: '' });
+  const [statusPassword, setStatusPassword] = useState('');
+  const [transferForm, setTransferForm] = useState({ target_user_id: '', admin_current_password: '' });
   const [inviteOpen, setInviteOpen] = useState(false);
   const [inviteForm, setInviteForm] = useState({ name: '', email: '', admin_current_password: '' });
   const [inviteResult, setInviteResult] = useState<InviteResponse | null>(null);
@@ -119,6 +125,78 @@ export default function AdminUsersPage() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (payload: { userId: string; confirm_email: string; admin_current_password: string }) =>
+      fetchApi<{ deleted: boolean }>(`/users/admin/${payload.userId}`, {
+        method: 'DELETE',
+        body: JSON.stringify({
+          confirm_email: payload.confirm_email,
+          admin_current_password: payload.admin_current_password,
+        }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      setDeleteTarget(null);
+      setDeleteForm({ confirm_email: '', admin_current_password: '' });
+      pushToast({ title: 'User deleted', variant: 'success' });
+    },
+    onError: (err) => {
+      pushToast({
+        title: 'Could not delete user',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: (payload: { userId: string; status: 'active' | 'inactive'; admin_current_password: string }) =>
+      fetchApi<RecoveryTarget>(`/users/admin/${payload.userId}/status`, {
+        method: 'PATCH',
+        body: JSON.stringify({
+          status: payload.status,
+          admin_current_password: payload.admin_current_password,
+        }),
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      setStatusTarget(null);
+      setStatusPassword('');
+      pushToast({ title: 'User status updated', variant: 'success' });
+    },
+    onError: (err) => {
+      pushToast({
+        title: 'Could not update user status',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'error',
+      });
+    },
+  });
+
+  const transferMutation = useMutation({
+    mutationFn: (payload: { userId: string; target_user_id: string; admin_current_password: string }) =>
+      fetchApi<{ transferred: number }>(`/users/admin/${payload.userId}/transfer-posts`, {
+        method: 'POST',
+        body: JSON.stringify({
+          target_user_id: payload.target_user_id,
+          admin_current_password: payload.admin_current_password,
+        }),
+      }),
+    onSuccess: (result) => {
+      queryClient.invalidateQueries({ queryKey: ['admin-users'] });
+      setTransferTarget(null);
+      setTransferForm({ target_user_id: '', admin_current_password: '' });
+      pushToast({ title: 'Posts transferred', description: `${result.transferred} article(s) moved.`, variant: 'success' });
+    },
+    onError: (err) => {
+      pushToast({
+        title: 'Could not transfer posts',
+        description: err instanceof Error ? err.message : 'Please try again.',
+        variant: 'error',
+      });
+    },
+  });
+
   const openEmailModal = (user: RecoveryTarget) => {
     setEmailTarget(user);
     setEmailForm({ email: user.email || '', admin_current_password: '' });
@@ -128,6 +206,22 @@ export default function AdminUsersPage() {
     setPasswordTarget(user);
     setAdminPassword('');
     setResetLink(null);
+  };
+
+  const openDeleteModal = (user: RecoveryTarget) => {
+    setDeleteTarget(user);
+    setDeleteForm({ confirm_email: '', admin_current_password: '' });
+  };
+
+  const openStatusModal = (user: RecoveryTarget) => {
+    setStatusTarget(user);
+    setStatusPassword('');
+  };
+
+  const openTransferModal = (user: RecoveryTarget) => {
+    setTransferTarget(user);
+    const firstTarget = users.find(candidate => candidate.id !== user.id && candidate.status !== 'inactive');
+    setTransferForm({ target_user_id: firstTarget?.id || '', admin_current_password: '' });
   };
 
   const handleEmailSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -155,6 +249,36 @@ export default function AdminUsersPage() {
       name: inviteForm.name.trim(),
       email: inviteForm.email.trim(),
       admin_current_password: inviteForm.admin_current_password,
+    });
+  };
+
+  const handleDeleteSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!deleteTarget) return;
+    deleteMutation.mutate({
+      userId: deleteTarget.id,
+      confirm_email: deleteForm.confirm_email.trim(),
+      admin_current_password: deleteForm.admin_current_password,
+    });
+  };
+
+  const handleStatusSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!statusTarget) return;
+    statusMutation.mutate({
+      userId: statusTarget.id,
+      status: statusTarget.status === 'inactive' ? 'active' : 'inactive',
+      admin_current_password: statusPassword,
+    });
+  };
+
+  const handleTransferSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!transferTarget) return;
+    transferMutation.mutate({
+      userId: transferTarget.id,
+      target_user_id: transferForm.target_user_id,
+      admin_current_password: transferForm.admin_current_password,
     });
   };
 
@@ -229,6 +353,8 @@ export default function AdminUsersPage() {
               <tr>
                 <th className="px-5 py-3 font-semibold">User</th>
                 <th className="px-5 py-3 font-semibold">Role</th>
+                <th className="px-5 py-3 font-semibold">Status</th>
+                <th className="px-5 py-3 font-semibold">Articles</th>
                 <th className="px-5 py-3 font-semibold">Author URL</th>
                 <th className="px-5 py-3 text-right font-semibold">Recovery</th>
               </tr>
@@ -236,13 +362,13 @@ export default function AdminUsersPage() {
             <tbody className="divide-y divide-slate-200/70 dark:divide-slate-800/70">
               {isLoading ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-slate-500">
+                  <td colSpan={6} className="px-5 py-10 text-center text-slate-500">
                     <Loader2 className="mx-auto h-6 w-6 animate-spin text-primary-500" />
                   </td>
                 </tr>
               ) : users.length === 0 ? (
                 <tr>
-                  <td colSpan={4} className="px-5 py-10 text-center text-sm text-slate-500">No users found.</td>
+                  <td colSpan={6} className="px-5 py-10 text-center text-sm text-slate-500">No users found.</td>
                 </tr>
               ) : users.map(user => {
                 const isProtected = user.role === 'admin';
@@ -257,6 +383,16 @@ export default function AdminUsersPage() {
                         {user.role}
                       </span>
                     </td>
+                    <td className="px-5 py-4">
+                      <span className={`rounded-full border px-2.5 py-1 text-xs font-semibold capitalize ${
+                        user.status === 'inactive'
+                          ? 'border-amber-200 bg-amber-50 text-amber-700 dark:border-amber-900/50 dark:bg-amber-950/30 dark:text-amber-300'
+                          : 'border-emerald-200 bg-emerald-50 text-emerald-700 dark:border-emerald-900/50 dark:bg-emerald-950/30 dark:text-emerald-300'
+                      }`}>
+                        {user.status || 'active'}
+                      </span>
+                    </td>
+                    <td className="px-5 py-4 text-slate-600 dark:text-slate-300">{user.post_count || 0}</td>
                     <td className="px-5 py-4 font-mono text-xs text-primary-600 dark:text-primary-400">/author/{user.slug}</td>
                     <td className="px-5 py-4">
                       <div className="flex justify-end gap-2">
@@ -277,6 +413,34 @@ export default function AdminUsersPage() {
                         >
                           <KeyRound className="h-4 w-4" />
                           Reset
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openStatusModal(user)}
+                          disabled={isProtected}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                          {user.status === 'inactive' ? <UserCheck className="h-4 w-4" /> : <Ban className="h-4 w-4" />}
+                          {user.status === 'inactive' ? 'Reactivate' : 'Deactivate'}
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openTransferModal(user)}
+                          disabled={isProtected || !(user.post_count && user.post_count > 0)}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-slate-200 px-3 py-2 font-semibold text-slate-700 transition-colors hover:bg-slate-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-slate-800 dark:text-slate-300 dark:hover:bg-slate-800"
+                        >
+                          <ArrowRightLeft className="h-4 w-4" />
+                          Transfer
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => openDeleteModal(user)}
+                          disabled={isProtected || Boolean(user.post_count && user.post_count > 0)}
+                          title={user.post_count && user.post_count > 0 ? 'Transfer articles before deleting this user' : 'Delete user'}
+                          className="inline-flex items-center gap-1.5 rounded-lg border border-red-200 px-3 py-2 font-semibold text-red-600 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-40 dark:border-red-900/50 dark:text-red-400 dark:hover:bg-red-950/30"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                          Delete
                         </button>
                       </div>
                     </td>
@@ -438,6 +602,136 @@ export default function AdminUsersPage() {
                   Create link
                 </button>
               )}
+            </div>
+          </form>
+        </div>
+      )}
+
+      {statusTarget && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <form onSubmit={handleStatusSubmit} className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-start gap-3">
+              {statusTarget.status === 'inactive' ? <UserCheck className="mt-1 h-5 w-5 text-emerald-500" /> : <Ban className="mt-1 h-5 w-5 text-amber-500" />}
+              <div>
+                <h2 className="text-xl font-bold text-slate-950 dark:text-white">
+                  {statusTarget.status === 'inactive' ? 'Reactivate user' : 'Deactivate user'}
+                </h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  {statusTarget.status === 'inactive'
+                    ? `${statusTarget.name} will be able to sign in again.`
+                    : `${statusTarget.name} will no longer be able to sign in, but their articles keep the author attribution.`}
+                </p>
+              </div>
+            </div>
+            <input
+              type="password"
+              value={statusPassword}
+              onChange={(event) => setStatusPassword(event.target.value)}
+              placeholder="Your admin password"
+              className="mt-5 w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-slate-800 dark:bg-slate-950"
+              required
+            />
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" onClick={() => setStatusTarget(null)} className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Cancel</button>
+              <button type="submit" disabled={statusMutation.isPending} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-slate-950">
+                {statusMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                {statusTarget.status === 'inactive' ? 'Reactivate' : 'Deactivate'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {transferTarget && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <form onSubmit={handleTransferSubmit} className="w-full max-w-lg rounded-2xl border border-slate-200 bg-white p-6 shadow-2xl dark:border-slate-800 dark:bg-slate-900">
+            <div className="flex items-start gap-3">
+              <ArrowRightLeft className="mt-1 h-5 w-5 text-primary-500" />
+              <div>
+                <h2 className="text-xl font-bold text-slate-950 dark:text-white">Transfer articles</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  Move {transferTarget.post_count || 0} article(s) from {transferTarget.name} to another active user.
+                </p>
+              </div>
+            </div>
+            <div className="mt-5 space-y-4">
+              <select
+                value={transferForm.target_user_id}
+                onChange={(event) => setTransferForm(prev => ({ ...prev, target_user_id: event.target.value }))}
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-slate-800 dark:bg-slate-950"
+                required
+              >
+                <option value="">Select target user</option>
+                {users
+                  .filter(user => user.id !== transferTarget.id && user.status !== 'inactive')
+                  .map(user => (
+                    <option key={user.id} value={user.id}>
+                      {user.name} ({user.email})
+                    </option>
+                  ))}
+              </select>
+              <input
+                type="password"
+                value={transferForm.admin_current_password}
+                onChange={(event) => setTransferForm(prev => ({ ...prev, admin_current_password: event.target.value }))}
+                placeholder="Your admin password"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-primary-500 dark:border-slate-800 dark:bg-slate-950"
+                required
+              />
+            </div>
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" onClick={() => setTransferTarget(null)} className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Cancel</button>
+              <button type="submit" disabled={transferMutation.isPending || !transferForm.target_user_id} className="inline-flex items-center gap-2 rounded-xl bg-slate-950 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 dark:bg-white dark:text-slate-950">
+                {transferMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Transfer articles
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
+
+      {deleteTarget && (
+        <div className="fixed inset-0 z-50 grid place-items-center bg-slate-950/50 p-4 backdrop-blur-sm">
+          <form onSubmit={handleDeleteSubmit} className="w-full max-w-lg rounded-2xl border border-red-200 bg-white p-6 shadow-2xl dark:border-red-900/50 dark:bg-slate-900">
+            <div className="flex items-start gap-3">
+              <Trash2 className="mt-1 h-5 w-5 text-red-500" />
+              <div>
+                <h2 className="text-xl font-bold text-slate-950 dark:text-white">Delete user</h2>
+                <p className="mt-1 text-sm text-slate-500">
+                  This will remove {deleteTarget.name} from the users table. Existing posts will remain, but their author reference will be cleared.
+                </p>
+              </div>
+            </div>
+
+            <div className="mt-5 rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-800 dark:border-red-900/50 dark:bg-red-950/30 dark:text-red-200">
+              Type <span className="font-mono font-semibold">{deleteTarget.email}</span> and confirm with your admin password.
+            </div>
+
+            <div className="mt-5 space-y-4">
+              <input
+                type="email"
+                value={deleteForm.confirm_email}
+                onChange={(event) => setDeleteForm(prev => ({ ...prev, confirm_email: event.target.value }))}
+                placeholder="Confirm user email"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-red-500 dark:border-slate-800 dark:bg-slate-950"
+                required
+              />
+              <input
+                type="password"
+                value={deleteForm.admin_current_password}
+                onChange={(event) => setDeleteForm(prev => ({ ...prev, admin_current_password: event.target.value }))}
+                placeholder="Your admin password"
+                className="w-full rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm outline-none focus:ring-2 focus:ring-red-500 dark:border-slate-800 dark:bg-slate-950"
+                required
+              />
+            </div>
+
+            <div className="mt-6 flex justify-end gap-2">
+              <button type="button" onClick={() => setDeleteTarget(null)} className="rounded-xl px-4 py-2 text-sm font-semibold text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800">Cancel</button>
+              <button type="submit" disabled={deleteMutation.isPending} className="inline-flex items-center gap-2 rounded-xl bg-red-600 px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 hover:bg-red-700">
+                {deleteMutation.isPending && <Loader2 className="h-4 w-4 animate-spin" />}
+                Delete user
+              </button>
             </div>
           </form>
         </div>

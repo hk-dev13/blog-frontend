@@ -1,6 +1,7 @@
 'use client';
 
 import { FormEvent, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { Eye, EyeOff, Loader2, Mail, Save, Settings, ShieldCheck } from 'lucide-react';
 import { fetchApi } from '@/lib/api';
@@ -64,8 +65,10 @@ function PasswordInput({
 }
 
 export default function AdminSettingsPage() {
+  const router = useRouter();
   const user = useAppStore(state => state.user);
   const updateUser = useAppStore(state => state.updateUser);
+  const logout = useAppStore(state => state.logout);
   const pushToast = useToastStore(state => state.push);
 
   const [emailForm, setEmailForm] = useState({
@@ -117,9 +120,11 @@ export default function AdminSettingsPage() {
       });
       pushToast({
         title: 'Password updated',
-        description: 'Use your new password the next time you sign in.',
+        description: 'Please sign in again with your new password.',
         variant: 'success',
       });
+      logout();
+      router.push('/admin/login');
     },
     onError: (error) => {
       pushToast({

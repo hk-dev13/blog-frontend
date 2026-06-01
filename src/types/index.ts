@@ -3,6 +3,9 @@ export interface User {
   name: string;
   email?: string;
   role?: 'admin' | 'author' | string;
+  status?: 'active' | 'inactive' | string;
+  deactivated_at?: string | null;
+  post_count?: number;
   slug: string;
   bio?: string | null;
   short_bio?: string | null;
