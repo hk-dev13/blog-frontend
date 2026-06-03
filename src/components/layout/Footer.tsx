@@ -100,7 +100,7 @@ export default function Footer() {
             <ul className="space-y-3">
               <li>
                 <a
-                  href="mailto:husnikusuma@envoyou.com"
+                  href="mailto:info@envoyou.com"
                   className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Mail className="w-4 h-4 shrink-0" />

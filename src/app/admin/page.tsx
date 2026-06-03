@@ -87,7 +87,7 @@ export default function AdminDashboardPage() {
             className="group rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 dark:border-slate-800/70 dark:bg-slate-900/50"
           >
             <div className="flex items-center gap-4">
-              <div className={`${stat.color} p-3 rounded-2xl shadow-sm ring-4 ring-white/40 dark:ring-white/5`}>
+              <div className={`${stat.color} p-3 rounded-xl shadow-sm ring-1 ring-white/40 dark:ring-white/60`}>
                 <stat.icon className="w-6 h-6 text-white" />
               </div>
               <div className="min-w-0">
