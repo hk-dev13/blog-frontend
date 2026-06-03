@@ -88,7 +88,7 @@ export default async function PostPage({ params }: Props) {
       name: post.author?.name || 'Husni Kusuma',
       url: SITE_URL,
       image: post.author?.avatar_url || 'https://cdn.envoyou.com/admin/husniKusumaEnvoyou.webp',
-      description: 'Self-taught Fullstack Developer & Data Analyst enthusiast. Founder of Envoyou.',
+      description: 'Self-taught Fullstack Developer & AI enthusiast. Founder of Envoyou.',
     },
     publisher: {
       '@type': 'Organization',

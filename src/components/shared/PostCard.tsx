@@ -36,7 +36,7 @@ export default function PostCard({ post, featured = false, priority = false, act
   }
 
   return (
-    <article className={`group flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:-translate-y-1 ${featured ? 'md:flex-row' : ''}`}>
+    <article className={`group flex flex-col bg-white dark:bg-slate-900 rounded-2xl overflow-hidden border border-slate-100 dark:border-slate-800 transition-all duration-300 hover:bg-slate-100 dark:hover:bg-slate-800 hover:-translate-y-1 ${featured ? 'md:flex-row' : ''}`}>
       <div className={`relative overflow-hidden ${featured ? 'md:w-1/2 min-h-[300px]' : 'w-full aspect-[16/9]'}`}>
         <Link href={`/posts/${post.slug}`} className="absolute inset-0 z-0">
           <Image 

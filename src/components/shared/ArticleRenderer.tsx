@@ -44,7 +44,7 @@ export default function ArticleRenderer({
                 <Link
                   key={cat.slug}
                   href={`/categories/${cat.slug}`}
-                  className="inline-block px-3 py-1 text-sm font-semibold uppercase tracking-wider text-primary-600 hover:text-primary-700 dark:text-primary-400 dark:hover:text-primary-300 bg-primary-50 hover:bg-primary-100 dark:bg-primary-900/30 dark:hover:bg-primary-900/50 rounded-full transition-colors"
+                  className="inline-block px-3 py-1 border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-slate-50 rounded-full"
                 >
                   {cat.name}
                 </Link>

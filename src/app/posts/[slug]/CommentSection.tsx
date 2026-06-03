@@ -82,7 +82,7 @@ export default function CommentSection({ postId }: { postId: string }) {
                 type="text" 
                 value={name}
                 onChange={e => setName(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-primary-500 outline-none"
               />
             </div>
             <div>
@@ -92,7 +92,7 @@ export default function CommentSection({ postId }: { postId: string }) {
                 type="email" 
                 value={email}
                 onChange={e => setEmail(e.target.value)}
-                className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary-500 outline-none"
+                className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-primary-500 outline-none"
               />
             </div>
           </div>
@@ -103,13 +103,13 @@ export default function CommentSection({ postId }: { postId: string }) {
               rows={4}
               value={content}
               onChange={e => setContent(e.target.value)}
-              className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-2 focus:ring-primary-500 outline-none resize-y"
+              className="w-full px-4 py-2 rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 focus:ring-1 focus:ring-primary-500 outline-none resize-y"
             ></textarea>
           </div>
           <button 
             type="submit" 
             disabled={mutation.isPending}
-            className="px-6 py-2.5 bg-primary-600 hover:bg-primary-700 text-white font-medium rounded-lg transition-colors flex items-center justify-center min-w-[120px]"
+            className="px-6 py-2.5 border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-slate-50 rounded-full flex items-center justify-center min-w-[120px]"
           >
             {mutation.isPending ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Post Comment'}
           </button>
