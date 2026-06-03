@@ -10,7 +10,7 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Categories',
-  description: 'Jelajahi semua kategori artikel di Envoyou — dari AI & Teknologi, Bisnis, Investasi, hingga Web3.',
+  description: 'Jelajahi semua kategori artikel di Envoyou — dari AI, Teknologi, Bisnis hingga Investasi.',
   openGraph: {
     title: 'Categories | Envoyou Blog',
     description: 'Jelajahi semua kategori artikel di Envoyou.',
@@ -53,7 +53,7 @@ export default async function CategoriesPage() {
             Categories
           </h1>
           <p className="mx-auto max-w-lg text-base leading-7 text-slate-300 md:text-lg">
-            Temukan artikel berdasarkan topik yang paling relevan untuk Anda.
+            Find articles that match your interests by exploring our categories.
           </p>
         </div>
       </header>
@@ -62,7 +62,7 @@ export default async function CategoriesPage() {
       {sortedCategories.length === 0 ? (
         <div className="flex flex-col items-center justify-center py-24 text-slate-400">
           <BookOpen className="w-10 h-10 mb-3 opacity-40" />
-          <p className="text-sm">Belum ada kategori tersedia.</p>
+          <p className="text-sm">No categories available.</p>
         </div>
       ) : (
         <div className="space-y-5">
@@ -70,9 +70,9 @@ export default async function CategoriesPage() {
             <Link
               key={featuredCategory.id}
               href={`/categories/${featuredCategory.slug}`}
-              className="group grid gap-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:grid-cols-[auto_1fr_auto] md:items-center md:p-8"
+              className="group grid gap-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:grid-cols-[auto_1fr_auto] md:items-center md:p-8"
             >
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-600 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-400">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-50">
                 <CategoryIcon category={featuredCategory} className="h-8 w-8" />
               </div>
 
@@ -113,10 +113,10 @@ export default async function CategoriesPage() {
                 <Link
                   key={cat.id}
                   href={`/categories/${cat.slug}`}
-                  className="group flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:hover:border-primary-500/60 hover:shadow-xl hover:shadow-primary-500/10"
+                  className="group flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:hover:border-primary-500/60"
                 >
                   <div>
-                    <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-600 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-400">
+                    <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-50">
                       <CategoryIcon category={cat} className="h-6 w-6" />
                     </div>
 

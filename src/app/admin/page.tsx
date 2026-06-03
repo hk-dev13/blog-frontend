@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="group rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary-500/10 dark:border-slate-800/70 dark:bg-slate-900/50"
+            className="group rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 dark:border-slate-800/70 dark:bg-slate-900/50"
           >
             <div className="flex items-center gap-4">
               <div className={`${stat.color} p-3 rounded-2xl shadow-sm ring-4 ring-white/40 dark:ring-white/5`}>
