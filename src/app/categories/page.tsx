@@ -72,7 +72,7 @@ export default async function CategoriesPage() {
               href={`/categories/${featuredCategory.slug}`}
               className="group grid gap-6 rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:grid-cols-[auto_1fr_auto] md:items-center md:p-8"
             >
-              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-50">
+              <div className="inline-flex h-16 w-16 items-center justify-center rounded-2xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-slate-50 dark:group-hover:text-primary-50">
                 <CategoryIcon category={featuredCategory} className="h-8 w-8" />
               </div>
 
@@ -116,7 +116,7 @@ export default async function CategoriesPage() {
                   className="group flex flex-col justify-between rounded-2xl border border-slate-100 dark:border-slate-800 bg-white dark:bg-slate-900 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:hover:border-primary-500/60"
                 >
                   <div>
-                    <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-50">
+                    <div className="mb-4 inline-flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-slate-50 dark:group-hover:text-primary-50">
                       <CategoryIcon category={cat} className="h-6 w-6" />
                     </div>
 

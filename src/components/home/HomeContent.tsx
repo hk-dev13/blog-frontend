@@ -189,7 +189,7 @@ export default function HomeContent({
               >
                 <div className="flex flex-col h-full">
                   <div className="mb-4 flex items-center justify-between gap-3">
-                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-primary-50">
+                    <div className="inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-primary-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-slate-50 dark:group-hover:text-primary-50">
                       <CategoryIcon category={cat} className="h-5 w-5" />
                     </div>
                     <ArrowRight className="h-4 w-4 -translate-x-2 text-primary-600 opacity-0 transition-all group-hover:translate-x-0 group-hover:opacity-100 dark:text-primary-400" />
@@ -217,7 +217,7 @@ export default function HomeContent({
       {!activeTag && (
         <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:p-8">
           <div className="max-w-3xl">
-            <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-slate-50">
+            <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-slate-50 dark:group-hover:text-slate-50">
               <BookOpen className="h-5 w-5" />
             </div>
             <h2 className="font-serif text-3xl font-bold text-slate-950 dark:text-white">
@@ -235,7 +235,7 @@ export default function HomeContent({
             </div>
             <Link
               href="/about"
-              className="mt-7 inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-primary-400"
+              className="mt-7 inline-flex items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-slate-50"
             >
               Learn More
               <ArrowRight className="h-4 w-4" />
@@ -336,7 +336,7 @@ export default function HomeContent({
         <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:p-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex max-w-2xl gap-4">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-primary-400 dark:group-hover:text-slate-50">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-slate-50 dark:group-hover:text-slate-50">
                 <UserRound className="h-5 w-5" />
               </div>
               <div>
@@ -354,7 +354,7 @@ export default function HomeContent({
             </div>
             <Link
               href="/author/husni-kusuma"
-              className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-primary-400"
+              className="inline-flex w-fit items-center gap-2 rounded-full border border-slate-200 px-5 py-2.5 text-sm font-semibold text-slate-700 transition-colors hover:border-primary-500 hover:text-primary-600 dark:border-slate-700 dark:text-slate-200 dark:hover:border-primary-400 dark:hover:text-slate-50"
             >
               View Profile
               <ArrowRight className="h-4 w-4" />
