@@ -44,7 +44,7 @@ export default function Footer() {
           {/* Col 1 — Brand */}
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2.5 w-fit group">
-              <LogoMark className="h-8 w-8 text-primary-600 dark:text-primary-400 transition-transform group-hover:scale-110" />
+              <LogoMark className="h-6 w-6 text-primary-600 dark:text-primary-400 transition-transform group-hover:scale-110" />
               <span className="text-2xl leading-none font-bold font-serif text-primary-600 dark:text-primary-400">
                 Envoyou
               </span>
@@ -64,7 +64,7 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors hover:underline hover:underline-offset-4"
                   >
                     {label}
                   </Link>
@@ -83,7 +83,7 @@ export default function Footer() {
                 <li key={href}>
                   <Link
                     href={href}
-                    className="text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
+                    className="text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors hover:underline hover:underline-offset-4"
                   >
                     {label}
                   </Link>

@@ -34,7 +34,7 @@ export default function Navbar() {
     <header className="sticky top-0 z-50 w-full border-b border-slate-200 dark:border-slate-800 bg-white/80 dark:bg-slate-900/80 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
         <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
-          <LogoMark className="h-8 w-8 text-primary-600 dark:text-primary-400" />
+          <LogoMark className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           <span className="text-2xl leading-none font-bold font-serif text-primary-600 dark:text-primary-400">
             Envoyou
           </span>

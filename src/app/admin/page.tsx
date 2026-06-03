@@ -41,11 +41,11 @@ export default function AdminDashboardPage() {
   const recentPosts = posts.slice(0, 5);
 
   const stats = [
-    { label: 'Total Posts', value: totalPosts, icon: FileText, color: 'bg-slate-900 dark:bg-slate-800' },
-    { label: 'Published', value: publishedPosts, icon: TrendingUp, color: 'bg-slate-900 dark:bg-slate-800' },
-    { label: 'Scheduled', value: scheduledPosts, icon: Calendar, color: 'bg-slate-900 dark:bg-slate-800' },
-    { label: 'Drafts', value: draftPosts, icon: PenLine, color: 'bg-slate-900 dark:bg-slate-800' },
-    { label: 'Total Views', value: totalViews, icon: Eye, color: 'bg-slate-900 dark:bg-slate-800' },
+    { label: 'Total Posts', value: totalPosts, icon: FileText, color: 'bg-slate-100 dark:bg-slate-800' },
+    { label: 'Published', value: publishedPosts, icon: TrendingUp, color: 'bg-slate-100 dark:bg-slate-800' },
+    { label: 'Scheduled', value: scheduledPosts, icon: Calendar, color: 'bg-slate-100 dark:bg-slate-800' },
+    { label: 'Drafts', value: draftPosts, icon: PenLine, color: 'bg-slate-100 dark:bg-slate-800' },
+    { label: 'Total Views', value: totalViews, icon: Eye, color: 'bg-slate-100 dark:bg-slate-800' },
   ];
 
   return (
@@ -84,11 +84,11 @@ export default function AdminDashboardPage() {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="group rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 dark:border-slate-800/70 dark:bg-slate-900/50"
+            className="group rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-slate-100 dark:hover:bg-slate-800/50 dark:border-slate-800/70 dark:bg-slate-900/50"
           >
             <div className="flex items-center gap-4">
-              <div className={`${stat.color} p-3 rounded-xl shadow-sm ring-1 ring-white/40 dark:ring-white/60`}>
-                <stat.icon className="w-6 h-6 text-white" />
+              <div className={`${stat.color} p-3 rounded-2xl shadow-sm ring-1 ring-slate-500 dark:ring-white/60`}>
+                <stat.icon className="w-6 h-6 text-slate-950 dark:text-white" />
               </div>
               <div className="min-w-0">
                 <p className="text-2xl font-bold text-slate-950 dark:text-white tabular-nums">{stat.value}</p>
@@ -111,7 +111,7 @@ export default function AdminDashboardPage() {
           </p>
           <Link
             href="/admin/analytics"
-            className="mt-4 inline-flex items-center justify-center rounded-full bg-slate-950 px-4 py-2 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+            className="mt-4 inline-flex items-center justify-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm transition-colors hover:text-slate-950 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-600 dark:hover:text-white"
           >
             Open Analytics →
           </Link>
@@ -127,7 +127,7 @@ export default function AdminDashboardPage() {
               <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Recent Posts</h2>
               <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Latest updates across drafts, scheduled, and published posts.</p>
             </div>
-            <Link href="/admin/posts" className="text-sm font-semibold text-primary-600 dark:text-primary-400 hover:underline">
+            <Link href="/admin/posts" className="mt-4 inline-flex items-center justify-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm transition-colors hover:text-slate-950 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-600 dark:hover:text-white">
               View all →
             </Link>
           </div>

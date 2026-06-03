@@ -47,7 +47,7 @@ function PasswordInput({
           minLength={minLength}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 pr-12 text-sm text-slate-950 outline-none transition-colors focus:ring-2 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-12 text-sm text-slate-950 outline-none transition-colors focus:ring-1 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
           required
         />
         <button
@@ -182,7 +182,7 @@ export default function AdminSettingsPage() {
           className="rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50"
         >
           <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-900 text-white shadow-sm ring-4 ring-white/40 dark:bg-slate-800 dark:ring-white/5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-900 shadow-sm ring-2 ring-white/40 dark:text-slate-300 dark:bg-slate-800 dark:ring-white/5">
               <Mail className="h-5 w-5" />
             </span>
             <div>
@@ -196,7 +196,7 @@ export default function AdminSettingsPage() {
           <div className="mt-6 space-y-4">
             <div>
               <label htmlFor="settings-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
-                New email
+                Your email
               </label>
               <input
                 id="settings-email"
@@ -204,7 +204,7 @@ export default function AdminSettingsPage() {
                 autoComplete="email"
                 value={emailForm.email}
                 onChange={(event) => setEmailForm(prev => ({ ...prev, email: event.target.value }))}
-                className="mt-2 w-full rounded-lg border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-950 outline-none transition-colors focus:ring-2 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-950 outline-none transition-colors focus:ring-1 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
                 required
               />
             </div>
@@ -221,7 +221,7 @@ export default function AdminSettingsPage() {
           <button
             type="submit"
             disabled={emailMutation.isPending}
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             {emailMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save email
@@ -233,7 +233,7 @@ export default function AdminSettingsPage() {
           className="rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50"
         >
           <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-900 text-white shadow-sm ring-4 ring-white/40 dark:bg-slate-800 dark:ring-white/5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-900 shadow-sm ring-2 ring-white/40 dark:text-slate-300 dark:bg-slate-800 dark:ring-white/5">
               <ShieldCheck className="h-5 w-5" />
             </span>
             <div>
@@ -275,7 +275,7 @@ export default function AdminSettingsPage() {
           <button
             type="submit"
             disabled={passwordMutation.isPending}
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-slate-950 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition-colors hover:bg-slate-900 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-white dark:text-slate-950 dark:hover:bg-slate-100"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
           >
             {passwordMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save password

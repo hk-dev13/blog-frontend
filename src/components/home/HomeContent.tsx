@@ -172,8 +172,8 @@ export default function HomeContent({
         <section>
           <div className="flex items-center justify-between mb-8">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-primary-100 dark:bg-primary-900/30 flex items-center justify-center">
-                <LayoutGrid className="w-5 h-5 text-primary-600 dark:text-primary-400" />
+              <div className="w-10 h-10 rounded-xl bg-slate-100 dark:bg-slate-800 flex items-center justify-center">
+                <LayoutGrid className="w-5 h-5 text-slate-500 dark:text-slate-400" />
               </div>
               <h2 className="text-2xl font-bold font-serif text-slate-900 dark:text-white">
                 Browse by Category
@@ -185,7 +185,7 @@ export default function HomeContent({
               <Link
                 key={cat.id}
                 href={`/categories/${cat.slug}`}
-                className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60"
+                className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:bg-slate-100 dark:hover:bg-slate-800 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60"
               >
                 <div className="flex flex-col h-full">
                   <div className="mb-4 flex items-center justify-between gap-3">
@@ -215,7 +215,7 @@ export default function HomeContent({
       )}
 
       {!activeTag && (
-        <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:p-8">
+        <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 dark:hover:bg-slate-800 md:p-8">
           <div className="max-w-3xl">
             <div className="mb-5 inline-flex h-10 w-10 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-slate-50 dark:group-hover:text-slate-50">
               <BookOpen className="h-5 w-5" />
@@ -333,7 +333,7 @@ export default function HomeContent({
       )}
 
       {!activeTag && (
-        <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 md:p-8">
+        <section className="group rounded-2xl border border-slate-100 bg-white p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:border-primary-500/50 hover:bg-slate-100 dark:border-slate-800 dark:bg-slate-900 dark:hover:border-primary-500/60 dark:hover:bg-slate-800 md:p-8">
           <div className="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
             <div className="flex max-w-2xl gap-4">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl border border-slate-200 text-slate-500 transition-colors duration-300 group-hover:border-primary-500 group-hover:text-slate-900 dark:border-slate-700 dark:text-slate-400 dark:group-hover:border-slate-50 dark:group-hover:text-slate-50">

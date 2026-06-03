@@ -373,7 +373,7 @@ export default function AdminUsersPage() {
               ) : users.map(user => {
                 const isProtected = user.role === 'admin';
                 return (
-                  <tr key={user.id} className="text-sm">
+                  <tr key={user.id} className="text-sm hover:bg-slate-50 dark:hover:bg-slate-800/50">
                     <td className="px-5 py-4">
                       <div className="font-semibold text-slate-950 dark:text-white">{user.name}</div>
                       <div className="text-slate-500">{user.email}</div>

@@ -106,7 +106,7 @@ return (
                 name="email"
                 type="email"
                 required
-                className="appearance-none relative block w-full px-4 py-3 border border-slate-200/70 dark:border-slate-800/70 placeholder-slate-500 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-white/70 dark:bg-slate-950/40 shadow-sm"
+                className="appearance-none relative block w-full px-4 py-3 border border-slate-200/70 dark:border-slate-800/70 placeholder-slate-500 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-white/70 dark:bg-slate-950/40 shadow-sm"
                 placeholder="Email address"
                 value={email}
                 onChange={e => setEmail(e.target.value)}
@@ -120,7 +120,7 @@ return (
                   name="password"
                   type={showPassword ? 'text' : 'password'}
                   required
-                  className="appearance-none relative block w-full px-4 py-3 pr-12 border border-slate-200/70 dark:border-slate-800/70 placeholder-slate-500 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-white/70 dark:bg-slate-950/40 shadow-sm"
+                  className="appearance-none relative block w-full px-4 py-3 pr-12 border border-slate-200/70 dark:border-slate-800/70 placeholder-slate-500 text-slate-900 dark:text-white rounded-xl focus:outline-none focus:ring-1 focus:ring-primary-500 focus:border-primary-500 focus:z-10 sm:text-sm bg-white/70 dark:bg-slate-950/40 shadow-sm"
                   placeholder="Password"
                   value={password}
                   onChange={e => setPassword(e.target.value)}
