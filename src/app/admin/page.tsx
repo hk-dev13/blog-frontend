@@ -50,28 +50,28 @@ export default function AdminDashboardPage() {
 
   return (
     <div className="space-y-8">
-      <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10 md:py-12">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.26),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.18),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <header className="admin-page-hero overflow-hidden">
+        <div className="admin-page-hero-bg" />
+        <div className="admin-page-hero-content">
           <div className="max-w-2xl">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white shadow-lg shadow-white/5">
+            <div className="admin-page-hero-icon">
               <FileText className="h-5 w-5" />
             </div>
-            <h1 className="text-3xl font-serif font-bold text-white md:text-4xl">Dashboard</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-300 md:text-base">
+            <h1 className="admin-page-title">Dashboard</h1>
+            <p className="admin-page-description">
               A quick overview of content performance and recent activity.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="admin-hero-actions">
             <Link
               href="/admin/posts/create"
-              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary-400 hover:bg-primary-500/10"
+              className="admin-hero-button"
             >
               Create Post
             </Link>
             <Link
               href="/admin/posts"
-              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary-400 hover:bg-primary-500/10"
+              className="admin-hero-button"
             >
               Manage Posts
             </Link>
@@ -84,7 +84,7 @@ export default function AdminDashboardPage() {
         {stats.map((stat) => (
           <div
             key={stat.label}
-            className="group rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm transition-all duration-300 hover:-translate-y-1 hover:bg-slate-100 dark:hover:bg-slate-800/50 dark:border-slate-800/70 dark:bg-slate-900/50"
+            className="admin-surface group p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-100 dark:hover:bg-slate-800/50"
           >
             <div className="flex items-center gap-4">
               <div className={`${stat.color} p-3 rounded-2xl shadow-sm ring-1 ring-slate-500 dark:ring-white/60`}>
@@ -104,7 +104,7 @@ export default function AdminDashboardPage() {
         <div className="lg:col-span-2">
           <ViewsChart days={7} showRangeControls={false} height={160} compact />
         </div>
-        <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50">
+        <div className="admin-surface-padded">
           <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Analytics</h3>
           <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-6">
             Open detailed trends, top posts, and export reports for editorial and ads decisions.
@@ -119,7 +119,7 @@ export default function AdminDashboardPage() {
       </div>
 
       {/* Recent Posts */}
-      <div className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50">
+      <div className="admin-surface overflow-hidden">
         <div className="relative overflow-hidden border-b border-slate-200/70 p-6 dark:border-slate-800/70">
           <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_0%,rgba(13,135,207,0.12),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.55),transparent)] dark:bg-[radial-gradient(circle_at_30%_0%,rgba(13,135,207,0.18),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
           <div className="relative flex items-center justify-between">

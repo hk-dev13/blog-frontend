@@ -163,14 +163,14 @@ export default function AdminSettingsPage() {
 
   return (
     <div className="mx-auto max-w-5xl space-y-8">
-      <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10 md:py-12">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.14),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
+      <header className="admin-page-hero overflow-hidden">
+        <div className="admin-page-hero-bg" />
         <div className="relative z-10 max-w-2xl">
-          <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white shadow-lg shadow-white/5">
+          <div className="admin-page-hero-icon">
             <Settings className="h-5 w-5" />
           </div>
-          <h1 className="text-3xl font-serif font-bold text-white md:text-4xl">Settings</h1>
-          <p className="mt-2 text-sm leading-6 text-slate-300 md:text-base">
+          <h1 className="admin-page-title">Settings</h1>
+          <p className="admin-page-description">
             Manage your private login email and password. Your public author profile stays separate.
           </p>
         </div>
@@ -179,7 +179,7 @@ export default function AdminSettingsPage() {
       <div className="grid gap-6 lg:grid-cols-2">
         <form
           onSubmit={handleEmailSubmit}
-          className="rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50"
+          className="admin-surface-padded"
         >
           <div className="flex items-start gap-3">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-900 shadow-sm ring-2 ring-white/40 dark:text-slate-300 dark:bg-slate-800 dark:ring-white/5">
@@ -230,7 +230,7 @@ export default function AdminSettingsPage() {
 
         <form
           onSubmit={handlePasswordSubmit}
-          className="rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50"
+          className="admin-surface-padded"
         >
           <div className="flex items-start gap-3">
             <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-900 shadow-sm ring-2 ring-white/40 dark:text-slate-300 dark:bg-slate-800 dark:ring-white/5">

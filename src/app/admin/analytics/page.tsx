@@ -133,7 +133,7 @@ export default function AdminAnalyticsPage() {
       <ViewsChart days={days} onDaysChange={setDays} showRangeControls={false} height={320} />
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2 bg-white/80 dark:bg-slate-900/50 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-sm overflow-hidden">
+        <div className="lg:col-span-2 admin-surface overflow-hidden">
           <div className="p-6 border-b border-slate-200/70 dark:border-slate-800/70 flex items-center justify-between">
             <div>
               <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Top Posts</h2>
@@ -201,7 +201,7 @@ export default function AdminAnalyticsPage() {
           </div>
         </div>
 
-        <div className="bg-white/80 dark:bg-slate-900/50 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-sm p-6">
+        <div className="admin-surface-padded">
           <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Notes</h3>
           <ul className="mt-3 space-y-2 text-sm text-slate-600 dark:text-slate-300">
             <li>Data comes from daily aggregation (`post_views_daily`).</li>

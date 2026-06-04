@@ -384,22 +384,22 @@ export default function AdminPostsPage() {
 
   return (
     <div className="space-y-8">
-      <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10 md:py-12">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.24),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.16),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <header className="admin-page-hero overflow-hidden">
+        <div className="admin-page-hero-bg" />
+        <div className="admin-page-hero-content">
           <div className="max-w-2xl">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white shadow-lg shadow-white/5">
+            <div className="admin-page-hero-icon">
               <Edit className="h-5 w-5" />
             </div>
-            <h1 className="text-3xl font-serif font-bold text-white md:text-4xl">Manage Posts</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-300 md:text-base">
+            <h1 className="admin-page-title">Manage Posts</h1>
+            <p className="admin-page-description">
               Search, filter, and manage your drafts, scheduled, and published posts.
             </p>
           </div>
-          <div className="flex flex-wrap gap-2">
+          <div className="admin-hero-actions">
             <Link
               href="/admin/posts/create"
-              className="inline-flex items-center justify-center rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary-400 hover:bg-primary-500/10"
+              className="admin-hero-button"
             >
               Create Post
             </Link>
@@ -408,7 +408,7 @@ export default function AdminPostsPage() {
       </header>
 
       {/* Search, Filter & Bulk Action Bar */}
-      <div className="rounded-2xl border border-slate-200/70 bg-white/80 p-4 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50">
+      <div className="admin-surface p-4">
         <div className="flex flex-col sm:flex-row gap-3 items-start sm:items-center">
         <div className="flex w-full flex-col gap-2 sm:w-auto sm:flex-row sm:items-center">
           <button
@@ -963,7 +963,7 @@ export default function AdminPostsPage() {
       )}
 
       {/* Table */}
-      <div className="bg-white/80 dark:bg-slate-900/50 rounded-2xl shadow-sm border border-slate-200/70 dark:border-slate-800/70 overflow-hidden">
+      <div className="admin-surface overflow-hidden">
         {isLoading ? (
           <div className="flex items-center justify-center h-64">
             <Loader2 className="w-8 h-8 animate-spin text-primary-500" />

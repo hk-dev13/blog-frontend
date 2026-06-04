@@ -307,15 +307,15 @@ export default function AdminUsersPage() {
 
   return (
     <div className="space-y-8">
-      <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.22),transparent_40%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <header className="admin-page-hero overflow-hidden">
+        <div className="admin-page-hero-bg" />
+        <div className="admin-page-hero-content">
           <div>
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white">
+            <div className="admin-page-hero-icon">
               <Users className="h-5 w-5" />
             </div>
-            <h1 className="text-3xl font-serif font-bold text-white md:text-4xl">User Recovery</h1>
-            <p className="mt-2 max-w-2xl text-sm leading-6 text-slate-300 md:text-base">
+            <h1 className="admin-page-title">User Recovery</h1>
+            <p className="admin-page-description max-w-2xl">
               Invite authors and help them regain access without directly setting their password.
             </p>
           </div>
@@ -326,7 +326,7 @@ export default function AdminUsersPage() {
               setInviteResult(null);
               setInviteForm({ name: '', email: '', admin_current_password: '' });
             }}
-            className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary-400 hover:bg-primary-500/10"
+            className="admin-hero-button"
           >
             <UserPlus className="h-4 w-4" />
             Invite Author
@@ -334,7 +334,7 @@ export default function AdminUsersPage() {
         </div>
       </header>
 
-      <section className="overflow-hidden rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50">
+      <section className="admin-surface overflow-hidden">
         <div className="border-b border-slate-200/70 bg-slate-50/60 p-4 dark:border-slate-800/70 dark:bg-slate-950/40">
           <div className="relative max-w-md">
             <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-slate-400" />
