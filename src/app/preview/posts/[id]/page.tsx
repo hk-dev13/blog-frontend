@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { useQuery } from '@tanstack/react-query';
 import { Loader2 } from 'lucide-react';
@@ -17,7 +17,12 @@ export default function PreviewPostPage() {
   const params = useParams();
   const postId = params.id as string;
   const token = useAppStore(state => state.token);
-  const hydrated = useAppStore.persist.hasHydrated();
+  const [hydrated, setHydrated] = useState(false);
+
+  useEffect(() => {
+    setHydrated(useAppStore.persist?.hasHydrated?.() ?? true);
+    return useAppStore.persist?.onFinishHydration?.(() => setHydrated(true));
+  }, []);
 
   useEffect(() => {
     if (hydrated && !token) {

@@ -2,10 +2,10 @@
 
 import Link from 'next/link';
 import { Search, Moon, Sun } from 'lucide-react';
-import { useTheme } from 'next-themes';
 import { useRouter } from 'next/navigation';
 import { useState, useEffect, FormEvent } from 'react';
 import LogoMark from '@/components/shared/LogoMark';
+import { useTheme } from '@/components/ThemeProvider';
 
 export default function Navbar() {
   const { theme, setTheme, systemTheme } = useTheme();
