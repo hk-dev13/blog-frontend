@@ -57,6 +57,92 @@ body {
   }
 }
 
+@layer components {
+  .admin-page-hero {
+    @apply relative overflow-visible rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10 md:py-12;
+  }
+
+  .admin-page-hero-bg {
+    @apply absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.14),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)];
+  }
+
+  .admin-page-hero-content {
+    @apply relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between;
+  }
+
+  .admin-page-hero-icon {
+    @apply mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white shadow-lg shadow-white/5;
+  }
+
+  .admin-page-title {
+    @apply text-3xl font-serif font-bold text-white md:text-4xl;
+  }
+
+  .admin-page-description {
+    @apply mt-2 text-sm leading-6 text-slate-300 md:text-base;
+  }
+
+  .admin-hero-actions {
+    @apply flex flex-wrap items-center gap-2;
+  }
+
+  .admin-hero-button {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary-400 hover:bg-primary-500/10 disabled:opacity-50;
+  }
+
+  .admin-hero-button-primary {
+    @apply inline-flex items-center justify-center gap-2 rounded-full border border-white/10 bg-slate-950 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-900 disabled:opacity-50;
+  }
+
+  .admin-split-action {
+    @apply relative;
+  }
+
+  .admin-split-action-group {
+    @apply flex;
+  }
+
+  .admin-split-action-main {
+    @apply inline-flex items-center gap-2 rounded-l-full border border-white/10 bg-slate-950 px-5 py-2 text-sm font-semibold text-white transition-colors hover:bg-slate-900 disabled:opacity-50;
+  }
+
+  .admin-split-action-trigger {
+    @apply inline-flex items-center rounded-r-full border-l border-white/10 bg-slate-900 px-2 py-2 text-white transition-colors hover:bg-slate-800 disabled:opacity-50;
+  }
+
+  .admin-floating-panel {
+    @apply absolute right-0 z-50 mt-2 rounded-2xl border border-slate-200/70 bg-white/90 shadow-xl backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/70;
+  }
+
+  .admin-modal-panel {
+    @apply rounded-2xl border border-slate-200/70 bg-white/90 shadow-xl backdrop-blur dark:border-slate-800/70 dark:bg-slate-950/70;
+  }
+
+  .admin-menu-item {
+    @apply flex w-full items-center gap-3 px-4 py-3 text-left text-sm text-slate-700 transition-colors hover:bg-slate-50 dark:text-slate-300 dark:hover:bg-slate-800;
+  }
+
+  .admin-surface {
+    @apply rounded-2xl border border-slate-200/70 bg-white/80 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50;
+  }
+
+  .admin-surface-padded {
+    @apply rounded-2xl border border-slate-200/70 bg-white/80 p-6 shadow-sm dark:border-slate-800/70 dark:bg-slate-900/50;
+  }
+
+  .admin-segmented {
+    @apply inline-flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.06] p-1;
+  }
+
+  .admin-segmented-item {
+    @apply rounded-full px-3 py-1.5 text-sm font-semibold text-white/80 transition-colors hover:bg-white/10 hover:text-white;
+  }
+
+  .admin-segmented-item[data-active="true"] {
+    @apply bg-white text-slate-950 shadow-sm hover:bg-white hover:text-slate-950;
+  }
+}
+
 /* ── Global Blockquote Design System ── */
 .prose blockquote {
   position: relative;

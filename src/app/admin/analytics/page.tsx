@@ -92,28 +92,27 @@ export default function AdminAnalyticsPage() {
 
   return (
     <div className="max-w-7xl mx-auto space-y-8">
-      <header className="relative overflow-hidden rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10 md:py-12">
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.14),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <header className="admin-page-hero overflow-hidden">
+        <div className="admin-page-hero-bg" />
+        <div className="admin-page-hero-content">
           <div className="max-w-2xl">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white shadow-lg shadow-white/5">
+            <div className="admin-page-hero-icon">
               <BarChart3 className="h-5 w-5" />
             </div>
-            <h1 className="text-3xl font-serif font-bold text-white md:text-4xl">Analytics</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-300 md:text-base">
+            <h1 className="admin-page-title">Analytics</h1>
+            <p className="admin-page-description">
               Track real audience interest for editorial and ads decisions.
             </p>
           </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.06] px-1 py-1">
+          <div className="admin-hero-actions">
+            <div className="admin-segmented">
               {[7, 14, 30, 90].map((d) => (
                 <button
                   key={d}
                   type="button"
                   onClick={() => setDays(d)}
-                  className={`px-3 py-1.5 rounded-full text-sm font-semibold transition-colors ${
-                    days === d ? 'bg-white text-slate-950' : 'text-white/80 hover:bg-white/10'
-                  }`}
+                  data-active={days === d}
+                  className="admin-segmented-item"
                 >
                   {d}d
                 </button>
@@ -122,7 +121,7 @@ export default function AdminAnalyticsPage() {
             <button
               type="button"
               onClick={exportTopPostsCsv}
-              className="inline-flex items-center justify-center gap-2 rounded-full border border-white/15 bg-white/[0.06] px-4 py-2 text-sm font-semibold text-white transition-colors hover:border-primary-400 hover:bg-primary-500/10"
+              className="admin-hero-button"
             >
               <Download className="h-4 w-4" />
               Export CSV

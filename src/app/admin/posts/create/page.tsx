@@ -255,15 +255,15 @@ export default function CreatePostPage() {
 
   return (
     <div className="max-w-6xl mx-auto space-y-8">
-      <header className="relative overflow-visible rounded-2xl bg-slate-950 px-6 py-10 shadow-2xl shadow-slate-950/10 md:px-10 md:py-12">
-        <div className="absolute inset-0 rounded-2xl bg-[radial-gradient(circle_at_40%_0%,rgba(13,135,207,0.22),transparent_40%),radial-gradient(circle_at_80%_20%,rgba(99,102,241,0.14),transparent_35%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
-        <div className="relative z-10 flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
+      <header className="admin-page-hero">
+        <div className="admin-page-hero-bg" />
+        <div className="admin-page-hero-content">
           <div className="max-w-2xl">
-            <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-2xl border border-white/20 bg-white/[0.06] text-white shadow-lg shadow-white/5">
+            <div className="admin-page-hero-icon">
               <AlignLeft className="h-5 w-5" />
             </div>
-            <h1 className="text-3xl font-serif font-bold text-white md:text-4xl">Create New Post</h1>
-            <p className="mt-2 text-sm leading-6 text-slate-300 md:text-base">
+            <h1 className="admin-page-title">Create New Post</h1>
+            <p className="admin-page-description">
               Write, preview, publish, or schedule your next post.
             </p>
           {autosaveStatus !== 'idle' && (
@@ -282,11 +282,11 @@ export default function CreatePostPage() {
             </p>
           )}
           </div>
-          <div className="flex flex-wrap items-center gap-2">
+          <div className="admin-hero-actions">
           <button
             onClick={handlePreview}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white border border-white/15 bg-white/[0.06] rounded-full hover:border-primary-400 hover:bg-primary-500/10 transition-colors disabled:opacity-50"
+            className="admin-hero-button"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
             Preview
@@ -295,19 +295,19 @@ export default function CreatePostPage() {
           <button
             onClick={handleSaveDraft}
             disabled={isSaving}
-            className="flex items-center gap-2 px-4 py-2 text-sm font-semibold text-white border border-white/15 bg-white/[0.06] rounded-full hover:border-primary-400 hover:bg-primary-500/10 transition-colors disabled:opacity-50"
+            className="admin-hero-button"
           >
             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
             Draft
           </button>
 
           {/* Publish / Schedule Split Button */}
-          <div className="relative">
-            <div className="flex">
+          <div className="admin-split-action">
+            <div className="admin-split-action-group">
               <button
                 onClick={handlePublishNow}
                 disabled={isSaving}
-                className="flex items-center gap-2 px-5 py-2 text-sm font-semibold text-white bg-slate-950 hover:bg-slate-900 rounded-l-full transition-colors disabled:opacity-50 border border-white/10"
+                className="admin-split-action-main"
               >
                 {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
                 Publish
@@ -315,7 +315,7 @@ export default function CreatePostPage() {
               <button
                 onClick={() => { setShowPublishMenu(!showPublishMenu); setShowScheduler(false); }}
                 disabled={isSaving}
-                className="flex items-center px-2 py-2 text-white bg-slate-900 hover:bg-slate-800 rounded-r-full border-l border-white/10 transition-colors disabled:opacity-50"
+                className="admin-split-action-trigger"
               >
                 <ChevronDown className="w-4 h-4" />
               </button>
@@ -323,10 +323,10 @@ export default function CreatePostPage() {
 
             {/* Dropdown Menu */}
             {showPublishMenu && (
-              <div className="absolute right-0 mt-2 w-64 bg-white/90 dark:bg-slate-950/70 rounded-2xl shadow-xl border border-slate-200/70 dark:border-slate-800/70 z-50 overflow-hidden backdrop-blur">
+              <div className="admin-floating-panel w-64 overflow-hidden">
                 <button
                   onClick={() => { setShowPublishMenu(false); setShowScheduler(true); }}
-                  className="flex items-center gap-3 w-full px-4 py-3 text-sm text-slate-700 dark:text-slate-300 hover:bg-slate-50 dark:hover:bg-slate-800 transition-colors text-left"
+                  className="admin-menu-item"
                 >
                   <CalendarClock className="w-4 h-4 text-amber-500" />
                   <div>
@@ -339,7 +339,7 @@ export default function CreatePostPage() {
 
             {/* Schedule Modal */}
             {showScheduler && (
-              <div className="absolute right-0 mt-2 w-80 bg-white/90 dark:bg-slate-950/70 rounded-2xl shadow-xl border border-slate-200/70 dark:border-slate-800/70 z-50 p-4 space-y-4 backdrop-blur">
+              <div className="admin-floating-panel w-80 p-4 space-y-4">
                 <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                   <CalendarClock className="w-4 h-4 text-amber-500" />
                   Schedule Publication
@@ -377,7 +377,7 @@ export default function CreatePostPage() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         {/* Main Editor Area */}
         <div className="lg:col-span-2 space-y-6">
-          <div className="bg-white/80 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-sm space-y-4">
+          <div className="admin-surface-padded space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
               <input
@@ -475,7 +475,7 @@ export default function CreatePostPage() {
         {/* Sidebar Options */}
         <div className="space-y-6">
           {/* Cover Image Upload */}
-          <div className="bg-white/80 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-sm space-y-4">
+          <div className="admin-surface-padded space-y-4">
             <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cover Image</h3>
 
             {coverImageUrl ? (
@@ -570,7 +570,7 @@ export default function CreatePostPage() {
           </div>
 
           {/* Categories */}
-          <div className="bg-white/80 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-sm space-y-4">
+          <div className="admin-surface-padded space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Categories</h3>
               <button 
@@ -602,7 +602,7 @@ export default function CreatePostPage() {
           </div>
 
           {/* Tags */}
-          <div className="bg-white/80 dark:bg-slate-900/50 p-6 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-sm space-y-4">
+          <div className="admin-surface-padded space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Tags</h3>
               <button 
@@ -634,7 +634,7 @@ export default function CreatePostPage() {
           </div>
 
           {/* Featured Article Toggle */}
-          <div className="bg-white/80 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 shadow-sm">
+          <div className="admin-surface p-4">
             <label className="flex items-center justify-between cursor-pointer">
               <div className="flex items-center gap-2">
                 <Star className={`w-4 h-4 ${isFeatured ? 'text-amber-400 fill-amber-400' : 'text-slate-400'}`} />
@@ -657,7 +657,7 @@ export default function CreatePostPage() {
           </div>
 
           {/* SEO Settings (Collapsible) */}
-          <div className="bg-white/80 dark:bg-slate-900/50 rounded-2xl border border-slate-200/70 dark:border-slate-800/70 overflow-hidden shadow-sm">
+          <div className="admin-surface overflow-hidden">
             <button
               type="button"
               onClick={() => setSeoOpen(!seoOpen)}
@@ -736,7 +736,7 @@ export default function CreatePostPage() {
       {/* Taxonomy Modal */}
       {modalState.isOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
-          <div className="bg-white/90 dark:bg-slate-950/70 rounded-2xl shadow-xl w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200 border border-slate-200/70 dark:border-slate-800/70 backdrop-blur">
+          <div className="admin-modal-panel w-full max-w-sm overflow-hidden animate-in fade-in zoom-in-95 duration-200">
             <div className="flex items-center justify-between p-4 border-b border-slate-200 dark:border-slate-700">
               <h3 className="font-semibold text-slate-900 dark:text-white capitalize">Add New {modalState.type}</h3>
               <button 
