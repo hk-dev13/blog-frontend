@@ -61,7 +61,7 @@ export default function Navbar() {
               placeholder="Search articles..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-64 pl-10 pr-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 border-none focus:ring-2 focus:ring-primary-500 text-sm"
+              className="w-64 pl-10 pr-4 py-2 rounded-full bg-slate-100 dark:bg-slate-800 border-none focus:ring-1 focus:ring-primary-500 text-sm"
             />
             <Search className="absolute left-3 top-2.5 h-4 w-4 text-slate-400" />
           </form>

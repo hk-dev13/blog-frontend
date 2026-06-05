@@ -207,7 +207,7 @@ export default function AuthorPageContent({ author, initialPosts, initialMeta, s
             <button
               onClick={loadMore}
               disabled={isLoadingMore}
-              className="group px-8 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-full font-medium text-slate-700 dark:text-slate-200 hover:border-primary-500 hover:text-primary-600 dark:hover:text-primary-400 transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow-md"
+              className="group px-8 py-3 bg-white dark:bg-slate-800 border-2 border-slate-200 dark:border-slate-700 rounded-full font-medium text-slate-700 dark:text-slate-200 hover:border-primary-500 hover:text-primary-600 dark:hover:border-primary-500 dark:hover:text-white transition-all duration-300 flex items-center gap-2 shadow-sm hover:shadow-md"
             >
               {isLoadingMore ? (
                 <>
