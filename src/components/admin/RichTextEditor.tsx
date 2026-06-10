@@ -863,6 +863,7 @@ export default function RichTextEditor({
     },
   }, []);  // empty deps — editor created once
 
+  // eslint-disable-next-line react-hooks/immutability
   useEffect(() => {
     editorRef.current = editor;
     if (editor) {
