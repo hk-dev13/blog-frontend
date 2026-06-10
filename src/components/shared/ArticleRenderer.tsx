@@ -129,7 +129,7 @@ export default function ArticleRenderer({
                 <TableOfContents content={post.content} />
               </div>
 
-              <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none text-justify">
+              <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
                 {(post.content || '').split(/(@\[youtube\]\([^)]+\))/g).map((part, index) => {
                   const youtubeMatch = part.match(/^@\[youtube\]\(([^)]+)\)/);
                   if (youtubeMatch) {
