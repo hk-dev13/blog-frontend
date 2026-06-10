@@ -2,7 +2,7 @@
 
 import Link from '@tiptap/extension-link';
 import { useEditor, EditorContent } from '@tiptap/react';
-import { Editor, Extension, Mark, mergeAttributes, type MarkdownToken } from '@tiptap/core';
+import { Editor, Extension, Mark, Node, mergeAttributes, type MarkdownToken } from '@tiptap/core';
 import StarterKit from '@tiptap/starter-kit';
 import Image from '@tiptap/extension-image';
 import TextAlign from '@tiptap/extension-text-align';
@@ -21,9 +21,103 @@ import {
   AlignLeft, AlignCenter, AlignRight,
   Link2, Highlighter, Undo2, Redo2,
   Type, FileCode2, Search, Replace, ChevronLeft, ChevronRight, X,
+  Image as ImageIcon, Video as VideoIcon, Upload, Loader2
 } from 'lucide-react';
 
+import { useAppStore } from '@/store/useAppStore';
+import { API_URL } from '@/lib/env';
 import InternalLinkPopover from '@/components/admin/InternalLinkPopover';
+
+function getEmbedUrl(url: string) {
+  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
+  const match = url.match(regExp);
+  const videoId = (match && match[2].length === 11) ? match[2] : null;
+  if (videoId) {
+    return `https://www.youtube.com/embed/${videoId}`;
+  }
+  return url;
+}
+
+export const YoutubeNode = Node.create({
+  name: 'youtube',
+  group: 'block',
+  selectable: true,
+  draggable: true,
+  atom: true,
+
+  addAttributes() {
+    return {
+      src: {
+        default: null,
+      },
+    };
+  },
+
+  parseHTML() {
+    return [
+      {
+        tag: 'div[data-youtube]',
+        getAttrs: (el) => ({
+          src: (el as HTMLElement).getAttribute('data-youtube'),
+        }),
+      },
+    ];
+  },
+
+  renderHTML({ HTMLAttributes }) {
+    return [
+      'div',
+      {
+        'data-youtube': HTMLAttributes.src,
+        class: 'aspect-video w-full max-w-2xl mx-auto rounded-lg overflow-hidden my-4 relative bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700',
+      },
+      [
+        'iframe',
+        {
+          src: HTMLAttributes.src,
+          class: 'absolute inset-0 w-full h-full border-0 pointer-events-none',
+          allowfullscreen: 'true',
+        },
+      ],
+    ];
+  },
+  addStorage() {
+    return {
+      markdown: {
+        serialize(state: any, node: any) {
+          state.write(`@[youtube](${node.attrs.src})`);
+          state.closeBlock(node);
+        },
+        parse: {
+          setup(markdownit: any) {
+            markdownit.inline.ruler.after('escape', 'youtube', (state: any, silent: boolean) => {
+              const str = state.src.slice(state.pos);
+              if (!str.startsWith('@[youtube]')) {
+                return false;
+              }
+              const match = /^@\[youtube\]\(([^)]+)\)/.exec(str);
+              if (!match) {
+                return false;
+              }
+              if (!silent) {
+                const token = state.push('youtube', 'div', 0);
+                token.attrs = [['data-youtube', match[1]]];
+              }
+              state.pos += match[0].length;
+              return true;
+            });
+
+            markdownit.renderer.rules.youtube = (tokens: any, idx: number) => {
+              const token = tokens[idx];
+              const src = token.attrs ? token.attrs[0][1] : '';
+              return `<div data-youtube="${src}"></div>`;
+            };
+          }
+        }
+      }
+    };
+  },
+});
 
 /* ─────────────────────────────────────────────── types */
 interface RichTextEditorProps {
@@ -350,6 +444,84 @@ export default function RichTextEditor({
   const [wholeWordFind, setWholeWordFind] = useState(true);
   const [activeMatchIndex, setActiveMatchIndex] = useState(0);
   const linkSelectionRef = useRef<{ from: number; to: number } | null>(null);
+
+  // Image insertion states
+  const [imageModalOpen, setImageModalOpen] = useState(false);
+  const [imageUrlInput, setImageUrlInput] = useState('');
+  const [imageAltInput, setImageAltInput] = useState('');
+  const [imageWidthInput, setImageWidthInput] = useState('');
+  const [imageCaptionInput, setImageCaptionInput] = useState('');
+  const [uploadingEditorImage, setUploadingEditorImage] = useState(false);
+
+  // YouTube embed states
+  const [youtubeModalOpen, setYoutubeModalOpen] = useState(false);
+  const [youtubeUrlInput, setYoutubeUrlInput] = useState('');
+
+  // Access token for image uploads
+  const token = useAppStore(state => state.token);
+
+  // Handle uploading editor image
+  const handleEditorImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    setUploadingEditorImage(true);
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch(`${API_URL}/upload`, {
+        method: 'POST',
+        headers: { 'Authorization': `Bearer ${token}` },
+        body: formData,
+      });
+      const data = await res.json();
+      if (data.success) {
+        setImageUrlInput(data.data.url);
+      } else {
+        throw new Error(data.error || 'Upload failed');
+      }
+    } catch (err: any) {
+      alert(err.message || 'Failed to upload image');
+    } finally {
+      setUploadingEditorImage(false);
+    }
+  };
+
+  const insertImage = () => {
+    if (!imageUrlInput.trim()) return;
+    const activeEditor = editorRef.current;
+    const altText = imageAltInput.trim();
+    const widthText = imageWidthInput.trim();
+    const captionText = imageCaptionInput.trim();
+
+    let combinedAlt = altText;
+    if (widthText || captionText) {
+      combinedAlt = `${altText}|${widthText}|${captionText}`;
+    }
+
+    if (activeEditor) {
+      activeEditor.chain().focus().setImage({ src: imageUrlInput, alt: combinedAlt }).run();
+    }
+    setImageModalOpen(false);
+    setImageUrlInput('');
+    setImageAltInput('');
+    setImageWidthInput('');
+    setImageCaptionInput('');
+  };
+
+  const insertYoutube = () => {
+    if (!youtubeUrlInput.trim()) return;
+    const embedUrl = getEmbedUrl(youtubeUrlInput.trim());
+    const activeEditor = editorRef.current;
+    if (activeEditor) {
+      activeEditor.chain().focus().insertContent({
+        type: 'youtube',
+        attrs: { src: embedUrl }
+      }).run();
+    }
+    setYoutubeModalOpen(false);
+    setYoutubeUrlInput('');
+  };
   const modeShortcutHint = 'Ctrl/Cmd+Alt+M';
   const richTextShortcutHint = 'Ctrl/Cmd+Alt+R';
   const findReplaceShortcutHint = 'Ctrl/Cmd+F';
@@ -649,6 +821,7 @@ export default function RichTextEditor({
         blockquote: { HTMLAttributes: { class: '' } },
       }),
       Image,
+      YoutubeNode,
       Link.configure({
         openOnClick: false,
         HTMLAttributes: { class: 'no-underline' },
@@ -692,6 +865,49 @@ export default function RichTextEditor({
 
   useEffect(() => {
     editorRef.current = editor;
+    if (editor) {
+      // 1. Manually inject storage.markdown into the youtube extension instance to bypass v2/v3 compatibility gaps
+      const youtubeExtension = editor.extensionManager.extensions.find(e => e.name === 'youtube') as any;
+      if (youtubeExtension) {
+        if (!youtubeExtension.storage) {
+          youtubeExtension.storage = {};
+        }
+        youtubeExtension.storage.markdown = {
+          serialize(state: any, node: any) {
+            state.write(`@[youtube](${node.attrs.src})`);
+            state.closeBlock(node);
+          }
+        };
+      }
+
+      // 2. Manually inject the parser setup into markdown-it
+      const parser = (editor.storage as any).markdown?.parser;
+      if (parser && parser.md) {
+        const md = parser.md;
+        md.inline.ruler.after('escape', 'youtube', (state: any, silent: boolean) => {
+          const str = state.src.slice(state.pos);
+          if (!str.startsWith('@[youtube]')) {
+            return false;
+          }
+          const match = /^@\[youtube\]\(([^)]+)\)/.exec(str);
+          if (!match) {
+            return false;
+          }
+          if (!silent) {
+            const token = state.push('youtube', 'div', 0);
+            token.attrs = [['data-youtube', match[1]]];
+          }
+          state.pos += match[0].length;
+          return true;
+        });
+
+        md.renderer.rules.youtube = (tokens: any, idx: number) => {
+          const token = tokens[idx];
+          const src = token.attrs ? token.attrs[0][1] : '';
+          return `<div data-youtube="${src}"></div>`;
+        };
+      }
+    }
   }, [editor]);
 
   /* ── sync external markdown value → editor, even while Markdown mode is active ── */
@@ -710,18 +926,6 @@ export default function RichTextEditor({
   const ic = 'w-4 h-4';
   const editorShellClass = 'max-h-[75vh] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900';
   const stickyToolbarClass = 'sticky top-0 z-20 flex items-center px-3 py-2 bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-700 border-b-0 rounded-t-lg shadow-sm';
-  const shortcutBar = (
-    <div className="border-t border-slate-200 bg-slate-50/80 px-3 py-2 text-[11px] text-slate-500 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-400">
-      <div className="flex items-center gap-2 overflow-x-auto whitespace-nowrap hide-scrollbar">
-        <span className="font-semibold uppercase tracking-[0.14em] text-slate-400 dark:text-slate-500">Shortcuts</span>
-        {shortcutHelp.map(([label, combo]) => (
-          <ShortcutChip key={label}>
-            {label}: {combo}
-          </ShortcutChip>
-        ))}
-      </div>
-    </div>
-  );
 
   /* ── mode toggle ── */
   const ModeToggle = () => (
@@ -945,6 +1149,22 @@ export default function RichTextEditor({
         >
           <Link2 className={ic} />
         </TB>
+        {/* Image */}
+        <TB
+          onClick={() => setImageModalOpen(true)}
+          active={editor.isActive('image')}
+          title="Insert Image"
+        >
+          <ImageIcon className={ic} />
+        </TB>
+        {/* YouTube */}
+        <TB
+          onClick={() => setYoutubeModalOpen(true)}
+          active={editor.isActive('youtube')}
+          title="Embed YouTube Video"
+        >
+          <VideoIcon className={ic} />
+        </TB>
         <TB
           onClick={openFindReplace}
           active={isFindReplaceOpen}
@@ -1056,7 +1276,6 @@ export default function RichTextEditor({
           className="min-h-[400px] w-full resize-y px-4 py-4 bg-slate-50 dark:bg-slate-900 border-0 rounded-b-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
           placeholder={placeholder}
         />
-        {shortcutBar}
       </div>
     );
   }
@@ -1070,7 +1289,6 @@ export default function RichTextEditor({
         <div className="rounded-b-lg">
           <EditorContent editor={editor} />
         </div>
-        {shortcutBar}
       </div>
       <InternalLinkPopover
         open={isLinkPopoverOpen}
@@ -1082,6 +1300,208 @@ export default function RichTextEditor({
         onSelect={applyLink}
         onRemove={removeLink}
       />
+
+      {/* Image Upload/Insertion Modal */}
+      {imageModalOpen && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <ImageIcon className="w-5 h-5 text-primary-500" />
+                Insert Image
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setImageModalOpen(false);
+                  setImageUrlInput('');
+                  setImageAltInput('');
+                  setImageWidthInput('');
+                  setImageCaptionInput('');
+                }}
+                className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-4">
+              {/* File Upload Option */}
+              <div className="space-y-2">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Upload Image
+                </label>
+                <label className="flex flex-col items-center justify-center w-full h-28 border-2 border-dashed border-slate-200 dark:border-slate-700 rounded-xl cursor-pointer hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                  <div className="flex flex-col items-center justify-center py-4 text-center">
+                    {uploadingEditorImage ? (
+                      <Loader2 className="w-8 h-8 text-primary-500 animate-spin mb-2" />
+                    ) : (
+                      <Upload className="w-6 h-6 text-slate-400 mb-2" />
+                    )}
+                    <p className="text-xs text-slate-600 dark:text-slate-400 font-medium">
+                      {uploadingEditorImage ? 'Uploading image...' : 'Click to upload local file'}
+                    </p>
+                  </div>
+                  <input
+                    type="file"
+                    className="hidden"
+                    accept="image/*"
+                    onChange={handleEditorImageUpload}
+                    disabled={uploadingEditorImage}
+                  />
+                </label>
+              </div>
+
+              <div className="relative flex py-1 items-center">
+                <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
+                <span className="flex-shrink mx-3 text-xs font-semibold text-slate-400 dark:text-slate-500 uppercase">Or</span>
+                <div className="flex-grow border-t border-slate-100 dark:border-slate-800"></div>
+              </div>
+
+              {/* URL input option */}
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Image URL
+                </label>
+                <input
+                  type="text"
+                  value={imageUrlInput}
+                  onChange={(e) => setImageUrlInput(e.target.value)}
+                  placeholder="https://example.com/image.png"
+                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none dark:text-white"
+                />
+              </div>
+
+              {/* Alt Text Input */}
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Alternative Text (Alt)
+                </label>
+                <input
+                  type="text"
+                  value={imageAltInput}
+                  onChange={(e) => setImageAltInput(e.target.value)}
+                  placeholder="Describe the image..."
+                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none dark:text-white"
+                />
+              </div>
+
+              {/* Width Input */}
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Width (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={imageWidthInput}
+                  onChange={(e) => setImageWidthInput(e.target.value)}
+                  placeholder="e.g., 100%, 400px, 600"
+                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none dark:text-white"
+                />
+              </div>
+
+              {/* Caption Input */}
+              <div className="space-y-1">
+                <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                  Caption (Optional)
+                </label>
+                <input
+                  type="text"
+                  value={imageCaptionInput}
+                  onChange={(e) => setImageCaptionInput(e.target.value)}
+                  placeholder="Small text below the image..."
+                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none dark:text-white"
+                />
+              </div>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setImageModalOpen(false);
+                  setImageUrlInput('');
+                  setImageAltInput('');
+                  setImageWidthInput('');
+                  setImageCaptionInput('');
+                }}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={insertImage}
+                disabled={!imageUrlInput.trim() || uploadingEditorImage}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 rounded-lg transition-colors"
+              >
+                Insert Image
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* YouTube Video Embed Modal */}
+      {youtubeModalOpen && (
+        <div className="fixed inset-0 z-[150] flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm animate-in fade-in duration-200">
+          <div className="w-full max-w-md bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-2xl p-6 space-y-4">
+            <div className="flex items-center justify-between border-b border-slate-100 dark:border-slate-800 pb-3">
+              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                <VideoIcon className="w-5 h-5 text-red-500" />
+                Embed YouTube Video
+              </h3>
+              <button
+                type="button"
+                onClick={() => {
+                  setYoutubeModalOpen(false);
+                  setYoutubeUrlInput('');
+                }}
+                className="text-slate-400 hover:text-slate-500 dark:hover:text-slate-300"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            <div className="space-y-2">
+              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                YouTube URL / Link
+              </label>
+              <input
+                type="text"
+                value={youtubeUrlInput}
+                onChange={(e) => setYoutubeUrlInput(e.target.value)}
+                placeholder="https://www.youtube.com/watch?v=..."
+                className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none dark:text-white"
+              />
+              <p className="text-[11px] text-slate-400 dark:text-slate-500 leading-normal">
+                Paste any standard watch link (e.g., watch?v=) or short link (youtu.be/). It will automatically embed responsively.
+              </p>
+            </div>
+
+            <div className="flex justify-end gap-2 border-t border-slate-100 dark:border-slate-800 pt-4">
+              <button
+                type="button"
+                onClick={() => {
+                  setYoutubeModalOpen(false);
+                  setYoutubeUrlInput('');
+                }}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={insertYoutube}
+                disabled={!youtubeUrlInput.trim()}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 disabled:opacity-50 rounded-lg transition-colors"
+              >
+                Embed Video
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   );
 }

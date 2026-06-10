@@ -116,7 +116,7 @@ export default function ArticleRenderer({
           />
         </div>
 
-        <div className="container mx-auto px-4 max-w-6xl">
+        <div className="container mx-auto px-4 max-w-7xl">
           <div className="flex gap-10">
             <aside className="hidden xl:block w-64 shrink-0">
               <div className="sticky top-20">
@@ -124,41 +124,102 @@ export default function ArticleRenderer({
               </div>
             </aside>
 
-            <div className="min-w-0 flex-1 max-w-3xl mx-auto">
+            <div className="min-w-0 flex-1 max-w-4xl mx-auto">
               <div className="xl:hidden">
                 <TableOfContents content={post.content} />
               </div>
 
-              <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
-                <ReactMarkdown
-                  remarkPlugins={[remarkGfm]}
-                  rehypePlugins={[rehypeSlug, rehypeHighlight]}
-                  components={{
-                    a: ({ href, children, ...props }) => {
-                      let isExternal = false;
-                      if (href && href.startsWith('http')) {
-                        try {
-                          const url = new URL(href);
-                          isExternal = url.hostname !== 'envoyou.com' && !url.hostname.endsWith('.envoyou.com');
-                        } catch {
-                          isExternal = false;
+              <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none text-justify">
+                {(post.content || '').split(/(@\[youtube\]\([^)]+\))/g).map((part, index) => {
+                  const youtubeMatch = part.match(/^@\[youtube\]\(([^)]+)\)/);
+                  if (youtubeMatch) {
+                    const embedUrl = youtubeMatch[1];
+                    return (
+                      <div key={index} className="relative aspect-video w-full rounded-2xl overflow-hidden shadow-lg my-8 border border-slate-200 dark:border-slate-800">
+                        <iframe
+                          src={embedUrl}
+                          className="absolute inset-0 w-full h-full border-0"
+                          allowFullScreen
+                          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                        />
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <ReactMarkdown
+                      key={index}
+                      remarkPlugins={[remarkGfm]}
+                      rehypePlugins={[rehypeSlug, rehypeHighlight]}
+                      components={{
+                        a: ({ href, children, ...props }) => {
+                          let isExternal = false;
+                          if (href && href.startsWith('http')) {
+                            try {
+                              const url = new URL(href);
+                              isExternal = url.hostname !== 'envoyou.com' && !url.hostname.endsWith('.envoyou.com');
+                            } catch {
+                              isExternal = false;
+                            }
+                          }
+                          return (
+                            <a
+                              href={href}
+                              target={isExternal ? '_blank' : undefined}
+                              rel={isExternal ? 'noopener noreferrer' : undefined}
+                              {...props}
+                            >
+                              {children}
+                            </a>
+                          );
+                        },
+                        img: ({ src, alt, ...props }) => {
+                          if (!src) return null;
+                          
+                          let cleanAlt = alt || '';
+                          let customWidth: string | undefined = undefined;
+                          let captionText: string | undefined = undefined;
+                          
+                          if (cleanAlt.includes('|')) {
+                            const parts = cleanAlt.split('|');
+                            cleanAlt = parts[0].trim();
+                            if (parts.length >= 2) {
+                              const p1 = parts[1].trim();
+                              if (/^\d+(px|%)?$/.test(p1) || p1 === '') {
+                                if (p1 !== '') {
+                                  customWidth = /^\d+$/.test(p1) ? `${p1}px` : p1;
+                                }
+                                if (parts.length >= 3) {
+                                  captionText = parts.slice(2).join('|').trim();
+                                }
+                              } else {
+                                captionText = parts.slice(1).join('|').trim();
+                              }
+                            }
+                          }
+
+                          return (
+                            <span className="block my-8 text-center">
+                              <img
+                                src={src}
+                                alt={cleanAlt || 'Article image'}
+                                style={customWidth ? { width: customWidth } : undefined}
+                                className="inline-block rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 max-w-full h-auto !m-0"
+                              />
+                              {captionText && (
+                                <span className="block text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans italic text-center max-w-xl mx-auto px-4">
+                                  {captionText}
+                                </span>
+                              )}
+                            </span>
+                          );
                         }
-                      }
-                      return (
-                        <a
-                          href={href}
-                          target={isExternal ? '_blank' : undefined}
-                          rel={isExternal ? 'noopener noreferrer' : undefined}
-                          {...props}
-                        >
-                          {children}
-                        </a>
-                      );
-                    }
-                  }}
-                >
-                  {post.content}
-                </ReactMarkdown>
+                      }}
+                    >
+                      {part}
+                    </ReactMarkdown>
+                  );
+                })}
               </div>
 
               {post.tags && post.tags.length > 0 && (
@@ -181,6 +242,13 @@ export default function ArticleRenderer({
               )}
 
               {showComments && <CommentSection postId={post.id} />}
+
+              {/* Editorial Note */}
+              <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 text-[11px] md:text-xs text-slate-400 dark:text-slate-500 leading-relaxed font-sans text-center max-w-2xl mx-auto">
+                <p>
+                  <strong>Editorial Note:</strong> Articles on Envoyou may involve the use of AI technology as part of the research, editing, or content refinement process. All materials remain subject to editorial review before publication. The information presented is for educational and general reference purposes only and is not intended as a substitute for professional advice. Readers are advised to perform additional verification before making decisions based on the information in the article.
+                </p>
+              </div>
             </div>
           </div>
         </div>
