@@ -51,40 +51,37 @@ export default function ThirdPartyScripts({
     if (process.env.NODE_ENV !== 'production') return;
 
     let cleanupIdle = () => {};
-    const timeoutId = window.setTimeout(() => {
-      cleanupIdle = runWhenIdle(() => {
-        if (gaId) {
-          window.dataLayer = window.dataLayer || [];
-          window.gtag = window.gtag || function gtag(...args: unknown[]) {
-            window.dataLayer?.push(args);
-          };
-          window.gtag('js', new Date());
-          window.gtag('config', gaId);
+    cleanupIdle = runWhenIdle(() => {
+      if (gaId) {
+        window.dataLayer = window.dataLayer || [];
+        window.gtag = window.gtag || function gtag(...args: unknown[]) {
+          window.dataLayer?.push(args);
+        };
+        window.gtag('js', new Date());
+        window.gtag('config', gaId);
 
-          appendScript(`https://www.googletagmanager.com/gtag/js?id=${gaId}`);
-        }
+        appendScript(`https://www.googletagmanager.com/gtag/js?id=${gaId}`);
+      }
 
-        if (clarityId) {
-          window.clarity = window.clarity || function clarity(...args: unknown[]) {
-            if (!window.clarity) return;
-            window.clarity.q = window.clarity.q || [];
-            window.clarity.q.push(args);
-          };
+      if (clarityId) {
+        window.clarity = window.clarity || function clarity(...args: unknown[]) {
+          if (!window.clarity) return;
+          window.clarity.q = window.clarity.q || [];
+          window.clarity.q.push(args);
+        };
 
-          appendScript(`https://www.clarity.ms/tag/${clarityId}`);
-        }
+        appendScript(`https://www.clarity.ms/tag/${clarityId}`);
+      }
 
-        if (adsenseClient) {
-          appendScript(
-            `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`,
-            { crossorigin: 'anonymous' },
-          );
-        }
-      });
-    }, 8000);
+      if (adsenseClient) {
+        appendScript(
+          `https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=${adsenseClient}`,
+          { crossorigin: 'anonymous' },
+        );
+      }
+    });
 
     return () => {
-      window.clearTimeout(timeoutId);
       cleanupIdle();
     };
   }, [adsenseClient, clarityId, gaId]);
