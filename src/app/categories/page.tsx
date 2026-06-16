@@ -10,10 +10,10 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Categories',
-  description: 'Jelajahi semua kategori artikel di Envoyou — dari AI, Teknologi, Bisnis hingga Investasi.',
+  description: 'Explore all article categories on Envoyou blog — from AI, Technology, Business to Investment.',
   openGraph: {
     title: 'Categories | Envoyou Blog',
-    description: 'Jelajahi semua kategori artikel di Envoyou.',
+    description: 'Explore all article categories on Envoyou blog.',
     url: `${SITE_URL}/categories`,
   },
 };
@@ -94,13 +94,13 @@ export default async function CategoriesPage() {
               <div className="flex items-center justify-between gap-4 border-t border-slate-100 pt-5 dark:border-slate-800 md:flex-col md:items-end md:border-t-0 md:pt-0">
                 {featuredCategory.post_count != null ? (
                   <span className="text-sm text-slate-400 dark:text-slate-500">
-                    {featuredCategory.post_count} artikel
+                    {featuredCategory.post_count} {featuredCategory.post_count === 1 ? 'article' : 'articles'}
                   </span>
                 ) : (
                   <span />
                 )}
                 <span className="inline-flex items-center gap-1 text-sm font-semibold text-primary-600 transition-all dark:text-primary-400 group-hover:gap-1.5">
-                  Lihat artikel
+                  View articles
                   <ArrowRight className="h-4 w-4" />
                 </span>
               </div>
@@ -134,13 +134,13 @@ export default async function CategoriesPage() {
                   <div className="mt-5 flex items-center justify-between border-t border-slate-100 pt-4 dark:border-slate-800">
                     {cat.post_count != null ? (
                       <span className="text-xs text-slate-400 dark:text-slate-500">
-                        {cat.post_count} artikel
+                        {cat.post_count} {cat.post_count === 1 ? 'article' : 'articles'}
                       </span>
                     ) : (
                       <span />
                     )}
                     <span className="inline-flex items-center gap-1 text-xs font-semibold text-primary-600 transition-all dark:text-primary-400 group-hover:gap-1.5">
-                      Lihat artikel
+                      View articles
                       <ArrowRight className="h-3 w-3" />
                     </span>
                   </div>

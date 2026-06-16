@@ -46,11 +46,11 @@ export default function Footer() {
             <Link href="/" className="flex items-center gap-2.5 w-fit group">
               <LogoMark className="h-6 w-6 text-primary-600 dark:text-primary-400 transition-transform group-hover:scale-110" />
               <span className="text-2xl leading-none font-bold font-serif text-primary-600 dark:text-primary-400">
-                Envoyou
+                E-Blog
               </span>
             </Link>
             <p className="text-sm text-slate-500 dark:text-slate-300 leading-relaxed max-w-[220px]">
-              Wawasan teknologi, AI, strategi digital, dan sistem masa depan.
+              Technology insights, AI, digital strategy, and future systems.
             </p>
           </div>
 

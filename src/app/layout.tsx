@@ -42,7 +42,7 @@ const blogSchema = {
   '@id': `${SITE_URL}/#blog`,
   name: 'Envoyou Blog',
   url: SITE_URL,
-  description: 'Wawasan teknologi, kecerdasan buatan, strategi bisnis, dan investasi digital dari Envoyou.',
+  description: 'Technology insights, artificial intelligence, business strategy, and digital investment from Envoyou.',
   publisher: {
     '@id': `${SITE_URL}/#organization`,
   },
@@ -76,10 +76,10 @@ export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
   applicationName: 'Envoyou Blog',
   title: {
-    default: "Envoyou Blog - Wawasan Teknologi, AI, dan Bisnis Modern",
+    default: "Envoyou Blog - Insights on Technology, AI, and Modern Business",
     template: "%s | Envoyou Blog",
   },
-  description: "Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.",
+  description: "Actionable insights and future perspectives. Deep exploration of artificial intelligence, sales strategy, and digital investment by Envoyou.",
   alternates: {
     canonical: SITE_URL,
     types: {
@@ -89,14 +89,14 @@ export const metadata: Metadata = {
   openGraph: {
     type: 'website',
     siteName: 'Envoyou Blog',
-    title: 'Envoyou Blog - Wawasan Teknologi, AI, dan Bisnis Modern',
-    description: 'Actionable insights and future perspectives seputar AI, teknologi, strategi bisnis, dan investasi digital.',
+    title: 'Envoyou Blog - Insights on Technology, AI, and Modern Business',
+    description: 'Actionable insights and future perspectives on AI, technology, business strategy, and digital investment.',
     url: SITE_URL,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Envoyou Blog - Wawasan Teknologi, AI, dan Bisnis Modern',
-    description: 'Wawasan teknologi, AI, strategi bisnis, dan investasi digital dari Envoyou.',
+    title: 'Envoyou Blog - Insights on Technology, AI, and Modern Business',
+    description: 'Technology insights, AI, business strategy, and digital investment from Envoyou.',
   },
   robots: {
     index: true,
@@ -113,7 +113,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="id" className={inter.variable} suppressHydrationWarning>
+    <html lang="en" className={inter.variable} suppressHydrationWarning>
       {/* 1. Tambahkan suppressHydrationWarning di body */}
       <body
         className="antialiased min-h-screen flex flex-col bg-slate-50 dark:bg-slate-900 text-slate-900 dark:text-slate-50 transition-colors duration-300"

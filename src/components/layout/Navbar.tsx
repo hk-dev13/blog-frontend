@@ -36,7 +36,7 @@ export default function Navbar() {
         <Link href="/" className="flex items-center gap-2 transition-transform hover:scale-105">
           <LogoMark className="h-6 w-6 text-primary-600 dark:text-primary-400" />
           <span className="text-2xl leading-none font-bold font-serif text-primary-600 dark:text-primary-400">
-            Envoyou
+            E-Blog
           </span>
         </Link>
 

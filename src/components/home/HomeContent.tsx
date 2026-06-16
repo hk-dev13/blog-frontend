@@ -150,11 +150,11 @@ export default function HomeContent({
             Envoyou Blog
           </p>
           <h1 className="font-serif text-4xl font-bold leading-tight text-slate-950 dark:text-white md:text-5xl">
-            Wawasan teknologi, AI, dan strategi digital masa depan.
+            Technology insights, AI, and digital strategy for the future.
           </h1>
           <p className="mt-5 max-w-2xl text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
-            Riset, analisis, dan panduan praktis tentang artificial intelligence, bisnis modern,
-            cloud infrastructure, dan investasi digital.
+            Research, analysis, and practical guides on artificial intelligence, modern business,
+            cloud infrastructure, and digital investment.
           </p>
         </section>
       )}
@@ -199,7 +199,7 @@ export default function HomeContent({
                   </h3>
                   {cat.post_count != null && (
                     <p className="mb-3 text-xs font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
-                      {cat.post_count} artikel
+                      {cat.post_count} {cat.post_count === 1 ? 'article' : 'articles'}
                     </p>
                   )}
                   {cat.description && (
@@ -221,16 +221,16 @@ export default function HomeContent({
               <BookOpen className="h-5 w-5" />
             </div>
             <h2 className="font-serif text-3xl font-bold text-slate-950 dark:text-white">
-              About Envoyou
+              About Envoyou blog
             </h2>
             <div className="mt-5 space-y-4 text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
               <p>
-                Envoyou adalah publication platform yang berfokus pada Artificial Intelligence,
-                teknologi, data, dan strategi digital.
+                Envoyou blog is a publication platform focusing on Artificial Intelligence,
+                technology, data, and digital strategy.
               </p>
               <p>
-                Kami menerbitkan riset, analisis, dan panduan praktis untuk membantu pembaca
-                memahami perubahan teknologi dan bisnis modern.
+                We publish research, analysis, and practical guides to help readers
+                understand technological and modern business changes.
               </p>
             </div>
             <Link
@@ -308,7 +308,7 @@ export default function HomeContent({
                 Trending Topics
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Topik yang sedang paling banyak muncul di Envoyou.
+                Topics that appear most frequently on Envoyou blog.
               </p>
             </div>
           </div>
@@ -347,8 +347,8 @@ export default function HomeContent({
                   Husni Kusuma
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base">
-                  Penulis Envoyou yang membahas AI, teknologi, data, dan strategi digital melalui
-                  riset ringkas, analisis praktis, dan perspektif bisnis modern.
+                  Author of Envoyou blog who writes about AI, technology, data, and digital strategy through
+                  concise research, practical analysis, and modern business perspectives.
                 </p>
               </div>
             </div>

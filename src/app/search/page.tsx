@@ -86,7 +86,7 @@ function SearchContent() {
       {/* Giant Search Bar */}
       <div className="mb-16">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-center text-slate-900 dark:text-white mb-8">
-          Explore Envoyou
+          Explore Envoyou blog
         </h1>
         <div className="relative max-w-3xl mx-auto">
           <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">

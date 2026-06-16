@@ -16,13 +16,13 @@ import CategoryIcon from '@/components/shared/CategoryIcon';
 import type { Category } from '@/types';
 
 export const metadata: Metadata = {
-  title: 'Tentang Envoyou Blog',
+  title: 'About Envoyou Blog',
   description:
-    'Envoyou Blog adalah publication platform yang membahas Artificial Intelligence, teknologi, data, dan strategi digital.',
+    'Envoyou Blog is a publication platform covering Artificial Intelligence, technology, data, and digital strategy.',
   openGraph: {
-    title: 'Tentang Envoyou Blog',
+    title: 'About Envoyou Blog',
     description:
-      'Publication platform untuk riset, analisis, dan panduan praktis tentang AI, teknologi, data, dan strategi digital.',
+      'Publication platform for research, analysis, and practical guides on AI, technology, data, and digital strategy.',
   },
 };
 
@@ -66,31 +66,31 @@ function TopicCard({
 const topics = [
   {
     title: 'Technology & AI',
-    body: 'Riset, produk, workflow, dan perkembangan teknologi berbasis AI.',
+    body: 'Research, products, workflows, and developments in AI-based technology.',
     category: { name: 'Technology & AI', slug: 'teknologi-ai' },
   },
   {
     title: 'Data & Insight',
-    body: 'Insight berbasis data, pola pasar, dan cara membaca sinyal dari informasi.',
+    body: 'Data-driven insights, market patterns, and reading signals from information.',
     category: { name: 'Data & Insight', slug: 'data-insight' },
   },
   {
     title: 'Finance & Investment',
-    body: 'Analisis keuangan, investasi digital, bisnis, dan keputusan berbasis risiko.',
+    body: 'Financial analysis, digital investment, business, and risk-based decision making.',
     category: { name: 'Finance & Investment', slug: 'keuangan-investasi' },
   },
   {
     title: 'Digital Creator',
-    body: 'Strategi konten, distribusi, creator economy, dan transformasi digital.',
+    body: 'Content strategy, distribution, creator economy, and digital transformation.',
     category: { name: 'Digital Creator', slug: 'creator-digital' },
   },
 ];
 
 const editorialPrinciples = [
-  'Mengutamakan konteks, bukan sekadar rangkuman berita.',
-  'Menulis dengan bahasa yang jelas, praktis, dan bisa ditindaklanjuti.',
-  'Membedakan opini, analisis, dan fakta agar pembaca tahu pijakannya.',
-  'Memilih topik yang relevan dengan perubahan teknologi dan bisnis modern.',
+  'Prioritizing context, not just news summaries.',
+  'Writing in clear, practical, and actionable language.',
+  'Distinguishing between opinion, analysis, and facts so readers know where they stand.',
+  'Choosing topics relevant to modern technological and business changes.',
 ];
 
 export default function AboutPage() {
@@ -106,11 +106,11 @@ export default function AboutPage() {
             About
           </p>
           <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
-            Tentang Envoyou Blog
+            About Envoyou Blog
           </h1>
           <p className="mx-auto max-w-xl text-base leading-7 text-slate-300 md:text-lg">
-            Publication platform untuk memahami Artificial Intelligence, teknologi, data, dan
-            strategi digital dengan perspektif yang rapi dan praktis.
+            A publication platform to understand Artificial Intelligence, technology, data, and
+            digital strategy with a clean and practical perspective.
           </p>
         </div>
       </header>
@@ -118,35 +118,34 @@ export default function AboutPage() {
       <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
         <div className="space-y-14 md:col-span-2">
           <section>
-            <SectionHeading icon={Globe2} title="Apa itu Envoyou" />
+            <SectionHeading icon={Globe2} title="What is Envoyou" />
             <div className="space-y-4 text-base leading-8 text-slate-600 dark:text-slate-400">
               <p>
-                Envoyou adalah publication platform yang berfokus pada Artificial Intelligence,
-                teknologi, data, dan strategi digital. Kontennya dirancang untuk membantu pembaca
-                melihat perubahan teknologi dengan lebih jernih.
+                Envoyou blog is a publication platform focusing on Artificial Intelligence,
+                technology, data, and digital strategy. Its content is designed to help readers
+                see technological changes more clearly.
               </p>
               <p>
-                Di sini, artikel tidak hanya mengejar apa yang sedang ramai. Envoyou mencoba
-                menjelaskan mengapa sebuah tren penting, bagaimana dampaknya terhadap bisnis, dan
-                apa yang bisa dipelajari oleh pembaca yang sedang membangun, bekerja, atau mengambil
-                keputusan di dunia digital.
+                Here, articles do not just chase trending news. Envoyou attempts to
+                explain why a trend matters, how it impacts business, and what can be learned
+                by readers who are building, working, or making decisions in the digital world.
               </p>
             </div>
           </section>
 
           <section>
-            <SectionHeading icon={Compass} title="Misi Envoyou" />
+            <SectionHeading icon={Compass} title="Envoyou's Mission" />
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:p-8">
               <p className="text-base leading-8 text-slate-600 dark:text-slate-400">
-                Misi Envoyou adalah menerbitkan riset, analisis, dan panduan praktis yang membantu
-                pembaca memahami hubungan antara teknologi, bisnis, dan perubahan perilaku manusia
-                di era digital.
+                The mission of Envoyou blog is to publish research, analysis, and practical guides that help
+                readers understand the relationship between technology, business, and human behavior changes
+                in the digital era.
               </p>
             </div>
           </section>
 
           <section>
-            <SectionHeading icon={Layers} title="Topik Utama" />
+            <SectionHeading icon={Layers} title="Key Topics" />
             <div className="grid grid-cols-1 gap-5 sm:grid-cols-2">
               {topics.map((topic) => (
                 <TopicCard key={topic.title} {...topic} />
@@ -155,7 +154,7 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <SectionHeading icon={ShieldCheck} title="Prinsip Editorial" />
+            <SectionHeading icon={ShieldCheck} title="Editorial Principles" />
             <div className="space-y-3">
               {editorialPrinciples.map((principle) => (
                 <div
@@ -177,13 +176,13 @@ export default function AboutPage() {
             <div className="mb-4 flex items-center gap-2">
               <PenLine className="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Format Konten
+                Content Format
               </h3>
             </div>
             <div className="space-y-3 text-sm leading-6 text-slate-500 dark:text-slate-400">
-              <p>Riset ringkas untuk memahami konteks.</p>
-              <p>Analisis untuk membaca dampak dan arah perubahan.</p>
-              <p>Panduan praktis untuk menerapkan insight ke pekerjaan nyata.</p>
+              <p>Concise research to understand context.</p>
+              <p>Analysis to evaluate the impact and direction of changes.</p>
+              <p>Practical guides to apply insights to real work.</p>
             </div>
           </div>
 
@@ -191,17 +190,17 @@ export default function AboutPage() {
             <div className="mb-4 flex items-center gap-2">
               <UserRound className="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Siapa di balik Envoyou
+                Who is behind Envoyou
               </h3>
             </div>
             <p className="mb-5 text-sm leading-7 text-slate-500 dark:text-slate-400">
-              Envoyou dibangun dan dikelola oleh Husni Kusuma.
+              Envoyou blog is built and managed by Husni Kusuma.
             </p>
             <Link
               href="/author/husni-kusuma"
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:border-primary-500 hover:text-slate-950 dark:border-slate-700 dark:text-slate-400 dark:hover:border-primary-400 dark:hover:text-white"
             >
-              Baca profil penulis
+              Read author's profile
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -211,13 +210,13 @@ export default function AboutPage() {
       <div className="mt-20 text-center">
         <div className="mb-12 h-px w-full bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-700" />
         <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-          Mulai jelajahi artikel terbaru dari Envoyou.
+          Start exploring the latest articles from Envoyou.
         </p>
         <Link
           href="/"
           className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:border-primary-500 hover:text-slate-950 dark:border-slate-700 dark:text-slate-400 dark:hover:border-primary-400 dark:hover:text-white"
         >
-          Jelajahi Artikel
+          Explore Articles
           <ArrowRight className="h-4 w-4" />
         </Link>
       </div>
