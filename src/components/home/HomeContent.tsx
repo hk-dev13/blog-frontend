@@ -147,7 +147,7 @@ export default function HomeContent({
       {!activeTag && (
         <section className="max-w-3xl pt-4">
           <p className="mb-3 text-sm font-semibold uppercase tracking-widest text-primary-600 dark:text-primary-400">
-            Envoyou Blog
+            E-Blog
           </p>
           <h1 className="font-serif text-4xl font-bold leading-tight text-slate-950 dark:text-white md:text-5xl">
             Technology insights, AI, and digital strategy for the future.

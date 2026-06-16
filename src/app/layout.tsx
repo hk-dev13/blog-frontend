@@ -21,7 +21,7 @@ const websiteSchema = {
   '@context': 'https://schema.org',
   '@type': 'WebSite',
   '@id': `${SITE_URL}/#website`,
-  name: 'Envoyou Blog',
+  name: 'E-Blog',
   url: SITE_URL,
   publisher: {
     '@id': `${SITE_URL}/#organization`,
@@ -40,7 +40,7 @@ const blogSchema = {
   '@context': 'https://schema.org',
   '@type': 'Blog',
   '@id': `${SITE_URL}/#blog`,
-  name: 'Envoyou Blog',
+  name: 'E-Blog',
   url: SITE_URL,
   description: 'Technology insights, artificial intelligence, business strategy, and digital investment from Envoyou.',
   publisher: {
@@ -52,7 +52,7 @@ const navigationSchema = {
   '@context': 'https://schema.org',
   '@type': 'ItemList',
   '@id': `${SITE_URL}/#site-navigation`,
-  name: 'Envoyou Blog Navigation',
+  name: 'E-Blog Navigation',
   itemListElement: [
     { '@type': 'SiteNavigationElement', position: 1, name: 'Home', url: SITE_URL },
     { '@type': 'SiteNavigationElement', position: 2, name: 'About', url: `${SITE_URL}/about` },
@@ -74,10 +74,10 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   metadataBase: new URL(SITE_URL),
-  applicationName: 'Envoyou Blog',
+  applicationName: 'E-Blog',
   title: {
-    default: "Envoyou Blog - Insights on Technology, AI, and Modern Business",
-    template: "%s | Envoyou Blog",
+    default: "E-Blog - Insights on Technology, AI, and Modern Business",
+    template: "%s | E-Blog",
   },
   description: "Actionable insights and future perspectives. Deep exploration of artificial intelligence, sales strategy, and digital investment by Envoyou.",
   alternates: {
@@ -88,14 +88,14 @@ export const metadata: Metadata = {
   },
   openGraph: {
     type: 'website',
-    siteName: 'Envoyou Blog',
-    title: 'Envoyou Blog - Insights on Technology, AI, and Modern Business',
+    siteName: 'E-Blog',
+    title: 'E-Blog - Insights on Technology, AI, and Modern Business',
     description: 'Actionable insights and future perspectives on AI, technology, business strategy, and digital investment.',
     url: SITE_URL,
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'Envoyou Blog - Insights on Technology, AI, and Modern Business',
+    title: 'E-Blog - Insights on Technology, AI, and Modern Business',
     description: 'Technology insights, AI, business strategy, and digital investment from Envoyou.',
   },
   robots: {

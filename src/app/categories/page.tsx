@@ -12,7 +12,7 @@ export const metadata: Metadata = {
   title: 'Categories',
   description: 'Explore all article categories on E-Blog — from AI, Technology, Business to Investment.',
   openGraph: {
-    title: 'Categories | Envoyou Blog',
+    title: 'Categories | E-Blog',
     description: 'Explore all article categories on E-Blog.',
     url: `${SITE_URL}/categories`,
   },

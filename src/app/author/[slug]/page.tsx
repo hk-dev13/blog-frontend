@@ -18,13 +18,13 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   try {
     const author = await serverFetch<User>(`/users/${slug}`, { revalidate: 300 });
     const name = author.name || authorName;
-    const bio = author.short_bio || author.bio || `Articles by ${name} on Envoyou Blog.`;
+    const bio = author.short_bio || author.bio || `Articles by ${name} on E-Blog.`;
 
     return {
       title: name,
       description: bio,
       openGraph: {
-        title: `${name} — Envoyou Blog`,
+        title: `${name} — E-Blog`,
         description: bio,
         type: 'profile',
         url: `${SITE_URL}/author/${slug}`,

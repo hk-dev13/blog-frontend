@@ -16,11 +16,11 @@ import CategoryIcon from '@/components/shared/CategoryIcon';
 import type { Category } from '@/types';
 
 export const metadata: Metadata = {
-  title: 'About Envoyou Blog',
+  title: 'About E-Blog',
   description:
-    'Envoyou Blog is a publication platform covering Artificial Intelligence, technology, data, and digital strategy.',
+    'E-Blog is a publication platform covering Artificial Intelligence, technology, data, and digital strategy.',
   openGraph: {
-    title: 'About Envoyou Blog',
+    title: 'About E-Blog',
     description:
       'Publication platform for research, analysis, and practical guides on AI, technology, data, and digital strategy.',
   },
@@ -106,7 +106,7 @@ export default function AboutPage() {
             About
           </p>
           <h1 className="mb-4 font-serif text-4xl font-bold text-white md:text-5xl">
-            About Envoyou Blog
+            About E-Blog
           </h1>
           <p className="mx-auto max-w-xl text-base leading-7 text-slate-300 md:text-lg">
             A publication platform to understand Artificial Intelligence, technology, data, and

@@ -35,7 +35,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
         canonical: `${SITE_URL}/categories/${slug}`,
       },
       openGraph: {
-        title: `${title} | Envoyou Blog`,
+        title: `${title} | E-Blog`,
         description,
         type: 'website',
         url: `${SITE_URL}/categories/${slug}`,
