@@ -10,10 +10,10 @@ export const revalidate = 3600;
 
 export const metadata: Metadata = {
   title: 'Categories',
-  description: 'Explore all article categories on Envoyou blog — from AI, Technology, Business to Investment.',
+  description: 'Explore all article categories on E-Blog — from AI, Technology, Business to Investment.',
   openGraph: {
     title: 'Categories | Envoyou Blog',
-    description: 'Explore all article categories on Envoyou blog.',
+    description: 'Explore all article categories on E-Blog.',
     url: `${SITE_URL}/categories`,
   },
 };

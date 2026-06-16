@@ -221,11 +221,11 @@ export default function HomeContent({
               <BookOpen className="h-5 w-5" />
             </div>
             <h2 className="font-serif text-3xl font-bold text-slate-950 dark:text-white">
-              About Envoyou blog
+              About E-Blog
             </h2>
             <div className="mt-5 space-y-4 text-base leading-7 text-slate-600 dark:text-slate-300 md:text-lg">
               <p>
-                Envoyou blog is a publication platform focusing on Artificial Intelligence,
+                E-Blog is a publication platform focusing on Artificial Intelligence,
                 technology, data, and digital strategy.
               </p>
               <p>
@@ -308,7 +308,7 @@ export default function HomeContent({
                 Trending Topics
               </h2>
               <p className="mt-1 text-sm text-slate-500 dark:text-slate-400">
-                Topics that appear most frequently on Envoyou blog.
+                Topics that appear most frequently on E-Blog.
               </p>
             </div>
           </div>
@@ -347,7 +347,7 @@ export default function HomeContent({
                   Husni Kusuma
                 </h2>
                 <p className="mt-3 text-sm leading-6 text-slate-600 dark:text-slate-300 md:text-base">
-                  Author of Envoyou blog who writes about AI, technology, data, and digital strategy through
+                  Author of E-Blog who writes about AI, technology, data, and digital strategy through
                   concise research, practical analysis, and modern business perspectives.
                 </p>
               </div>

@@ -13,14 +13,14 @@ const HighlightedText = ({ text, highlight }: { text: string; highlight: string 
   if (!highlight.trim()) {
     return <span>{text}</span>;
   }
-  
+
   // Use regex to find case-insensitive matches
   const regex = new RegExp(`(${highlight})`, 'gi');
   const parts = text.split(regex);
-  
+
   return (
     <span>
-      {parts.map((part, i) => 
+      {parts.map((part, i) =>
         regex.test(part) ? (
           <span key={i} className="bg-yellow-200 dark:bg-yellow-900/50 text-slate-900 dark:text-white font-medium px-1 rounded-sm">
             {part}
@@ -53,7 +53,7 @@ function SearchContent() {
   const searchParams = useSearchParams();
   const router = useRouter();
   const initialQuery = searchParams.get('q') || '';
-  
+
   const [inputValue, setInputValue] = useState(initialQuery);
   const [debouncedQuery, setDebouncedQuery] = useState(initialQuery);
 
@@ -61,7 +61,7 @@ function SearchContent() {
   useEffect(() => {
     const timer = setTimeout(() => {
       setDebouncedQuery(inputValue);
-      
+
       // Update URL silently
       if (inputValue.trim()) {
         const newUrl = new URL(window.location.href);
@@ -86,7 +86,7 @@ function SearchContent() {
       {/* Giant Search Bar */}
       <div className="mb-16">
         <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-center text-slate-900 dark:text-white mb-8">
-          Explore Envoyou blog
+          Explore E-Blog
         </h1>
         <div className="relative max-w-3xl mx-auto">
           <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none">

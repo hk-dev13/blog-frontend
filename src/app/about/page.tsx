@@ -118,10 +118,10 @@ export default function AboutPage() {
       <div className="grid grid-cols-1 gap-10 md:grid-cols-3">
         <div className="space-y-14 md:col-span-2">
           <section>
-            <SectionHeading icon={Globe2} title="What is Envoyou" />
+            <SectionHeading icon={Globe2} title="What is E-Blog" />
             <div className="space-y-4 text-base leading-8 text-slate-600 dark:text-slate-400">
               <p>
-                Envoyou blog is a publication platform focusing on Artificial Intelligence,
+                E-Blog is a publication platform focusing on Artificial Intelligence,
                 technology, data, and digital strategy. Its content is designed to help readers
                 see technological changes more clearly.
               </p>
@@ -134,10 +134,10 @@ export default function AboutPage() {
           </section>
 
           <section>
-            <SectionHeading icon={Compass} title="Envoyou's Mission" />
+            <SectionHeading icon={Compass} title="E-Blog's Mission" />
             <div className="rounded-2xl border border-slate-100 bg-white p-6 shadow-sm dark:border-slate-800 dark:bg-slate-900 md:p-8">
               <p className="text-base leading-8 text-slate-600 dark:text-slate-400">
-                The mission of Envoyou blog is to publish research, analysis, and practical guides that help
+                The mission of E-Blog is to publish research, analysis, and practical guides that help
                 readers understand the relationship between technology, business, and human behavior changes
                 in the digital era.
               </p>
@@ -194,7 +194,7 @@ export default function AboutPage() {
               </h3>
             </div>
             <p className="mb-5 text-sm leading-7 text-slate-500 dark:text-slate-400">
-              Envoyou blog is built and managed by Husni Kusuma.
+              E-Blog is built and managed by Husni Kusuma.
             </p>
             <Link
               href="/author/husni-kusuma"
