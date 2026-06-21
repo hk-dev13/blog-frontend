@@ -82,7 +82,7 @@ return (
 
         {/* Title */}
         <h2 className="mt-2 text-center text-3xl font-serif font-extrabold text-slate-900 dark:text-white">
-          Envoyou Admin
+          E-Blog Admin
         </h2>
 
         {/* Subtitle */}

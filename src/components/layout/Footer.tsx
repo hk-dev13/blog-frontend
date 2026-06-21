@@ -12,8 +12,8 @@ import NewsletterForm from '@/components/shared/NewsletterForm';
 const NAV_LINKS = [
   { label: 'Home', href: '/' },
   { label: 'Categories', href: '/categories' },
-  { label: 'About', href: '/about' },
-  { label: 'Search', href: '/search' },
+  { label: 'About E-Blog', href: '/about' },
+  { label: 'Search Articles', href: '/search' },
   { label: 'RSS Feed', href: '/feed.xml' },
 ];
 
@@ -109,7 +109,7 @@ export default function Footer() {
               </li>
               <li>
                 <a
-                  href="https://github.com/hk-dev13"
+                  href="https://github.com/Envoyou"
                   target="_blank"
                   rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
@@ -121,6 +121,8 @@ export default function Footer() {
               <li>
                 <a
                   href="https://envoyou.com"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   className="inline-flex items-center gap-2.5 text-sm text-slate-600 dark:text-slate-300 hover:text-primary-600 dark:hover:text-primary-400 transition-colors"
                 >
                   <Globe className="w-4 h-4 shrink-0" />
@@ -139,8 +141,8 @@ export default function Footer() {
           <span>© {currentYear} Envoyou. All rights reserved.</span>
           <span>
             Made with ❤️ by{' '}
-            <Link href="/about" className="text-slate-600 underline underline-offset-4 transition-colors hover:text-primary-500 dark:text-slate-300 dark:hover:text-primary-400">
-              Husni Kusuma
+            <Link href="https://www.envoyou.com/about" target="_blank" rel="noopener noreferrer" className="text-slate-600 underline underline-offset-4 transition-colors hover:text-primary-500 dark:text-slate-300 dark:hover:text-primary-400">
+              EAI (Editorial Intelligence)
             </Link>
           </span>
         </div>

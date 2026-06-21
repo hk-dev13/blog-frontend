@@ -13,7 +13,7 @@ const organizationSchema = {
   url: 'https://envoyou.com',
   logo: `${SITE_URL}/icon.svg`,
   sameAs: [
-    'https://github.com/hk-dev13',
+    'https://github.com/Envoyou',
   ],
 };
 
@@ -42,7 +42,7 @@ const blogSchema = {
   '@id': `${SITE_URL}/#blog`,
   name: 'E-Blog',
   url: SITE_URL,
-  description: 'Technology insights, artificial intelligence, business strategy, and digital investment from Envoyou.',
+  description: 'Technology insights, artificial intelligence, business strategy, and digital investment from E-Blog.',
   publisher: {
     '@id': `${SITE_URL}/#organization`,
   },
@@ -79,7 +79,7 @@ export const metadata: Metadata = {
     default: "E-Blog - Insights on Technology, AI, and Modern Business",
     template: "%s | E-Blog",
   },
-  description: "Actionable insights and future perspectives. Deep exploration of artificial intelligence, sales strategy, and digital investment by Envoyou.",
+  description: "Actionable insights and future perspectives. Deep exploration of artificial intelligence, sales strategy, and digital investment by E-Blog.",
   alternates: {
     canonical: SITE_URL,
     types: {
@@ -96,7 +96,7 @@ export const metadata: Metadata = {
   twitter: {
     card: 'summary_large_image',
     title: 'E-Blog - Insights on Technology, AI, and Modern Business',
-    description: 'Technology insights, AI, business strategy, and digital investment from Envoyou.',
+    description: 'Technology insights, AI, business strategy, and digital investment from E-Blog.',
   },
   robots: {
     index: true,

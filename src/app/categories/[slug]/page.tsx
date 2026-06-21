@@ -26,7 +26,7 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
     if (!category) return { title: 'Category Not Found' };
 
     const title = category.name;
-    const description = category.meta_description || category.description || `Artikel terbaru dalam kategori ${category.name} di Envoyou.`;
+    const description = category.meta_description || category.description || `New articles in ${category.name} on E-Blog.`;
 
     return {
       title,

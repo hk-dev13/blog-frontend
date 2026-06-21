@@ -40,7 +40,7 @@ export async function GET() {
       <link>${postUrl}</link>
       <guid isPermaLink="true">${postUrl}</guid>
       <pubDate>${pubDate}</pubDate>
-      <dc:creator>${escapeXml(post.author?.name || 'Envoyou')}</dc:creator>
+      <dc:creator>${escapeXml(post.author?.name || 'Envoyou Team')}</dc:creator>
       <description><![CDATA[${post.excerpt || post.meta_description || ''}]]></description>
       ${categories}
       ${coverImage}
@@ -53,10 +53,10 @@ export async function GET() {
   xmlns:dc="http://purl.org/dc/elements/1.1/"
 >
   <channel>
-    <title>E-Blog — Wawasan Teknologi, AI, dan Bisnis Modern</title>
+    <title>E-Blog — Insights on Technology, AI, and Modern Business</title>
     <link>${SITE_URL}</link>
-    <description>Actionable insights and future perspectives. Eksplorasi mendalam seputar kecerdasan buatan, strategi sales, dan investasi digital oleh Envoyou.</description>
-    <language>id</language>
+    <description>Actionable insights and future perspectives. An in-depth exploration of artificial intelligence, sales strategies, and digital investments by E-Blog.</description>
+    <language>en</language>
     <lastBuildDate>${lastBuildDate}</lastBuildDate>
     <atom:link href="${FEED_URL}" rel="self" type="application/rss+xml" />
     <image>

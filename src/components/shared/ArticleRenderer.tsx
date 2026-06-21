@@ -246,7 +246,7 @@ export default function ArticleRenderer({
               {/* Editorial Note */}
               <div className="mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 text-[11px] md:text-xs text-slate-400 dark:text-slate-500 leading-relaxed font-sans text-center max-w-2xl mx-auto">
                 <p>
-                  <strong>Editorial Note:</strong> Articles on Envoyou may involve the use of AI technology as part of the research, editing, or content refinement process. All materials remain subject to editorial review before publication. The information presented is for educational and general reference purposes only and is not intended as a substitute for professional advice. Readers are advised to perform additional verification before making decisions based on the information in the article.
+                  <strong>Editorial Note:</strong> Articles on E-Blog may involve the use of AI technology as part of the research, editing, or content refinement process. All materials remain subject to editorial review before publication. The information presented is for educational and general reference purposes only and is not intended as a substitute for professional advice. Readers are advised to perform additional verification before making decisions based on the information in the article.
                 </p>
               </div>
             </div>

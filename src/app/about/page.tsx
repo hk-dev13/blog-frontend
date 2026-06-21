@@ -126,7 +126,7 @@ export default function AboutPage() {
                 see technological changes more clearly.
               </p>
               <p>
-                Here, articles do not just chase trending news. Envoyou attempts to
+                Here, articles do not just chase trending news. E-Blog attempts to
                 explain why a trend matters, how it impacts business, and what can be learned
                 by readers who are building, working, or making decisions in the digital world.
               </p>
@@ -190,17 +190,19 @@ export default function AboutPage() {
             <div className="mb-4 flex items-center gap-2">
               <UserRound className="h-4 w-4 text-primary-600 dark:text-primary-400" />
               <h3 className="text-sm font-bold text-slate-800 dark:text-slate-100">
-                Who is behind Envoyou
+                Who is behind E-Blog
               </h3>
             </div>
             <p className="mb-5 text-sm leading-7 text-slate-500 dark:text-slate-400">
-              E-Blog is built and managed by Husni Kusuma.
+              E-Blog is built and managed by Envoyou.
             </p>
             <Link
-              href="/author/husni-kusuma"
+              href="https://www.envoyou.com/about"
+              target="_blank"
+              rel="noopener noreferrer"
               className="inline-flex items-center gap-2 rounded-full border border-slate-200 px-4 py-2 text-sm font-semibold text-slate-600 transition-colors hover:border-primary-500 hover:text-slate-950 dark:border-slate-700 dark:text-slate-400 dark:hover:border-primary-400 dark:hover:text-white"
             >
-              Read author's profile
+              Read about Envoyou
               <ArrowRight className="h-4 w-4" />
             </Link>
           </div>
@@ -210,7 +212,7 @@ export default function AboutPage() {
       <div className="mt-20 text-center">
         <div className="mb-12 h-px w-full bg-gradient-to-r from-transparent via-slate-300 to-transparent dark:via-slate-700" />
         <p className="mb-4 text-sm text-slate-500 dark:text-slate-400">
-          Start exploring the latest articles from Envoyou.
+          Start exploring the latest articles from E-Blog.
         </p>
         <Link
           href="/"

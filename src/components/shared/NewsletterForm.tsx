@@ -55,7 +55,7 @@ export default function NewsletterForm() {
       <div className="flex items-center justify-center gap-2 mb-3">
         <Mail className="w-4 h-4 text-primary-500" />
         <p className="text-sm font-medium text-slate-600 dark:text-slate-300">
-          Get the latest insights from Envoyou
+          Get the latest insights from E-Blog
         </p>
         <span className="px-2 py-0.5 text-[10px] font-semibold rounded-full bg-primary-100 text-primary-600 dark:bg-primary-900/40 dark:text-primary-300">
           BETA
@@ -65,7 +65,7 @@ export default function NewsletterForm() {
       {status === 'success' ? (
         <div className="flex items-center justify-center gap-2 text-green-600 dark:text-green-400 text-sm font-medium py-2">
           <CheckCircle className="w-4 h-4" />
-          Thanks for joining Envoyou Beta.
+          Thanks for joining E-Blog Beta.
         </div>
       ) : (
         <>
