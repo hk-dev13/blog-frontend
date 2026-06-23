@@ -113,6 +113,7 @@ export default function ArticleRenderer({
             sizes="100vw"
             priority
             className="object-cover rounded-2xl shadow-xl"
+            unoptimized={imageUrl.startsWith('https://cdn.envoyou.com/')}
           />
         </div>
 

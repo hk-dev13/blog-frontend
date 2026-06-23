@@ -47,6 +47,7 @@ export default function PostCard({ post, featured = false, priority = false, act
             priority={priority}
             fetchPriority={priority ? 'high' : 'auto'}
             className="object-cover transition-transform duration-500 group-hover:scale-105"
+            unoptimized={imageUrl.startsWith('https://cdn.envoyou.com/')}
           />
         </Link>
         {badgeCategories.length > 0 && (
