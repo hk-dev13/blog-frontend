@@ -1,4 +1,5 @@
 import { useAppStore } from '@/store/useAppStore';
+import { useToastStore } from '@/store/useToastStore';
 
 import { API_URL } from '@/lib/env';
 
@@ -66,6 +67,31 @@ function parseRetryAfterSeconds(res: Response): number | undefined {
   return undefined;
 }
 
+function handleAuthError(status: number, endpoint: string) {
+  if (status === 401 && !endpoint.includes('/auth/login')) {
+    const wasLoggedIn = !!useAppStore.getState().token;
+    if (wasLoggedIn) {
+      // Clear token and user
+      useAppStore.getState().logout();
+
+      // Show toast in English
+      useToastStore.getState().push({
+        title: 'Session Expired',
+        description: 'Your session has expired. Please log in again.',
+        variant: 'error',
+      });
+
+      // Redirect if in admin panel
+      if (typeof window !== 'undefined') {
+        const currentPath = window.location.pathname;
+        if (currentPath.startsWith('/admin') && currentPath !== '/admin/login') {
+          window.location.href = `/admin/login?redirect=${encodeURIComponent(currentPath)}`;
+        }
+      }
+    }
+  }
+}
+
 export async function fetchApi<T>(
   endpoint: string,
   options?: RequestInit
@@ -86,6 +112,7 @@ export async function fetchApi<T>(
   const data = await readJsonSafely(res);
 
   if (!res.ok) {
+    handleAuthError(res.status, endpoint);
     const retryAfterSeconds = res.status === 429 ? parseRetryAfterSeconds(res) : undefined;
     const code = data?.error || data?.code;
     const message =
@@ -119,6 +146,7 @@ export async function fetchPaginatedApi<T>(
   const data = await readJsonSafely(res);
 
   if (!res.ok) {
+    handleAuthError(res.status, endpoint);
     const retryAfterSeconds = res.status === 429 ? parseRetryAfterSeconds(res) : undefined;
     const code = data?.error || data?.code;
     const message =

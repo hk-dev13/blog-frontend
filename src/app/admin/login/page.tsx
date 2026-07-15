@@ -55,7 +55,17 @@ export default function AdminLoginPage() {
       });
 
       setAuth(res.token, res.user);
-      router.push('/admin/posts');
+      
+      let redirectTarget = '/admin/posts';
+      if (typeof window !== 'undefined') {
+        const params = new URLSearchParams(window.location.search);
+        const redirect = params.get('redirect');
+        if (redirect && redirect.startsWith('/') && !redirect.startsWith('//')) {
+          redirectTarget = redirect;
+        }
+      }
+
+      router.push(redirectTarget);
     } catch (err: any) {
       if (isApiError(err) && err.status === 429) {
         const retryAfterSeconds = err.retryAfterSeconds ?? 60;
