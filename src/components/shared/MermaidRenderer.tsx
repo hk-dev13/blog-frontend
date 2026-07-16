@@ -67,7 +67,7 @@ export default function MermaidRenderer({ chart }: MermaidRendererProps) {
     <div className="flex justify-center my-8 w-full overflow-x-auto">
       <div 
         ref={containerRef} 
-        className="mermaid-svg max-w-full"
+        className="mermaid-svg"
         dangerouslySetInnerHTML={{ 
           __html: svg || '<div class="animate-pulse h-28 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full flex items-center justify-center text-slate-400 text-sm">Rendering diagram...</div>' 
         }}
