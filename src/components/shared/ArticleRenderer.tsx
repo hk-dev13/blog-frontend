@@ -13,6 +13,7 @@ import ShareButtons from '@/components/shared/ShareButtons';
 import LikeButton from '@/components/shared/LikeButton';
 import TableOfContents from '@/components/shared/TableOfContents';
 import CommentSection from '@/app/posts/[slug]/CommentSection';
+import MermaidRenderer from '@/components/shared/MermaidRenderer';
 
 interface ArticleRendererProps {
   post: Post;
@@ -153,6 +154,20 @@ export default function ArticleRenderer({
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeSlug, rehypeHighlight]}
                       components={{
+                        code: ({ className, children, ...props }) => {
+                          const match = /language-(\w+)/.exec(className || '');
+                          const isMermaid = match && match[1] === 'mermaid';
+                          
+                          if (isMermaid) {
+                            return <MermaidRenderer chart={String(children).replace(/\n$/, '')} />;
+                          }
+                          
+                          return (
+                            <code className={className} {...props}>
+                              {children}
+                            </code>
+                          );
+                        },
                         a: ({ href, children, ...props }) => {
                           let isExternal = false;
                           if (href && href.startsWith('http')) {
