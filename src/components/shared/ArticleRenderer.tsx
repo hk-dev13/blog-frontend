@@ -1,3 +1,4 @@
+import React, { isValidElement } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
@@ -154,6 +155,15 @@ export default function ArticleRenderer({
                       remarkPlugins={[remarkGfm]}
                       rehypePlugins={[rehypeSlug, rehypeHighlight]}
                       components={{
+                        pre: ({ children, ...props }) => {
+                          const isMermaid = isValidElement(children) && 
+                            String((children.props as any)?.className || '').includes('language-mermaid');
+                          
+                          if (isMermaid) {
+                            return <>{children}</>;
+                          }
+                          return <pre {...props}>{children}</pre>;
+                        },
                         code: ({ className, children, ...props }) => {
                           const match = /language-(\w+)/.exec(className || '');
                           const isMermaid = match && match[1] === 'mermaid';

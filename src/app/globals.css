@@ -166,3 +166,10 @@ body {
 .prose blockquote p::after {
   content: none !important;
 }
+
+/* ── Mermaid SVG Styles ── */
+.mermaid-svg svg {
+  width: 100% !important;
+  height: auto !important;
+  max-width: 100% !important;
+}
