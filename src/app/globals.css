@@ -179,3 +179,67 @@ body {
   width: auto !important;
   max-width: none !important;
 }
+
+/* ── Tiptap / ProseMirror Table Design System ── */
+.ProseMirror table {
+  border-collapse: collapse;
+  table-layout: fixed;
+  width: 100%;
+  margin: 1.5rem 0;
+  overflow: hidden;
+  border-radius: 0.75rem;
+  border: 1px solid #e2e8f0;
+  background-color: #ffffff;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+}
+
+.dark .ProseMirror table {
+  border-color: #334155;
+  background-color: #0f172a;
+}
+
+.ProseMirror td,
+.ProseMirror th {
+  min-width: 120px;
+  border: 1px solid #e2e8f0;
+  padding: 0.75rem 1rem;
+  vertical-align: top;
+  box-sizing: border-box;
+  position: relative;
+}
+
+.dark .ProseMirror td,
+.dark .ProseMirror th {
+  border-color: #334155;
+}
+
+.ProseMirror th {
+  font-weight: 600;
+  text-align: left;
+  background-color: #f8fafc;
+  color: #0f172a;
+  border-bottom: 2px solid #cbd5e1;
+}
+
+.dark .ProseMirror th {
+  background-color: #1e293b;
+  color: #f8fafc;
+  border-bottom: 2px solid #475569;
+}
+
+.ProseMirror td:focus-within,
+.ProseMirror th:focus-within,
+.ProseMirror .selectedCell {
+  outline: 2px solid #0d87cf;
+  outline-offset: -2px;
+  background-color: rgba(13, 135, 207, 0.05);
+}
+
+.dark .ProseMirror td:focus-within,
+.dark .ProseMirror th:focus-within,
+.dark .ProseMirror .selectedCell {
+  outline: 2px solid #3396d6;
+  outline-offset: -2px;
+  background-color: rgba(51, 150, 214, 0.1);
+}
+

@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, AlertCircle } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, AlertCircle, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from '@/lib/editorUtils';
 import { API_URL } from '@/lib/env';
@@ -43,6 +43,7 @@ export default function CreatePostPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [canonicalUrl, setCanonicalUrl] = useState('');
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
+  const [showOptionsSidebar, setShowOptionsSidebar] = useState(true);
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
@@ -284,6 +285,15 @@ export default function CreatePostPage() {
           </div>
           <div className="admin-hero-actions">
           <button
+            type="button"
+            onClick={() => setShowOptionsSidebar(!showOptionsSidebar)}
+            className="admin-hero-button border-primary-500/40 text-primary-400 hover:bg-primary-500/20"
+            title={showOptionsSidebar ? 'Collapse settings panel for Focus Mode (Full Width)' : 'Show settings panel'}
+          >
+            {showOptionsSidebar ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4 text-primary-400" />}
+            <span>{showOptionsSidebar ? 'Focus Mode' : 'Settings'}</span>
+          </button>
+          <button
             onClick={handlePreview}
             disabled={isSaving}
             className="admin-hero-button"
@@ -376,7 +386,7 @@ export default function CreatePostPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
         {/* Main Editor Area */}
-        <div className="lg:col-span-9 space-y-6">
+        <div className={`${showOptionsSidebar ? 'lg:col-span-9' : 'lg:col-span-12 max-w-5xl mx-auto w-full'} space-y-6 transition-all duration-300`}>
           <div className="admin-surface-padded space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
@@ -387,7 +397,7 @@ export default function CreatePostPage() {
                   setTitle(e.target.value);
                   if (!slugLocked) setSlug(generateSlug(e.target.value));
                 }}
-                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
+                className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none text-lg font-semibold"
                 placeholder="Enter post title..."
                 required
               />
@@ -473,7 +483,8 @@ export default function CreatePostPage() {
         </div>
 
         {/* Sidebar Options */}
-        <div className="lg:col-span-3 space-y-6">
+        {showOptionsSidebar && (
+          <div className="lg:col-span-3 space-y-6 animate-in fade-in duration-200">
           {/* Cover Image Upload */}
           <div className="admin-surface-padded space-y-4">
             <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cover Image</h3>
@@ -731,6 +742,7 @@ export default function CreatePostPage() {
             coverImage={coverImageUrl}
           />
         </div>
+      )}
       </div>
 
       {/* Taxonomy Modal */}
