@@ -16,6 +16,8 @@ interface LightboxModalProps {
   onClose: () => void;
 }
 
+const MAX_ZOOM_SCALE = 20; // 2000% maximum zoom limit
+
 export default function LightboxModal({ media, onClose }: LightboxModalProps) {
   const [scale, setScale] = useState(1);
   const [position, setPosition] = useState({ x: 0, y: 0 });
@@ -58,10 +60,10 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
     if (!containerRef.current) return;
 
     const rect = containerRef.current.getBoundingClientRect();
-    const zoomFactor = e.deltaY < 0 ? 1.15 : 0.85;
+    const zoomFactor = e.deltaY < 0 ? 1.2 : 0.8;
 
     setScale((prevScale) => {
-      const nextScale = Math.min(Math.max(1, prevScale * zoomFactor), 5);
+      const nextScale = Math.min(Math.max(1, prevScale * zoomFactor), MAX_ZOOM_SCALE);
       if (nextScale === 1) {
         setPosition({ x: 0, y: 0 });
         return 1;
@@ -104,7 +106,7 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
     setIsDragging(false);
   };
 
-  // Double click to toggle 1x / 2.5x zoom at clicked point
+  // Double click to toggle 1x / 3x zoom at clicked point
   const handleDoubleClick = (e: React.MouseEvent) => {
     if (!containerRef.current) return;
 
@@ -115,7 +117,7 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
       const rect = containerRef.current.getBoundingClientRect();
       const mouseX = e.clientX - rect.left - rect.width / 2;
       const mouseY = e.clientY - rect.top - rect.height / 2;
-      const targetScale = 2.5;
+      const targetScale = 3;
 
       const ratio = targetScale - 1;
       setPosition({
@@ -127,12 +129,12 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
   };
 
   const zoomIn = () => {
-    setScale((prev) => Math.min(5, prev * 1.25));
+    setScale((prev) => Math.min(MAX_ZOOM_SCALE, prev * 1.3));
   };
 
   const zoomOut = () => {
     setScale((prev) => {
-      const next = Math.max(1, prev / 1.25);
+      const next = Math.max(1, prev / 1.3);
       if (next === 1) setPosition({ x: 0, y: 0 });
       return next;
     });
@@ -147,7 +149,7 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
 
   return (
     <div
-      className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-black/85 backdrop-blur-md p-4 transition-opacity duration-300 animate-in fade-in select-none"
+      className="fixed inset-0 z-50 flex flex-col items-center justify-between bg-slate-900/90 dark:bg-black/95 backdrop-blur-md p-4 transition-opacity duration-300 animate-in fade-in select-none"
       onClick={onClose}
       role="dialog"
       aria-modal="true"
@@ -155,15 +157,15 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
     >
       {/* Top Header Controls */}
       <div className="w-full flex items-center justify-between z-50 px-2 py-1">
-        <div className="flex items-center gap-2 text-xs text-slate-300 bg-slate-900/80 px-3.5 py-1.5 rounded-full border border-slate-700/50">
-          <Move className="w-3.5 h-3.5 text-primary-400" />
-          <span>Scroll wheel to zoom at cursor &bull; Drag to pan &bull; Double-click to toggle</span>
+        <div className="flex items-center gap-2 text-xs text-slate-700 dark:text-slate-300 bg-white/90 dark:bg-slate-900/90 px-3.5 py-1.5 rounded-full border border-slate-200 dark:border-slate-700/60 shadow-lg">
+          <Move className="w-3.5 h-3.5 text-primary-500 dark:text-primary-400" />
+          <span>Scroll wheel to zoom at cursor (up to 2000%) &bull; Drag to pan &bull; Double-click to toggle</span>
         </div>
 
         <button
           type="button"
           onClick={onClose}
-          className="p-2 rounded-full bg-slate-900/80 text-slate-200 hover:text-white hover:bg-slate-800 transition-colors border border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500"
+          className="p-2 rounded-full bg-white/90 dark:bg-slate-900/80 text-slate-700 dark:text-slate-200 hover:text-slate-900 dark:hover:text-white hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors border border-slate-200 dark:border-slate-700/50 focus:outline-none focus:ring-2 focus:ring-primary-500 shadow-lg"
           aria-label="Close modal"
           title="Close (ESC)"
         >
@@ -200,10 +202,10 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
                 src={media.src}
                 alt={media.alt || 'Enlarged image'}
                 draggable={false}
-                className="max-h-[82vh] max-w-[92vw] w-auto h-auto object-contain rounded-xl shadow-2xl border border-slate-700/30 select-none pointer-events-auto"
+                className="max-h-[82vh] max-w-[92vw] w-auto h-auto object-contain rounded-xl shadow-2xl border border-slate-200 dark:border-slate-700/50 select-none pointer-events-auto bg-white dark:bg-slate-900"
               />
               {media.caption && scale === 1 && (
-                <p className="mt-3 text-sm text-slate-300 text-center font-sans italic max-w-2xl px-4 bg-slate-900/60 py-1.5 px-4 rounded-full border border-slate-800 pointer-events-none">
+                <p className="mt-3 text-sm text-slate-700 dark:text-slate-300 text-center font-sans italic max-w-2xl px-4 bg-white/90 dark:bg-slate-900/80 py-1.5 px-4 rounded-full border border-slate-200 dark:border-slate-800 shadow-md pointer-events-none">
                   {media.caption}
                 </p>
               )}
@@ -212,7 +214,7 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
 
           {media.type === 'mermaid' && media.svgContent && (
             <div className="w-full flex flex-col items-center justify-center">
-              <div className="w-full max-w-[92vw] max-h-[82vh] bg-slate-900/90 dark:bg-slate-950 p-6 md:p-10 rounded-2xl border border-slate-800 shadow-2xl flex justify-center items-center [&_svg]:w-full [&_svg]:max-w-[85vw] [&_svg]:h-auto [&_svg]:max-h-[78vh] [&_svg]:object-contain select-none pointer-events-auto">
+              <div className="w-full max-w-[92vw] max-h-[82vh] bg-white/95 dark:bg-slate-950 p-6 md:p-10 rounded-2xl border border-slate-200 dark:border-slate-800 shadow-2xl flex justify-center items-center [&_svg]:w-full [&_svg]:max-w-[85vw] [&_svg]:h-auto [&_svg]:max-h-[78vh] [&_svg]:object-contain select-none pointer-events-auto">
                 <div
                   dangerouslySetInnerHTML={{ __html: media.svgContent }}
                   className="w-full flex justify-center items-center"
@@ -225,40 +227,40 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
 
       {/* Bottom Toolbar Controls */}
       <div
-        className="z-50 flex items-center gap-2 bg-slate-900/90 text-slate-200 px-4 py-2 rounded-full border border-slate-700/60 shadow-xl backdrop-blur-md"
+        className="z-50 flex items-center gap-2 bg-white/90 dark:bg-slate-900/90 text-slate-800 dark:text-slate-200 px-4 py-2 rounded-full border border-slate-200 dark:border-slate-700/60 shadow-xl backdrop-blur-md"
         onClick={(e) => e.stopPropagation()}
       >
         <button
           type="button"
           onClick={zoomOut}
           disabled={scale <= 1}
-          className="p-1.5 rounded-full hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+          className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
           title="Zoom out (-)"
         >
           <ZoomOut className="w-4 h-4" />
         </button>
 
-        <span className="text-xs font-mono font-medium px-2 min-w-[3.5rem] text-center text-slate-300">
+        <span className="text-xs font-mono font-medium px-2 min-w-[3.8rem] text-center text-slate-800 dark:text-slate-200">
           {Math.round(scale * 100)}%
         </span>
 
         <button
           type="button"
           onClick={zoomIn}
-          disabled={scale >= 5}
-          className="p-1.5 rounded-full hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+          disabled={scale >= MAX_ZOOM_SCALE}
+          className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
           title="Zoom in (+)"
         >
           <ZoomIn className="w-4 h-4" />
         </button>
 
-        <div className="w-px h-4 bg-slate-700 mx-1" />
+        <div className="w-px h-4 bg-slate-300 dark:bg-slate-700 mx-1" />
 
         <button
           type="button"
           onClick={resetZoom}
           disabled={scale === 1 && position.x === 0 && position.y === 0}
-          className="p-1.5 rounded-full hover:bg-slate-800 text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
+          className="p-1.5 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 disabled:opacity-40 disabled:hover:bg-transparent transition-colors"
           title="Reset zoom"
         >
           <RotateCcw className="w-4 h-4" />
