@@ -178,7 +178,7 @@ export default function EditPostPage() {
   });
 
   // Build the post payload
-  const buildPayload = () => ({
+  const buildPayload = useCallback(() => ({
     title,
     slug: slug || undefined,
     excerpt,
@@ -191,7 +191,11 @@ export default function EditPostPage() {
     is_featured: isFeatured,
     category_ids: selectedCategories,
     tag_ids: selectedTags,
-  });
+  }), [
+    title, slug, excerpt, content,
+    coverImageUrl, coverImageAlt, metaTitle, metaDescription,
+    canonicalUrl, isFeatured, selectedCategories, selectedTags,
+  ]);
 
   const updateMutation = useMutation({
     mutationFn: (data: any) => fetchApi(`/posts/${postId}`, { method: 'PUT', body: JSON.stringify(data) }),
@@ -225,7 +229,6 @@ export default function EditPostPage() {
     } finally {
       setIsSaving(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, content, buildPayload, clearSave, router, pushToast, updateMutation]);
 
   const handlePreview = async () => {

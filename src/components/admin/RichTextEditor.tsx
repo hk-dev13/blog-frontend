@@ -918,6 +918,7 @@ export default function RichTextEditor({
           return true;
         });
 
+        // eslint-disable-next-line react-hooks/immutability
         md.renderer.rules.youtube = (tokens: any, idx: number) => {
           const token = tokens[idx];
           const src = token.attrs ? token.attrs[0][1] : '';

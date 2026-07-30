@@ -43,13 +43,14 @@ export function RevisionDiffPanel({
   onClose,
   onRestore,
 }: RevisionDiffPanelProps) {
-  if (!revision) return null;
-
   const contentDiff = useMemo(() => {
+    if (!revision) return [];
     const oldText = normalizeMarkdownForDiff(revision.content || '');
     const newText = normalizeMarkdownForDiff(currentContent || '');
     return diffWords(oldText, newText);
-  }, [revision.content, currentContent]);
+  }, [revision, currentContent]);
+
+  if (!revision) return null;
 
   const titleChanged = (revision.title || '').trim() !== (currentTitle || '').trim();
 

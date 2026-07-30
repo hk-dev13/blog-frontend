@@ -115,7 +115,7 @@ export default function CreatePostPage() {
   });
 
   // Build the post payload
-  const buildPayload = () => ({
+  const buildPayload = useCallback(() => ({
     title,
     slug: slugLocked && slug ? slug : undefined,
     excerpt,
@@ -128,7 +128,11 @@ export default function CreatePostPage() {
     is_featured: isFeatured,
     category_ids: selectedCategories,
     tag_ids: selectedTags,
-  });
+  }), [
+    title, slugLocked, slug, excerpt, content,
+    coverImageUrl, coverImageAlt, metaTitle, metaDescription,
+    canonicalUrl, isFeatured, selectedCategories, selectedTags,
+  ]);
 
   // Save as Draft — returns the created post so Ctrl+S can redirect
   const handleSaveDraft = useCallback(async (): Promise<{ id: string } | null> => {
@@ -148,7 +152,6 @@ export default function CreatePostPage() {
     } finally {
       setIsSaving(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [title, content, buildPayload, clearSave, router, pushToast]);
 
   const handlePreview = async () => {
