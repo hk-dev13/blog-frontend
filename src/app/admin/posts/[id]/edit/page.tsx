@@ -5,7 +5,7 @@ import { useRouter, useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag, Post, PostRevision } from '@/types';
-import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, History, RotateCcw, AlertCircle, PanelRightClose, PanelRightOpen } from 'lucide-react';
+import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, History, RotateCcw, AlertCircle, PanelRightClose, PanelRightOpen, Eye } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
 import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave, type AutosaveData, type RestoreState, type AutosaveEnvelope } from '@/lib/editorUtils';
 import { useToastStore } from '@/store/useToastStore';
@@ -14,6 +14,7 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
 import AdminLoadError from '@/components/admin/AdminLoadError';
+import { RevisionDiffPanel } from '@/components/admin/RevisionDiffPanel';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 const revisionDateFormatter = new Intl.DateTimeFormat('id-ID', {
@@ -57,6 +58,7 @@ export default function EditPostPage() {
   const [showOptionsSidebar, setShowOptionsSidebar] = useState(true);
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
   const [revisionToRestore, setRevisionToRestore] = useState<PostRevision | null>(null);
+  const [revisionToDiff, setRevisionToDiff] = useState<PostRevision | null>(null);
   const [autosaveRestoreState, setAutosaveRestoreState] = useState<{ state: RestoreState; envelope: AutosaveEnvelope } | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
@@ -927,14 +929,24 @@ export default function EditPostPage() {
                             {rev.source_ref && <span className="font-mono">{rev.source_ref}</span>}
                           </div>
                         </div>
-                        <button
-                          type="button"
-                          onClick={() => setRevisionToRestore(rev)}
-                          className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
-                          title="Restore this revision"
-                        >
-                          <RotateCcw className="w-3.5 h-3.5" />
-                        </button>
+                        <div className="flex items-center gap-1 shrink-0">
+                          <button
+                            type="button"
+                            onClick={() => setRevisionToDiff(rev)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-primary-600 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
+                            title="Preview diff with current draft"
+                          >
+                            <Eye className="w-3.5 h-3.5" />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => setRevisionToRestore(rev)}
+                            className="p-1.5 rounded-lg text-slate-400 hover:text-amber-600 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors"
+                            title="Restore this revision"
+                          >
+                            <RotateCcw className="w-3.5 h-3.5" />
+                          </button>
+                        </div>
                       </div>
                     ))}
                   </div>
@@ -1104,6 +1116,14 @@ export default function EditPostPage() {
           </div>
         </div>
       )}
+      {/* Revision Diff Panel Drawer (P3.3) */}
+      <RevisionDiffPanel
+        revision={revisionToDiff}
+        currentContent={content}
+        currentTitle={title}
+        onClose={() => setRevisionToDiff(null)}
+        onRestore={(rev) => setRevisionToRestore(rev)}
+      />
     </div>
   );
 }

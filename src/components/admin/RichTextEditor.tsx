@@ -30,6 +30,7 @@ import { useToastStore } from '@/store/useToastStore';
 import { API_URL } from '@/lib/env';
 import InternalLinkPopover from '@/components/admin/InternalLinkPopover';
 import BlockDragHandle from '@/components/admin/BlockDragHandle';
+import { SearchHighlightExtension } from '@/lib/tiptap/searchHighlightExtension';
 
 function getEmbedUrl(url: string) {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -837,6 +838,7 @@ export default function RichTextEditor({
       TableRow,
       TableHeader,
       TableCell,
+      SearchHighlightExtension,
       Markdown.configure({ html: false, transformCopiedText: true }),
       ToolbarShortcuts,
       modeShortcuts,
@@ -864,7 +866,18 @@ export default function RichTextEditor({
       const md = (editor.storage as any).markdown.getMarkdown();
       onChange(md);
     },
-  }, []);  // empty deps — editor created once
+  });
+
+  // Sync SearchHighlightExtension decorations when search input changes
+  useEffect(() => {
+    if (!editor || mode !== 'wysiwyg') return;
+    if (!isFindReplaceOpen || !findQuery.trim()) {
+      (editor.commands as any).clearSearch();
+      return;
+    }
+    (editor.commands as any).setSearchTerm(findQuery);
+    (editor.commands as any).setMatchIndex(activeMatchIndex);
+  }, [editor, mode, isFindReplaceOpen, findQuery, activeMatchIndex]);
 
   // eslint-disable-next-line react-hooks/immutability
   useEffect(() => {
