@@ -67,9 +67,66 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
       setHandleStyle((prev) => ({ ...prev, visible: false }));
     };
 
+    const handleEditorDragOver = (e: DragEvent) => {
+      if (draggingPosRef.current === null) return;
+      e.preventDefault();
+      if (e.dataTransfer) {
+        e.dataTransfer.dropEffect = 'move';
+      }
+    };
+
+    const handleEditorDrop = (e: DragEvent) => {
+      if (!editor || draggingPosRef.current === null) return;
+      e.preventDefault();
+
+      const fromPos = draggingPosRef.current;
+      draggingPosRef.current = null;
+
+      try {
+        const target = e.target as HTMLElement | null;
+        const topBlock = target?.closest('.prose > *') as HTMLElement | null;
+        if (!topBlock) return;
+
+        const targetPos = editor.view.posAtDOM(topBlock, 0);
+
+        const $from = editor.state.doc.resolve(fromPos);
+        const fromNode = $from.nodeAfter;
+
+        if (!fromNode) return;
+
+        const nodeSize = fromNode.nodeSize;
+        const tr = editor.state.tr;
+
+        // Resolve drop block position at top-level (depth 1)
+        const $target = editor.state.doc.resolve(targetPos);
+        const targetBlockPos = $target.before(1);
+
+        if (fromPos === targetBlockPos) return;
+
+        if (fromPos < targetBlockPos) {
+          // Dragging downwards
+          const targetNodeSize = $target.node(1).nodeSize;
+          tr.insert(targetBlockPos + targetNodeSize, fromNode);
+          tr.delete(fromPos, fromPos + nodeSize);
+        } else {
+          // Dragging upwards
+          tr.delete(fromPos, fromPos + nodeSize);
+          tr.insert(targetBlockPos, fromNode);
+        }
+
+        editor.view.dispatch(tr);
+        setHandleStyle((prev) => ({ ...prev, visible: false }));
+      } catch (err) {
+        console.error('Failed to move block node:', err);
+      }
+    };
+
     const targetContainer = container || editorDom;
     targetContainer.addEventListener('mousemove', handleMouseMove);
     targetContainer.addEventListener('mouseleave', handleMouseLeave);
+
+    editorDom.addEventListener('dragover', handleEditorDragOver);
+    editorDom.addEventListener('drop', handleEditorDrop);
 
     window.addEventListener('scroll', updateHandlePosition, true);
     window.addEventListener('resize', updateHandlePosition);
@@ -77,6 +134,8 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
     return () => {
       targetContainer.removeEventListener('mousemove', handleMouseMove);
       targetContainer.removeEventListener('mouseleave', handleMouseLeave);
+      editorDom.removeEventListener('dragover', handleEditorDragOver);
+      editorDom.removeEventListener('drop', handleEditorDrop);
       window.removeEventListener('scroll', updateHandlePosition, true);
       window.removeEventListener('resize', updateHandlePosition);
     };
@@ -87,51 +146,10 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
 
     draggingPosRef.current = activePosRef.current;
     e.dataTransfer.effectAllowed = 'move';
-    e.dataTransfer.setData('text/plain', ''); // Required for HTML5 drag
+    e.dataTransfer.setData('text/plain', 'block-reorder'); // Required for HTML5 drag
 
     if (activeNodeElementRef.current) {
       e.dataTransfer.setDragImage(activeNodeElementRef.current, 0, 0);
-    }
-  };
-
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    if (!editor || draggingPosRef.current === null) return;
-
-    const target = e.target as HTMLElement | null;
-    const topBlock = target?.closest('.prose > *') as HTMLElement | null;
-    if (!topBlock) return;
-
-    try {
-      const targetPos = editor.view.posAtDOM(topBlock, 0);
-      const fromPos = draggingPosRef.current;
-
-      if (fromPos === targetPos) return;
-
-      const $from = editor.state.doc.resolve(fromPos);
-      const node = $from.nodeAfter;
-
-      if (!node) return;
-
-      const nodeSize = node.nodeSize;
-      const tr = editor.state.tr;
-
-      // Delete node from old position and insert at new position
-      tr.delete(fromPos, fromPos + nodeSize);
-      const mappedTargetPos = tr.mapping.map(targetPos);
-      tr.insert(mappedTargetPos, node);
-
-      editor.view.dispatch(tr);
-      setHandleStyle((prev) => ({ ...prev, visible: false }));
-    } catch (err) {
-      console.error('Failed to move block node:', err);
-    } finally {
-      draggingPosRef.current = null;
     }
   };
 
@@ -142,8 +160,6 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
       ref={handleRef}
       draggable
       onDragStart={handleDragStart}
-      onDragOver={handleDragOver}
-      onDrop={handleDrop}
       style={{ top: `${handleStyle.top}px`, left: `${handleStyle.left}px` }}
       className="absolute z-20 flex items-center justify-center p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-800/80 cursor-grab active:cursor-grabbing transition-all duration-150 group/handle"
       title="Click & drag to reorder block"

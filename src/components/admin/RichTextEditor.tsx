@@ -14,13 +14,15 @@ import { TableHeader } from '@tiptap/extension-table-header';
 import { TableCell } from '@tiptap/extension-table-cell';
 import { Markdown } from 'tiptap-markdown';
 import { useEffect, useCallback, useMemo, useRef, useState } from 'react';
+import { TaskList } from '@tiptap/extension-task-list';
+import { TaskItem } from '@tiptap/extension-task-item';
 import {
   Bold, Italic, Underline as UnderlineIcon, Strikethrough,
-  Heading1, Heading2, Heading3,
-  List, ListOrdered, Quote, Code, Minus,
+  Heading1, Heading2, Heading3, Heading4,
+  List, ListOrdered, ListTodo, Quote, Code, Minus,
   AlignLeft, AlignCenter, AlignRight,
   Link2, Highlighter, Undo2, Redo2,
-  Type, FileCode2, Search, Replace, ChevronLeft, ChevronRight, X,
+  Type, FileCode2, Search, Replace, ChevronLeft, ChevronRight, ChevronDown, X,
   Image as ImageIcon, Video as VideoIcon, Upload, Loader2,
   Plus, Table as TableIcon, Workflow, Trash2
 } from 'lucide-react';
@@ -438,6 +440,234 @@ const ShortcutChip = ({ children }: { children: React.ReactNode }) => (
     {children}
   </span>
 );
+
+function HeadingsDropdown({ editor }: { editor: Editor }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as HTMLElement | null)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const activeLevel = editor.isActive('heading', { level: 1 })
+    ? 1
+    : editor.isActive('heading', { level: 2 })
+    ? 2
+    : editor.isActive('heading', { level: 3 })
+    ? 3
+    : editor.isActive('heading', { level: 4 })
+    ? 4
+    : null;
+
+  const currentLabel = activeLevel ? `H${activeLevel}` : 'Paragraph';
+
+  return (
+    <div ref={dropdownRef} className="relative inline-block text-left">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-label="Select heading style"
+        className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold transition-colors ${
+          activeLevel !== null
+            ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400'
+            : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+        }`}
+      >
+        {activeLevel === 1 && <Heading1 className="w-4 h-4" />}
+        {activeLevel === 2 && <Heading2 className="w-4 h-4" />}
+        {activeLevel === 3 && <Heading3 className="w-4 h-4" />}
+        {activeLevel === 4 && <Heading4 className="w-4 h-4" />}
+        {activeLevel === null && <Type className="w-4 h-4" />}
+        <span>{currentLabel}</span>
+        <ChevronDown className="w-3 h-3 opacity-70" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 z-50 mt-1 w-44 rounded-xl border border-slate-200 bg-white py-1 shadow-xl dark:border-slate-700 dark:bg-slate-900 animate-in fade-in duration-100">
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().setParagraph().run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-medium transition-colors ${
+              activeLevel === null
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Type className="w-4 h-4 text-slate-400" />
+            <span>Normal Paragraph</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().toggleHeading({ level: 1 }).run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-serif font-bold transition-colors ${
+              activeLevel === 1
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Heading1 className="w-4 h-4" />
+            <span>Heading 1 (H1)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().toggleHeading({ level: 2 }).run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-serif font-semibold transition-colors ${
+              activeLevel === 2
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Heading2 className="w-4 h-4" />
+            <span>Heading 2 (H2)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().toggleHeading({ level: 3 }).run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-serif font-medium transition-colors ${
+              activeLevel === 3
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Heading3 className="w-4 h-4" />
+            <span>Heading 3 (H3)</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().toggleHeading({ level: 4 }).run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-serif font-normal transition-colors ${
+              activeLevel === 4
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <Heading4 className="w-4 h-4" />
+            <span>Heading 4 (H4)</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ListsDropdown({ editor }: { editor: Editor }) {
+  const [isOpen, setIsOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement | null>(null);
+
+  useEffect(() => {
+    const handleOutsideClick = (e: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as HTMLElement | null)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleOutsideClick);
+    return () => document.removeEventListener('mousedown', handleOutsideClick);
+  }, []);
+
+  const isBullet = editor.isActive('bulletList');
+  const isOrdered = editor.isActive('orderedList');
+  const isTask = editor.isActive('taskList');
+  const hasActiveList = isBullet || isOrdered || isTask;
+
+  return (
+    <div ref={dropdownRef} className="relative inline-block text-left">
+      <button
+        type="button"
+        onClick={() => setIsOpen(!isOpen)}
+        aria-expanded={isOpen}
+        aria-label="Select list style"
+        className={`flex items-center gap-1 px-2 py-1 rounded-md text-xs font-semibold transition-colors ${
+          hasActiveList
+            ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400'
+            : 'text-slate-600 hover:text-slate-900 dark:text-slate-300 dark:hover:text-white hover:bg-slate-200 dark:hover:bg-slate-700'
+        }`}
+      >
+        {isOrdered && <ListOrdered className="w-4 h-4" />}
+        {isTask && <ListTodo className="w-4 h-4" />}
+        {(!isOrdered && !isTask) && <List className="w-4 h-4" />}
+        <ChevronDown className="w-3 h-3 opacity-70" />
+      </button>
+
+      {isOpen && (
+        <div className="absolute left-0 z-50 mt-1 w-44 rounded-xl border border-slate-200 bg-white py-1 shadow-xl dark:border-slate-700 dark:bg-slate-900 animate-in fade-in duration-100">
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().toggleBulletList().run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-medium transition-colors ${
+              isBullet
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <List className="w-4 h-4" />
+            <span>Bullet List</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().toggleOrderedList().run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-medium transition-colors ${
+              isOrdered
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <ListOrdered className="w-4 h-4" />
+            <span>Numbered List</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={() => {
+              editor.chain().focus().toggleTaskList().run();
+              setIsOpen(false);
+            }}
+            className={`flex w-full items-center gap-2 px-3 py-1.5 text-xs text-left font-medium transition-colors ${
+              isTask
+                ? 'bg-primary-50 text-primary-600 dark:bg-primary-900/30 dark:text-primary-300'
+                : 'text-slate-700 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800'
+            }`}
+          >
+            <ListTodo className="w-4 h-4" />
+            <span>Task List</span>
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
 
 const TableAction = ({
   onClick, title, label, disabled = false, active = false,
@@ -913,12 +1143,16 @@ export default function RichTextEditor({
     immediatelyRender: false,
     extensions: [
       StarterKit.configure({
-        heading: { levels: [1, 2, 3] },
+        heading: { levels: [1, 2, 3, 4] },
         underline: false,
         link: false,
         code: { HTMLAttributes: { class: 'font-mono bg-slate-100 dark:bg-slate-800 px-1 rounded text-sm' } },
         codeBlock: { HTMLAttributes: { class: 'font-mono bg-slate-900 text-slate-100 p-4 rounded-lg text-sm overflow-x-auto' } },
         blockquote: { HTMLAttributes: { class: '' } },
+      }),
+      TaskList,
+      TaskItem.configure({
+        nested: true,
       }),
       Image,
       YoutubeNode,
@@ -1146,54 +1380,41 @@ export default function RichTextEditor({
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
-        {/* Headings */}
-        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} isToggle title="Heading 1 (Ctrl/Cmd+Alt+1)" ariaLabel="Heading 1">
-          <Heading1 className={ic} />
-        </TB>
-        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} isToggle title="Heading 2 (Ctrl/Cmd+Alt+2)" ariaLabel="Heading 2">
-          <Heading2 className={ic} />
-        </TB>
-        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} isToggle title="Heading 3 (Ctrl/Cmd+Alt+3)" ariaLabel="Heading 3">
-          <Heading3 className={ic} />
-        </TB>
+        {/* Headings Dropdown */}
+        <HeadingsDropdown editor={editor} />
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
         {/* Inline formats */}
         <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} isToggle title="Bold (Ctrl/Cmd+B)" ariaLabel="Bold">
-          <Bold className={ic} />
+          <Bold className="w-4 h-4" />
         </TB>
         <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} isToggle title="Italic (Ctrl/Cmd+I)" ariaLabel="Italic">
-          <Italic className={ic} />
+          <Italic className="w-4 h-4" />
         </TB>
         <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} isToggle title="Underline (Ctrl/Cmd+U)" ariaLabel="Underline">
-          <UnderlineIcon className={ic} />
+          <UnderlineIcon className="w-4 h-4" />
         </TB>
         <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} isToggle title="Strikethrough (Ctrl/Cmd+Shift+S)" ariaLabel="Strikethrough">
-          <Strikethrough className={ic} />
+          <Strikethrough className="w-4 h-4" />
         </TB>
         <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} isToggle title="Highlight (Ctrl/Cmd+Shift+H)" ariaLabel="Highlight">
-          <Highlighter className={ic} />
+          <Highlighter className="w-4 h-4" />
         </TB>
         <TB onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} isToggle title="Inline code (Ctrl/Cmd+E)" ariaLabel="Inline code">
-          <Code className={ic} />
+          <Code className="w-4 h-4" />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
-        {/* Lists */}
-        <TB onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} isToggle title="Bullet list (Ctrl/Cmd+Shift+7)" ariaLabel="Bullet list">
-          <List className={ic} />
-        </TB>
-        <TB onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} isToggle title="Ordered list (Ctrl/Cmd+Shift+8)" ariaLabel="Ordered list">
-          <ListOrdered className={ic} />
-        </TB>
+        {/* Lists Dropdown */}
+        <ListsDropdown editor={editor} />
         <TB onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} isToggle title="Blockquote (Ctrl/Cmd+Shift+B)" ariaLabel="Blockquote">
-          <Quote className={ic} />
+          <Quote className="w-4 h-4" />
         </TB>
         <TB onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} isToggle title="Code block (Ctrl/Cmd+Alt+C)" ariaLabel="Code block">
-          <FileCode2 className={ic} />
+          <FileCode2 className="w-4 h-4" />
         </TB>
         <TB onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider (Ctrl/Cmd+Alt+-)" ariaLabel="Insert divider">
-          <Minus className={ic} />
+          <Minus className="w-4 h-4" />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
