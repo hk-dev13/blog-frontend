@@ -285,7 +285,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
       <div className="pointer-events-none fixed inset-0 -z-10 bg-[radial-gradient(circle_at_20%_0%,rgba(13,135,207,0.14),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(99,102,241,0.10),transparent_38%),linear-gradient(180deg,rgba(255,255,255,0.8),rgba(255,255,255,0))] dark:bg-[radial-gradient(circle_at_20%_0%,rgba(13,135,207,0.22),transparent_45%),radial-gradient(circle_at_80%_10%,rgba(99,102,241,0.16),transparent_38%),linear-gradient(180deg,rgba(2,6,23,0.7),rgba(2,6,23,0))]" />
       <div className="min-h-screen flex">
         {/* Desktop Sidebar */}
-        <aside className={`hidden md:flex flex-col p-4 transition-all duration-300 ${isSidebarCollapsed ? 'w-20' : 'w-72'}`}>
+        <aside className={`hidden md:flex flex-col p-4 transition-all duration-300 ${isSidebarCollapsed ? 'w-24' : 'w-72'}`}>
           {renderNavContent(isSidebarCollapsed)}
         </aside>
 
