@@ -14,6 +14,7 @@ import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
 import AdminLoadError from '@/components/admin/AdminLoadError';
+import { PostEditorHeaderHero } from '@/components/admin/PostEditorHeaderHero';
 
 const numberFormatter = new Intl.NumberFormat('en-US');
 
@@ -337,133 +338,25 @@ export default function CreatePostPage() {
 
   return (
     <div className="w-full space-y-6">
-      <header className="admin-page-hero">
-        <div className="admin-page-hero-bg" />
-        <div className="admin-page-hero-content">
-          <div className="max-w-2xl">
-            <div className="admin-page-hero-icon">
-              <AlignLeft className="h-5 w-5" />
-            </div>
-            <h1 className="admin-page-title">Create New Post</h1>
-            <p className="admin-page-description">
-              Write, preview, publish, or schedule your next post.
-            </p>
-          {autosaveStatus !== 'idle' && (
-            <p className={`text-xs mt-3 flex items-center gap-1 ${
-              autosaveStatus === 'saved'
-                ? 'text-emerald-500'
-                : autosaveStatus === 'error'
-                  ? 'text-red-500'
-                  : 'text-amber-500'
-            }`}>
-              {autosaveStatus === 'saving' && <Loader2 className="w-3 h-3 animate-spin" />}
-              {autosaveStatus === 'saved' && <Save className="w-3 h-3" />}
-              {autosaveStatus === 'dirty' && <Clock className="w-3 h-3" />}
-              {autosaveStatus === 'error' && <AlertCircle className="w-3 h-3" />}
-              {autosaveLabel}
-            </p>
-          )}
-          </div>
-          <div className="admin-hero-actions">
-          <button
-            type="button"
-            onClick={() => setShowOptionsSidebar(!showOptionsSidebar)}
-            className="admin-hero-button border-primary-500/40 text-primary-400 hover:bg-primary-500/20"
-            title={showOptionsSidebar ? 'Collapse settings panel for Focus Mode (Full Width)' : 'Show settings panel'}
-          >
-            {showOptionsSidebar ? <PanelRightClose className="w-4 h-4" /> : <PanelRightOpen className="w-4 h-4 text-primary-400" />}
-            <span>{showOptionsSidebar ? 'Focus Mode' : 'Settings'}</span>
-          </button>
-          <button
-            onClick={handlePreview}
-            disabled={isSaving}
-            className="admin-hero-button"
-          >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
-            Preview
-          </button>
-          {/* Save as Draft */}
-          <button
-            onClick={handleSaveDraft}
-            disabled={isSaving}
-            className="admin-hero-button"
-          >
-            {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
-            Draft
-          </button>
-
-          {/* Publish / Schedule Split Button */}
-          <div className="admin-split-action">
-            <div className="admin-split-action-group">
-              <button
-                onClick={handlePublishNow}
-                disabled={isSaving}
-                className="admin-split-action-main"
-              >
-                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Globe className="w-4 h-4" />}
-                Publish
-              </button>
-              <button
-                onClick={() => { setShowPublishMenu(!showPublishMenu); setShowScheduler(false); }}
-                disabled={isSaving}
-                className="admin-split-action-trigger"
-              >
-                <ChevronDown className="w-4 h-4" />
-              </button>
-            </div>
-
-            {/* Dropdown Menu */}
-            {showPublishMenu && (
-              <div className="admin-floating-panel w-64 overflow-hidden">
-                <button
-                  onClick={() => { setShowPublishMenu(false); setShowScheduler(true); }}
-                  className="admin-menu-item"
-                >
-                  <CalendarClock className="w-4 h-4 text-amber-500" />
-                  <div>
-                    <p className="font-medium">Schedule</p>
-                    <p className="text-xs text-slate-500">Set a future publish date</p>
-                  </div>
-                </button>
-              </div>
-            )}
-
-            {/* Schedule Modal */}
-            {showScheduler && (
-              <div className="admin-floating-panel w-80 p-4 space-y-4">
-                <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
-                  <CalendarClock className="w-4 h-4 text-amber-500" />
-                  Schedule Publication
-                </div>
-                <input
-                  type="datetime-local"
-                  value={scheduleDate}
-                  onChange={e => setScheduleDate(e.target.value)}
-                  min={getLocalDateTimeMin()}
-                  className="w-full px-3 py-2 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-amber-500 focus:outline-none"
-                />
-                <div className="flex gap-2">
-                  <button
-                    onClick={() => setShowScheduler(false)}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-slate-600 dark:text-slate-400 bg-slate-100 dark:bg-slate-700 rounded-lg hover:bg-slate-200 dark:hover:bg-slate-600 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    onClick={handleSchedule}
-                    disabled={isSaving || !scheduleDate}
-                    className="flex-1 px-3 py-2 text-sm font-medium text-white bg-amber-500 hover:bg-amber-600 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                  >
-                    {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarClock className="w-4 h-4" />}
-                    Schedule
-                  </button>
-                </div>
-	              </div>
-	            )}
-	          </div>
-	        </div>
-	      </div>
-	    </header>
+      <PostEditorHeaderHero
+        mode="create"
+        titleText="Create New Post"
+        descriptionText="Write, preview, publish, or schedule your next post."
+        isSaving={isSaving}
+        autosaveStatus={autosaveStatus}
+        autosaveLabel={autosaveLabel}
+        showSidebar={showOptionsSidebar}
+        onToggleSidebar={() => setShowOptionsSidebar(!showOptionsSidebar)}
+        onPreview={handlePreview}
+        onSaveDraft={handleSaveDraft}
+        onPublishNow={handlePublishNow}
+        onSchedule={(date) => {
+          setScheduleDate(date);
+          handleSchedule();
+        }}
+        scheduleDate={scheduleDate}
+        onScheduleDateChange={setScheduleDate}
+      />
 
       {/* Autosave restore prompt (replaces browser confirm()) */}
       {autosaveRestoreState && (
