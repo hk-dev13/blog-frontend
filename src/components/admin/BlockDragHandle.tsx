@@ -9,10 +9,11 @@ interface BlockDragHandleProps {
 }
 
 export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
-  const [handleStyle, setHandleStyle] = useState<{ top: number; visible: boolean }>({ top: 0, visible: false });
+  const [handleStyle, setHandleStyle] = useState<{ top: number; left: number; visible: boolean }>({ top: 0, left: 6, visible: false });
   const activeNodeElementRef = useRef<HTMLElement | null>(null);
   const activePosRef = useRef<number | null>(null);
   const draggingPosRef = useRef<number | null>(null);
+  const handleRef = useRef<HTMLDivElement | null>(null);
 
   const updateHandlePosition = useCallback(() => {
     if (!editor || editor.isDestroyed || !activeNodeElementRef.current) return;
@@ -21,18 +22,27 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
     const editorRect = editorDom.getBoundingClientRect();
     const nodeRect = activeNodeElementRef.current.getBoundingClientRect();
 
-    const top = nodeRect.top - editorRect.top + 4; // Align near top of block
-    setHandleStyle({ top, visible: true });
+    const top = nodeRect.top - editorRect.top + 2;
+    // Position handle 28px left of block content, clamped to minimum 6px inside container boundary
+    const left = Math.max(6, nodeRect.left - editorRect.left - 28);
+
+    setHandleStyle({ top, left, visible: true });
   }, [editor]);
 
   useEffect(() => {
     if (!editor || editor.isDestroyed) return;
 
     const editorDom = editor.view.dom;
+    const container = (editorDom.closest('.relative') as HTMLElement | null) || editorDom.parentElement;
 
     const handleMouseMove = (e: MouseEvent) => {
       const target = e.target as HTMLElement | null;
       if (!target) return;
+
+      // Keep handle active when hovering over handle itself
+      if (handleRef.current && handleRef.current.contains(target)) {
+        return;
+      }
 
       // Find top-level block inside prose editor container
       const topBlock = target.closest('.prose > *') as HTMLElement | null;
@@ -49,16 +59,26 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
       }
     };
 
-    const handleMouseLeave = () => {
+    const handleMouseLeave = (e: MouseEvent) => {
+      const relatedTarget = e.relatedTarget as HTMLElement | null;
+      if (handleRef.current && relatedTarget && handleRef.current.contains(relatedTarget)) {
+        return;
+      }
       setHandleStyle((prev) => ({ ...prev, visible: false }));
     };
 
-    editorDom.addEventListener('mousemove', handleMouseMove);
-    editorDom.addEventListener('mouseleave', handleMouseLeave);
+    const targetContainer = container || editorDom;
+    targetContainer.addEventListener('mousemove', handleMouseMove);
+    targetContainer.addEventListener('mouseleave', handleMouseLeave);
+
+    window.addEventListener('scroll', updateHandlePosition, true);
+    window.addEventListener('resize', updateHandlePosition);
 
     return () => {
-      editorDom.removeEventListener('mousemove', handleMouseMove);
-      editorDom.removeEventListener('mouseleave', handleMouseLeave);
+      targetContainer.removeEventListener('mousemove', handleMouseMove);
+      targetContainer.removeEventListener('mouseleave', handleMouseLeave);
+      window.removeEventListener('scroll', updateHandlePosition, true);
+      window.removeEventListener('resize', updateHandlePosition);
     };
   }, [editor, updateHandlePosition]);
 
@@ -107,7 +127,7 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
       tr.insert(mappedTargetPos, node);
 
       editor.view.dispatch(tr);
-      setHandleStyle({ top: 0, visible: false });
+      setHandleStyle((prev) => ({ ...prev, visible: false }));
     } catch (err) {
       console.error('Failed to move block node:', err);
     } finally {
@@ -119,13 +139,15 @@ export default function BlockDragHandle({ editor }: BlockDragHandleProps) {
 
   return (
     <div
+      ref={handleRef}
       draggable
       onDragStart={handleDragStart}
       onDragOver={handleDragOver}
       onDrop={handleDrop}
-      style={{ top: `${handleStyle.top}px` }}
-      className="absolute -left-7 z-20 flex items-center justify-center p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-800/80 cursor-grab active:cursor-grabbing transition-all duration-150 group/handle"
+      style={{ top: `${handleStyle.top}px`, left: `${handleStyle.left}px` }}
+      className="absolute z-20 flex items-center justify-center p-1 rounded-md text-slate-400 hover:text-slate-700 dark:hover:text-slate-200 hover:bg-slate-200/80 dark:hover:bg-slate-800/80 cursor-grab active:cursor-grabbing transition-all duration-150 group/handle"
       title="Click & drag to reorder block"
+      aria-label="Drag block to reorder"
     >
       <GripVertical className="w-4 h-4" />
     </div>
