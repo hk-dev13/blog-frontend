@@ -1278,8 +1278,17 @@ function CustomBubbleMenu({ editor, openLinkPopover }: { editor: Editor; openLin
       const startCoords = editor.view.coordsAtPos(from);
       const endCoords = editor.view.coordsAtPos(to);
 
-      const top = Math.max(0, startCoords.top - editorRect.top - 48);
-      const left = Math.max(10, (startCoords.left + endCoords.left) / 2 - editorRect.left - 120);
+      const estimatedMenuWidth = 280;
+      const estimatedMenuHeight = 44;
+
+      let top = startCoords.top - editorRect.top - estimatedMenuHeight - 4;
+      if (top < 0) {
+        top = endCoords.bottom - editorRect.top + 8;
+      }
+
+      const midLeft = (startCoords.left + endCoords.left) / 2 - editorRect.left - estimatedMenuWidth / 2;
+      const maxLeft = Math.max(10, editorRect.width - estimatedMenuWidth - 10);
+      const left = Math.min(Math.max(10, midLeft), maxLeft);
 
       setMenuPos({ top, left, visible: true });
     } catch {
@@ -1292,10 +1301,14 @@ function CustomBubbleMenu({ editor, openLinkPopover }: { editor: Editor; openLin
 
     editor.on('selectionUpdate', updatePosition);
     editor.on('transaction', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
 
     return () => {
       editor.off('selectionUpdate', updatePosition);
       editor.off('transaction', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [editor, updatePosition]);
 
@@ -1303,36 +1316,38 @@ function CustomBubbleMenu({ editor, openLinkPopover }: { editor: Editor; openLin
 
   return (
     <div
+      role="toolbar"
+      aria-label="Contextual formatting menu"
       style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}
       className="absolute z-40 flex flex-wrap items-center gap-1 p-1.5 rounded-xl bg-slate-900/95 text-white dark:bg-slate-900/95 dark:text-slate-100 shadow-2xl border border-slate-700/80 backdrop-blur-md transition-all duration-100"
     >
-      <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold">
+      <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} isToggle title="Bold" ariaLabel="Bold">
         <Bold className="w-3.5 h-3.5" />
       </TB>
-      <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic">
+      <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} isToggle title="Italic" ariaLabel="Italic">
         <Italic className="w-3.5 h-3.5" />
       </TB>
-      <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="Underline">
+      <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} isToggle title="Underline" ariaLabel="Underline">
         <UnderlineIcon className="w-3.5 h-3.5" />
       </TB>
-      <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
+      <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} isToggle title="Strikethrough" ariaLabel="Strikethrough">
         <Strikethrough className="w-3.5 h-3.5" />
       </TB>
-      <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} title="Highlight">
+      <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} isToggle title="Highlight" ariaLabel="Highlight">
         <Highlighter className="w-3.5 h-3.5" />
       </TB>
       <div className="w-px h-4 bg-slate-700 mx-0.5" />
-      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="Heading 1">
+      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} isToggle title="Heading 1" ariaLabel="Heading 1">
         <Heading1 className="w-3.5 h-3.5" />
       </TB>
-      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2">
+      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} isToggle title="Heading 2" ariaLabel="Heading 2">
         <Heading2 className="w-3.5 h-3.5" />
       </TB>
-      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="Heading 3">
+      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} isToggle title="Heading 3" ariaLabel="Heading 3">
         <Heading3 className="w-3.5 h-3.5" />
       </TB>
       <div className="w-px h-4 bg-slate-700 mx-0.5" />
-      <TB onClick={() => openLinkPopover(editor)} active={editor.isActive('link')} title="Insert Link">
+      <TB onClick={() => openLinkPopover(editor)} active={editor.isActive('link')} isToggle title="Insert Link" ariaLabel="Insert Link">
         <Link2 className="w-3.5 h-3.5" />
       </TB>
       {editor.isActive('table') && (
@@ -1374,8 +1389,10 @@ function CustomFloatingMenu({
       const editorRect = editorDom.getBoundingClientRect();
       const coords = editor.view.coordsAtPos($anchor.pos);
 
-      const top = Math.max(0, coords.top - editorRect.top - 6);
-      const left = Math.max(0, coords.left - editorRect.left + 8);
+      const estimatedWidth = 320;
+      let top = Math.max(0, coords.top - editorRect.top - 6);
+      const maxLeft = Math.max(0, editorRect.width - estimatedWidth - 8);
+      let left = Math.min(Math.max(0, coords.left - editorRect.left + 8), maxLeft);
 
       setMenuPos({ top, left, visible: true });
     } catch {
@@ -1388,10 +1405,14 @@ function CustomFloatingMenu({
 
     editor.on('selectionUpdate', updatePosition);
     editor.on('transaction', updatePosition);
+    window.addEventListener('scroll', updatePosition, true);
+    window.addEventListener('resize', updatePosition);
 
     return () => {
       editor.off('selectionUpdate', updatePosition);
       editor.off('transaction', updatePosition);
+      window.removeEventListener('scroll', updatePosition, true);
+      window.removeEventListener('resize', updatePosition);
     };
   }, [editor, updatePosition]);
 
