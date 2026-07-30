@@ -187,6 +187,38 @@ export default function ArticleRenderer({
                             </code>
                           );
                         },
+                        table: ({ children, ...props }) => (
+                          <div className="my-8 overflow-x-auto rounded-2xl border border-slate-200 dark:border-slate-800 shadow-md bg-white dark:bg-slate-900/90">
+                            <table className="w-full text-left text-sm border-collapse min-w-[500px]" {...props}>
+                              {children}
+                            </table>
+                          </div>
+                        ),
+                        thead: ({ children, ...props }) => (
+                          <thead className="bg-slate-100/90 dark:bg-slate-800/80 border-b border-slate-200 dark:border-slate-700/80" {...props}>
+                            {children}
+                          </thead>
+                        ),
+                        tbody: ({ children, ...props }) => (
+                          <tbody className="divide-y divide-slate-100 dark:divide-slate-800/60" {...props}>
+                            {children}
+                          </tbody>
+                        ),
+                        tr: ({ children, ...props }) => (
+                          <tr className="even:bg-slate-50/50 dark:even:bg-slate-800/30 hover:bg-slate-100/50 dark:hover:bg-slate-800/50 transition-colors" {...props}>
+                            {children}
+                          </tr>
+                        ),
+                        th: ({ children, ...props }) => (
+                          <th className="px-5 py-3.5 text-left font-semibold text-slate-900 dark:text-slate-100 text-xs uppercase tracking-wider border-b border-slate-200 dark:border-slate-700/80" {...props}>
+                            {children}
+                          </th>
+                        ),
+                        td: ({ children, ...props }) => (
+                          <td className="px-5 py-3.5 text-slate-700 dark:text-slate-300 align-middle text-sm border-b border-slate-100 dark:border-slate-800/60" {...props}>
+                            {children}
+                          </td>
+                        ),
                         a: ({ href, children, ...props }) => {
                           let isExternal = false;
                           if (href && href.startsWith('http')) {
