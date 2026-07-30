@@ -14,6 +14,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const pathname = usePathname();
   const [mounted, setMounted] = useState(false);
   const [authHydrated, setAuthHydrated] = useState(false);
+  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -70,8 +71,6 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   ];
 
   const filteredNavItems = navItems.filter(item => !item.adminOnly || user?.role === 'admin');
-
-  const [isSidebarCollapsed, setIsSidebarCollapsed] = useState(false);
 
   return (
     <div className="min-h-screen bg-slate-50 dark:bg-slate-950">
