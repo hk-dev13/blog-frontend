@@ -32,14 +32,74 @@ import InternalLinkPopover from '@/components/admin/InternalLinkPopover';
 import BlockDragHandle from '@/components/admin/BlockDragHandle';
 import { SearchHighlightExtension } from '@/lib/tiptap/searchHighlightExtension';
 
-function getEmbedUrl(url: string) {
-  const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  const videoId = (match && match[2].length === 11) ? match[2] : null;
-  if (videoId) {
-    return `https://www.youtube.com/embed/${videoId}`;
+export function extractYoutubeVideoId(input: string): string | null {
+  if (!input) return null;
+  const trimmed = input.trim();
+
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) {
+    return trimmed;
   }
-  return url;
+
+  try {
+    const urlStr = /^https?:\/\//i.test(trimmed) ? trimmed : `https://${trimmed}`;
+    const parsed = new URL(urlStr);
+    const host = parsed.hostname.toLowerCase();
+    const validHosts = [
+      'youtube.com',
+      'www.youtube.com',
+      'm.youtube.com',
+      'youtu.be',
+      'www.youtu.be',
+      'youtube-nocookie.com',
+      'www.youtube-nocookie.com',
+    ];
+
+    if (!validHosts.includes(host)) {
+      return null;
+    }
+
+    if (host.includes('youtu.be')) {
+      const id = parsed.pathname.slice(1);
+      return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+    }
+
+    if (parsed.pathname.startsWith('/embed/')) {
+      const id = parsed.pathname.split('/')[2];
+      return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+    }
+
+    if (parsed.pathname.startsWith('/v/')) {
+      const id = parsed.pathname.split('/')[2];
+      return /^[a-zA-Z0-9_-]{11}$/.test(id) ? id : null;
+    }
+
+    const vParam = parsed.searchParams.get('v');
+    if (vParam && /^[a-zA-Z0-9_-]{11}$/.test(vParam)) {
+      return vParam;
+    }
+  } catch {
+    const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]{11}).*/;
+    const match = trimmed.match(regExp);
+    if (match && match[2] && /^[a-zA-Z0-9_-]{11}$/.test(match[2])) {
+      return match[2];
+    }
+  }
+
+  return null;
+}
+
+export function isSafeUrl(url: string): boolean {
+  if (!url) return false;
+  const trimmed = url.trim();
+  if (trimmed.startsWith('/') || trimmed.startsWith('#')) return true;
+  if (/^https?:\/\//i.test(trimmed) || /^mailto:/i.test(trimmed)) return true;
+  return false;
+}
+
+export function sanitizeUrl(url: string): string {
+  if (!url) return '';
+  const trimmed = url.trim();
+  return isSafeUrl(trimmed) ? trimmed : '';
 }
 
 export const YoutubeNode = Node.create({
@@ -51,7 +111,7 @@ export const YoutubeNode = Node.create({
 
   addAttributes() {
     return {
-      src: {
+      videoId: {
         default: null,
       },
     };
@@ -61,35 +121,47 @@ export const YoutubeNode = Node.create({
     return [
       {
         tag: 'div[data-youtube]',
-        getAttrs: (el) => ({
-          src: (el as HTMLElement).getAttribute('data-youtube'),
-        }),
+        getAttrs: (el) => {
+          const val = (el as HTMLElement).getAttribute('data-youtube');
+          return { videoId: extractYoutubeVideoId(val || '') };
+        },
       },
     ];
   },
 
   renderHTML({ HTMLAttributes }) {
+    const videoId = HTMLAttributes.videoId;
+    if (!videoId || !/^[a-zA-Z0-9_-]{11}$/.test(videoId)) {
+      return ['div', { class: 'hidden' }];
+    }
+
     return [
       'div',
       {
-        'data-youtube': HTMLAttributes.src,
+        'data-youtube': videoId,
         class: 'aspect-video w-full max-w-2xl mx-auto rounded-lg overflow-hidden my-4 relative bg-slate-100 dark:bg-slate-800 flex items-center justify-center border border-slate-200 dark:border-slate-700',
       },
       [
         'iframe',
         {
-          src: HTMLAttributes.src,
-          class: 'absolute inset-0 w-full h-full border-0 pointer-events-none',
+          src: `https://www.youtube-nocookie.com/embed/${videoId}`,
+          title: 'YouTube video player',
+          loading: 'lazy',
+          referrerpolicy: 'strict-origin-when-cross-origin',
           allowfullscreen: 'true',
+          class: 'absolute inset-0 w-full h-full border-0 pointer-events-none',
         },
       ],
     ];
   },
+
   addStorage() {
     return {
       markdown: {
         serialize(state: any, node: any) {
-          state.write(`@[youtube](${node.attrs.src})`);
+          if (node.attrs.videoId) {
+            state.write(`@[youtube](${node.attrs.videoId})`);
+          }
           state.closeBlock(node);
         },
         parse: {
@@ -103,9 +175,10 @@ export const YoutubeNode = Node.create({
               if (!match) {
                 return false;
               }
-              if (!silent) {
+              const videoId = extractYoutubeVideoId(match[1]);
+              if (!silent && videoId) {
                 const token = state.push('youtube', 'div', 0);
-                token.attrs = [['data-youtube', match[1]]];
+                token.attrs = [['data-youtube', videoId]];
               }
               state.pos += match[0].length;
               return true;
@@ -113,12 +186,12 @@ export const YoutubeNode = Node.create({
 
             markdownit.renderer.rules.youtube = (tokens: any, idx: number) => {
               const token = tokens[idx];
-              const src = token.attrs ? token.attrs[0][1] : '';
-              return `<div data-youtube="${src}"></div>`;
+              const videoId = token.attrs ? token.attrs[0][1] : '';
+              return `<div data-youtube="${videoId}"></div>`;
             };
-          }
-        }
-      }
+          },
+        },
+      },
     };
   },
 });
@@ -331,11 +404,13 @@ const MarkdownUnderline = Mark.create({
 
 /* ─────────────────────────────────────────────── toolbar button */
 const TB = ({
-  onClick, active = false, title, children, disabled = false, buttonRef,
+  onClick, active = false, isToggle = false, title, ariaLabel, children, disabled = false, buttonRef,
 }: {
   onClick: () => void;
   active?: boolean;
+  isToggle?: boolean;
   title: string;
+  ariaLabel?: string;
   children: React.ReactNode;
   disabled?: boolean;
   buttonRef?: React.Ref<HTMLButtonElement>;
@@ -346,6 +421,8 @@ const TB = ({
     onClick={onClick}
     disabled={disabled}
     title={title}
+    aria-label={ariaLabel || title}
+    {...(isToggle ? { 'aria-pressed': active } : {})}
     className={`p-1.5 rounded-md transition-colors ${
       active
         ? 'bg-primary-100 dark:bg-primary-900/40 text-primary-600 dark:text-primary-400'
@@ -493,18 +570,27 @@ export default function RichTextEditor({
 
   const insertImage = () => {
     if (!imageUrlInput.trim()) return;
+    const safeUrl = sanitizeUrl(imageUrlInput.trim());
+    if (!safeUrl) {
+      useToastStore.getState().push({ variant: 'error', title: 'Invalid Image URL', description: 'Only http, https, and relative image URLs are allowed.' });
+      return;
+    }
     const activeEditor = editorRef.current;
     const altText = imageAltInput.trim();
     const widthText = imageWidthInput.trim();
     const captionText = imageCaptionInput.trim();
 
-    let combinedAlt = altText;
-    if (widthText || captionText) {
-      combinedAlt = `${altText}|${widthText}|${captionText}`;
+    const safeAlt = altText.replace(/\|/g, '\\|');
+    const safeWidth = widthText.replace(/\|/g, '\\|');
+    const safeCaption = captionText.replace(/\|/g, '\\|');
+
+    let combinedAlt = safeAlt;
+    if (safeWidth || safeCaption) {
+      combinedAlt = `${safeAlt}|${safeWidth}|${safeCaption}`;
     }
 
     if (activeEditor) {
-      activeEditor.chain().focus().setImage({ src: imageUrlInput, alt: combinedAlt }).run();
+      activeEditor.chain().focus().setImage({ src: safeUrl, alt: combinedAlt }).run();
     }
     setImageModalOpen(false);
     setImageUrlInput('');
@@ -515,12 +601,16 @@ export default function RichTextEditor({
 
   const insertYoutube = () => {
     if (!youtubeUrlInput.trim()) return;
-    const embedUrl = getEmbedUrl(youtubeUrlInput.trim());
+    const videoId = extractYoutubeVideoId(youtubeUrlInput.trim());
+    if (!videoId) {
+      useToastStore.getState().push({ variant: 'error', title: 'Invalid YouTube URL', description: 'Please enter a valid YouTube video link or Video ID.' });
+      return;
+    }
     const activeEditor = editorRef.current;
     if (activeEditor) {
       activeEditor.chain().focus().insertContent({
         type: 'youtube',
-        attrs: { src: embedUrl }
+        attrs: { videoId }
       }).run();
     }
     setYoutubeModalOpen(false);
@@ -771,7 +861,13 @@ export default function RichTextEditor({
   const applyLink = useCallback((href: string) => {
     const activeEditor = editorRef.current;
 
-    if (!activeEditor) {
+    if (!activeEditor || !href) {
+      return;
+    }
+
+    const safeHref = sanitizeUrl(href);
+    if (!safeHref) {
+      useToastStore.getState().push({ variant: 'error', title: 'Invalid URL', description: 'Only http, https, mailto, and relative links are allowed.' });
       return;
     }
 
@@ -788,7 +884,7 @@ export default function RichTextEditor({
       chain = chain.extendMarkRange('link');
     }
 
-    chain.setLink({ href }).run();
+    chain.setLink({ href: safeHref }).run();
     setIsLinkPopoverOpen(false);
     setLinkPrefillQuery('');
   }, []);
@@ -879,53 +975,8 @@ export default function RichTextEditor({
     (editor.commands as any).setMatchIndex(activeMatchIndex);
   }, [editor, mode, isFindReplaceOpen, findQuery, activeMatchIndex]);
 
-  // eslint-disable-next-line react-hooks/immutability
   useEffect(() => {
     editorRef.current = editor;
-    if (editor) {
-      // 1. Manually inject storage.markdown into the youtube extension instance to bypass v2/v3 compatibility gaps
-      const youtubeExtension = editor.extensionManager.extensions.find(e => e.name === 'youtube') as any;
-      if (youtubeExtension) {
-        if (!youtubeExtension.storage) {
-          youtubeExtension.storage = {};
-        }
-        youtubeExtension.storage.markdown = {
-          serialize(state: any, node: any) {
-            state.write(`@[youtube](${node.attrs.src})`);
-            state.closeBlock(node);
-          }
-        };
-      }
-
-      // 2. Manually inject the parser setup into markdown-it
-      const parser = (editor.storage as any).markdown?.parser;
-      if (parser && parser.md) {
-        const md = parser.md;
-        md.inline.ruler.after('escape', 'youtube', (state: any, silent: boolean) => {
-          const str = state.src.slice(state.pos);
-          if (!str.startsWith('@[youtube]')) {
-            return false;
-          }
-          const match = /^@\[youtube\]\(([^)]+)\)/.exec(str);
-          if (!match) {
-            return false;
-          }
-          if (!silent) {
-            const token = state.push('youtube', 'div', 0);
-            token.attrs = [['data-youtube', match[1]]];
-          }
-          state.pos += match[0].length;
-          return true;
-        });
-
-        // eslint-disable-next-line react-hooks/immutability
-        md.renderer.rules.youtube = (tokens: any, idx: number) => {
-          const token = tokens[idx];
-          const src = token.attrs ? token.attrs[0][1] : '';
-          return `<div data-youtube="${src}"></div>`;
-        };
-      }
-    }
   }, [editor]);
 
   /* ── sync external markdown value → editor, even while Markdown mode is active ── */
@@ -1087,73 +1138,73 @@ export default function RichTextEditor({
     return (
       <div className={`${stickyToolbarClass} flex-wrap gap-0.5`}>
         {/* Undo/Redo */}
-        <TB onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl/Cmd+Z)" disabled={!editor.can().undo()}>
+        <TB onClick={() => editor.chain().focus().undo().run()} title="Undo (Ctrl/Cmd+Z)" ariaLabel="Undo" disabled={!editor.can().undo()}>
           <Undo2 className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().redo().run()} title="Redo (Ctrl/Cmd+Shift+Z)" disabled={!editor.can().redo()}>
+        <TB onClick={() => editor.chain().focus().redo().run()} title="Redo (Ctrl/Cmd+Shift+Z)" ariaLabel="Redo" disabled={!editor.can().redo()}>
           <Redo2 className={ic} />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
         {/* Headings */}
-        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="Heading 1 (Ctrl/Cmd+Alt+1)">
+        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} isToggle title="Heading 1 (Ctrl/Cmd+Alt+1)" ariaLabel="Heading 1">
           <Heading1 className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2 (Ctrl/Cmd+Alt+2)">
+        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} isToggle title="Heading 2 (Ctrl/Cmd+Alt+2)" ariaLabel="Heading 2">
           <Heading2 className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="Heading 3 (Ctrl/Cmd+Alt+3)">
+        <TB onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} isToggle title="Heading 3 (Ctrl/Cmd+Alt+3)" ariaLabel="Heading 3">
           <Heading3 className={ic} />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
         {/* Inline formats */}
-        <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold (Ctrl/Cmd+B)">
+        <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} isToggle title="Bold (Ctrl/Cmd+B)" ariaLabel="Bold">
           <Bold className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic (Ctrl/Cmd+I)">
+        <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} isToggle title="Italic (Ctrl/Cmd+I)" ariaLabel="Italic">
           <Italic className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="Underline (Ctrl/Cmd+U)">
+        <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} isToggle title="Underline (Ctrl/Cmd+U)" ariaLabel="Underline">
           <UnderlineIcon className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough (Ctrl/Cmd+Shift+S)">
+        <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} isToggle title="Strikethrough (Ctrl/Cmd+Shift+S)" ariaLabel="Strikethrough">
           <Strikethrough className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} title="Highlight (Ctrl/Cmd+Shift+H)">
+        <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} isToggle title="Highlight (Ctrl/Cmd+Shift+H)" ariaLabel="Highlight">
           <Highlighter className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} title="Inline code (Ctrl/Cmd+E)">
+        <TB onClick={() => editor.chain().focus().toggleCode().run()} active={editor.isActive('code')} isToggle title="Inline code (Ctrl/Cmd+E)" ariaLabel="Inline code">
           <Code className={ic} />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
         {/* Lists */}
-        <TB onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} title="Bullet list (Ctrl/Cmd+Shift+7)">
+        <TB onClick={() => editor.chain().focus().toggleBulletList().run()} active={editor.isActive('bulletList')} isToggle title="Bullet list (Ctrl/Cmd+Shift+7)" ariaLabel="Bullet list">
           <List className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} title="Ordered list (Ctrl/Cmd+Shift+8)">
+        <TB onClick={() => editor.chain().focus().toggleOrderedList().run()} active={editor.isActive('orderedList')} isToggle title="Ordered list (Ctrl/Cmd+Shift+8)" ariaLabel="Ordered list">
           <ListOrdered className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} title="Blockquote (Ctrl/Cmd+Shift+B)">
+        <TB onClick={() => editor.chain().focus().toggleBlockquote().run()} active={editor.isActive('blockquote')} isToggle title="Blockquote (Ctrl/Cmd+Shift+B)" ariaLabel="Blockquote">
           <Quote className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} title="Code block (Ctrl/Cmd+Alt+C)">
+        <TB onClick={() => editor.chain().focus().toggleCodeBlock().run()} active={editor.isActive('codeBlock')} isToggle title="Code block (Ctrl/Cmd+Alt+C)" ariaLabel="Code block">
           <FileCode2 className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider (Ctrl/Cmd+Alt+-)">
+        <TB onClick={() => editor.chain().focus().setHorizontalRule().run()} title="Divider (Ctrl/Cmd+Alt+-)" ariaLabel="Insert divider">
           <Minus className={ic} />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
         {/* Alignment */}
-        <TB onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} title="Align left (Ctrl/Cmd+Shift+L)">
+        <TB onClick={() => editor.chain().focus().setTextAlign('left').run()} active={editor.isActive({ textAlign: 'left' })} isToggle title="Align left (Ctrl/Cmd+Shift+L)" ariaLabel="Align left">
           <AlignLeft className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} title="Align center (Ctrl/Cmd+Shift+E)">
+        <TB onClick={() => editor.chain().focus().setTextAlign('center').run()} active={editor.isActive({ textAlign: 'center' })} isToggle title="Align center (Ctrl/Cmd+Shift+E)" ariaLabel="Align center">
           <AlignCenter className={ic} />
         </TB>
-        <TB onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} title="Align right (Ctrl/Cmd+Shift+R)">
+        <TB onClick={() => editor.chain().focus().setTextAlign('right').run()} active={editor.isActive({ textAlign: 'right' })} isToggle title="Align right (Ctrl/Cmd+Shift+R)" ariaLabel="Align right">
           <AlignRight className={ic} />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
@@ -1163,7 +1214,9 @@ export default function RichTextEditor({
           buttonRef={linkButtonRef}
           onClick={() => openLinkPopover(editor)}
           active={editor.isActive('link')}
+          isToggle
           title="Link (Ctrl/Cmd+Shift+K)"
+          ariaLabel="Link"
         >
           <Link2 className={ic} />
         </TB>
@@ -1172,6 +1225,7 @@ export default function RichTextEditor({
           onClick={() => setImageModalOpen(true)}
           active={editor.isActive('image')}
           title="Insert Image"
+          ariaLabel="Insert Image"
         >
           <ImageIcon className={ic} />
         </TB>
@@ -1180,6 +1234,7 @@ export default function RichTextEditor({
           onClick={() => setYoutubeModalOpen(true)}
           active={editor.isActive('youtube')}
           title="Embed YouTube Video"
+          ariaLabel="Embed YouTube Video"
         >
           <VideoIcon className={ic} />
         </TB>
@@ -1187,13 +1242,14 @@ export default function RichTextEditor({
           onClick={openFindReplace}
           active={isFindReplaceOpen}
           title={`Find and replace in Markdown source (${findReplaceShortcutHint})`}
+          ariaLabel="Find and replace"
         >
           <Search className={ic} />
         </TB>
         <div className="w-px h-5 bg-slate-300 dark:bg-slate-600 mx-1" />
 
         {/* Table */}
-        <TB onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table (Ctrl/Cmd+Alt+Shift+T)">
+        <TB onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()} title="Insert Table (Ctrl/Cmd+Alt+Shift+T)" ariaLabel="Insert Table">
           <span className="font-bold text-[10px]">TBL</span>
         </TB>
 
