@@ -1,6 +1,7 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import {
   AlignLeft,
   CalendarClock,
@@ -63,6 +64,11 @@ export function PostEditorHeaderHero({
 }: PostEditorHeaderHeroProps) {
   const [showPublishMenu, setShowPublishMenu] = useState(false);
   const [showScheduler, setShowScheduler] = useState(false);
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   return (
     <header className="admin-page-hero">
@@ -212,9 +218,9 @@ export function PostEditorHeaderHero({
                   </div>
                 )}
 
-                {/* Desktop Schedule Picker Modal */}
+                {/* Desktop Schedule Picker Modal (Shifted leftward so native browser picker fits comfortably on screen) */}
                 {showScheduler && (
-                  <div className="hidden md:block admin-floating-panel w-80 p-4 space-y-4 right-0">
+                  <div className="hidden md:block admin-floating-panel w-80 p-4 space-y-4 right-0 md:-translate-x-48 shadow-2xl border border-slate-200/80 dark:border-slate-800">
                     <div className="flex items-center gap-2 text-sm font-medium text-slate-700 dark:text-slate-300">
                       <CalendarClock className="w-4 h-4 text-amber-500" />
                       Schedule Publication
@@ -250,103 +256,106 @@ export function PostEditorHeaderHero({
                   </div>
                 )}
 
-                {/* Mobile Bottomsheet for Publish Options & Scheduler */}
-                {(showPublishMenu || showScheduler) && (
-                  <div className="md:hidden">
-                    <div
-                      className="fixed inset-0 z-50 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200"
-                      onClick={() => {
-                        setShowPublishMenu(false);
-                        setShowScheduler(false);
-                      }}
-                    />
-                    <div className="fixed inset-x-0 bottom-0 z-50 rounded-t-3xl border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4 animate-in slide-in-from-bottom duration-300">
-                      <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-1" />
+                {/* Mobile Bottomsheet Portaled directly to document.body for top z-index layer */}
+                {mounted &&
+                  (showPublishMenu || showScheduler) &&
+                  createPortal(
+                    <div className="md:hidden">
+                      <div
+                        className="fixed inset-0 z-[200] bg-slate-900/75 backdrop-blur-md animate-in fade-in duration-200"
+                        onClick={() => {
+                          setShowPublishMenu(false);
+                          setShowScheduler(false);
+                        }}
+                      />
+                      <div className="fixed inset-x-0 bottom-0 z-[200] rounded-t-3xl border-t border-slate-200/80 dark:border-slate-800/80 bg-white dark:bg-slate-900 p-6 shadow-2xl space-y-4 animate-in slide-in-from-bottom duration-300">
+                        <div className="w-12 h-1 bg-slate-300 dark:bg-slate-700 rounded-full mx-auto mb-1" />
 
-                      {showPublishMenu && (
-                        <div className="space-y-3">
-                          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                            <h3 className="text-base font-bold text-slate-900 dark:text-white">Publication Options</h3>
-                            <button
-                              type="button"
-                              onClick={() => setShowPublishMenu(false)}
-                              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-                          <button
-                            type="button"
-                            onClick={() => {
-                              setShowPublishMenu(false);
-                              setShowScheduler(true);
-                            }}
-                            className="flex items-center gap-3 w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
-                          >
-                            <CalendarClock className="w-5 h-5 text-amber-500" />
-                            <div>
-                              <p className="font-semibold text-sm text-slate-900 dark:text-white">Schedule Publication</p>
-                              <p className="text-xs text-slate-500 dark:text-slate-400">Set a future date & time for automatic publishing</p>
+                        {showPublishMenu && (
+                          <div className="space-y-3">
+                            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                              <h3 className="text-base font-bold text-slate-900 dark:text-white">Publication Options</h3>
+                              <button
+                                type="button"
+                                onClick={() => setShowPublishMenu(false)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
                             </div>
-                          </button>
-                        </div>
-                      )}
-
-                      {showScheduler && (
-                        <div className="space-y-4">
-                          <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
-                            <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
-                              <CalendarClock className="w-5 h-5 text-amber-500" />
-                              Schedule Publication
-                            </h3>
-                            <button
-                              type="button"
-                              onClick={() => setShowScheduler(false)}
-                              className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
-                            >
-                              <X className="w-5 h-5" />
-                            </button>
-                          </div>
-
-                          <div className="space-y-2">
-                            <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
-                              Select Date & Time
-                            </label>
-                            <input
-                              type="datetime-local"
-                              value={scheduleDate}
-                              onChange={(e) => onScheduleDateChange(e.target.value)}
-                              min={getLocalDateTimeMin()}
-                              className="w-full px-4 py-3 text-base bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-900 dark:text-white"
-                            />
-                          </div>
-
-                          <div className="flex gap-3 pt-2">
-                            <button
-                              type="button"
-                              onClick={() => setShowScheduler(false)}
-                              className="flex-1 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
-                            >
-                              Cancel
-                            </button>
                             <button
                               type="button"
                               onClick={() => {
-                                onSchedule(scheduleDate);
-                                setShowScheduler(false);
+                                setShowPublishMenu(false);
+                                setShowScheduler(true);
                               }}
-                              disabled={isSaving || !scheduleDate}
-                              className="flex-1 py-3 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                              className="flex items-center gap-3 w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors text-left"
                             >
-                              {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarClock className="w-4 h-4" />}
-                              Confirm Schedule
+                              <CalendarClock className="w-5 h-5 text-amber-500" />
+                              <div>
+                                <p className="font-semibold text-sm text-slate-900 dark:text-white">Schedule Publication</p>
+                                <p className="text-xs text-slate-500 dark:text-slate-400">Set a future date & time for automatic publishing</p>
+                              </div>
                             </button>
                           </div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
+                        )}
+
+                        {showScheduler && (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between pb-2 border-b border-slate-100 dark:border-slate-800">
+                              <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
+                                <CalendarClock className="w-5 h-5 text-amber-500" />
+                                Schedule Publication
+                              </h3>
+                              <button
+                                type="button"
+                                onClick={() => setShowScheduler(false)}
+                                className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 p-1"
+                              >
+                                <X className="w-5 h-5" />
+                              </button>
+                            </div>
+
+                            <div className="space-y-2">
+                              <label className="block text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wider">
+                                Select Date & Time
+                              </label>
+                              <input
+                                type="datetime-local"
+                                value={scheduleDate}
+                                onChange={(e) => onScheduleDateChange(e.target.value)}
+                                min={getLocalDateTimeMin()}
+                                className="w-full px-4 py-3 text-base bg-slate-50 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-xl focus:ring-2 focus:ring-amber-500 focus:outline-none text-slate-900 dark:text-white"
+                              />
+                            </div>
+
+                            <div className="flex gap-3 pt-2">
+                              <button
+                                type="button"
+                                onClick={() => setShowScheduler(false)}
+                                className="flex-1 py-3 text-sm font-semibold text-slate-700 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-xl hover:bg-slate-200 dark:hover:bg-slate-700 transition-colors"
+                              >
+                                Cancel
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  onSchedule(scheduleDate);
+                                  setShowScheduler(false);
+                                }}
+                                disabled={isSaving || !scheduleDate}
+                                className="flex-1 py-3 text-sm font-semibold text-white bg-amber-500 hover:bg-amber-600 rounded-xl transition-colors disabled:opacity-50 flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20"
+                              >
+                                {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <CalendarClock className="w-4 h-4" />}
+                                Confirm Schedule
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </div>,
+                    document.body
+                  )}
               </div>
             </>
           )}
