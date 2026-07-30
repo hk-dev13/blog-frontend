@@ -1,11 +1,13 @@
-import React, { isValidElement } from 'react';
+'use client';
+
+import React, { isValidElement, useState } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import rehypeHighlight from 'rehype-highlight';
 import rehypeSlug from 'rehype-slug';
-import { Clock, Eye, RefreshCw } from 'lucide-react';
+import { Clock, Eye, RefreshCw, ZoomIn } from 'lucide-react';
 import { format } from 'date-fns';
 
 import { Post } from '@/types';
@@ -15,6 +17,7 @@ import LikeButton from '@/components/shared/LikeButton';
 import TableOfContents from '@/components/shared/TableOfContents';
 import CommentSection from '@/app/posts/[slug]/CommentSection';
 import MermaidRenderer from '@/components/shared/MermaidRenderer';
+import LightboxModal, { LightboxMedia } from '@/components/shared/LightboxModal';
 
 interface ArticleRendererProps {
   post: Post;
@@ -35,6 +38,7 @@ export default function ArticleRenderer({
 }: ArticleRendererProps) {
   const publishDate = post.published_at ? new Date(post.published_at) : new Date(post.created_at);
   const imageUrl = post.cover_image || 'https://images.unsplash.com/photo-1499750310107-5fef28a66643?auto=format&fit=crop&w=1200&q=80';
+  const [lightboxMedia, setLightboxMedia] = useState<LightboxMedia | null>(null);
 
   return (
     <main className="pb-16">
@@ -107,14 +111,14 @@ export default function ArticleRenderer({
           </div>
         </header>
 
-        <div className="relative w-full max-w-6xl mx-auto px-4 mb-12 md:mb-20 aspect-[21/9]">
+        <div className="relative w-full max-w-6xl mx-auto px-4 mb-12 md:mb-20 aspect-[21/9] group cursor-zoom-in" onClick={() => setLightboxMedia({ type: 'image', src: imageUrl, alt: post.cover_image_alt || post.title })}>
           <Image
             src={imageUrl}
             alt={post.cover_image_alt || post.title}
             fill
             sizes="100vw"
             priority
-            className="object-cover rounded-2xl shadow-xl"
+            className="object-cover rounded-2xl shadow-xl transition-transform duration-300 group-hover:scale-[1.005]"
             unoptimized={imageUrl.startsWith('https://cdn.envoyou.com/')}
           />
         </div>
@@ -169,7 +173,12 @@ export default function ArticleRenderer({
                           const isMermaid = match && match[1] === 'mermaid';
                           
                           if (isMermaid) {
-                            return <MermaidRenderer chart={String(children).replace(/\n$/, '')} />;
+                            return (
+                              <MermaidRenderer
+                                chart={String(children).replace(/\n$/, '')}
+                                onExpand={(svgContent) => setLightboxMedia({ type: 'mermaid', svgContent })}
+                              />
+                            );
                           }
                           
                           return (
@@ -224,13 +233,17 @@ export default function ArticleRenderer({
                             }
                           }
 
+                          const imageSrc = typeof src === 'string' ? src : '';
+
                           return (
-                            <span className="block my-8 text-center">
+                            <span className="block my-8 text-center group cursor-zoom-in">
                               <img
                                 src={src}
                                 alt={cleanAlt || 'Article image'}
                                 style={customWidth ? { width: customWidth } : undefined}
-                                className="inline-block rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 max-w-full h-auto !m-0"
+                                onClick={() => setLightboxMedia({ type: 'image', src: imageSrc, alt: cleanAlt, caption: captionText })}
+                                title="Click to zoom image"
+                                className="inline-block rounded-2xl shadow-md border border-slate-100 dark:border-slate-800 max-w-full h-auto !m-0 transition-transform duration-200 group-hover:scale-[1.01]"
                               />
                               {captionText && (
                                 <span className="block text-xs md:text-sm text-slate-500 dark:text-slate-400 mt-2 font-sans italic text-center max-w-xl mx-auto px-4">
@@ -292,6 +305,10 @@ export default function ArticleRenderer({
           </div>
         </section>
       )}
+
+      {/* Lightbox Modal for enlarged Images and Mermaid diagrams */}
+      <LightboxModal media={lightboxMedia} onClose={() => setLightboxMedia(null)} />
     </main>
   );
 }
+

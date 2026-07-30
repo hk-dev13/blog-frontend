@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import mermaid from 'mermaid';
 import { useTheme } from 'next-themes';
+import { Maximize2 } from 'lucide-react';
 
 mermaid.initialize({
   startOnLoad: false,
@@ -11,9 +12,10 @@ mermaid.initialize({
 
 interface MermaidRendererProps {
   chart: string;
+  onExpand?: (svgContent: string) => void;
 }
 
-export default function MermaidRenderer({ chart }: MermaidRendererProps) {
+export default function MermaidRenderer({ chart, onExpand }: MermaidRendererProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [svg, setSvg] = useState<string>('');
   const [error, setError] = useState<boolean>(false);
@@ -63,15 +65,35 @@ export default function MermaidRenderer({ chart }: MermaidRendererProps) {
     );
   }
 
+  const handleExpand = () => {
+    if (onExpand && svg) {
+      onExpand(svg);
+    }
+  };
+
   return (
-    <div className="flex justify-center my-8 w-full overflow-x-auto">
+    <div className="group relative flex flex-col items-center justify-center my-8 w-full">
       <div 
         ref={containerRef} 
-        className="mermaid-svg"
+        onClick={handleExpand}
+        className={`mermaid-svg w-full overflow-x-auto flex justify-center transition-all duration-200 rounded-xl p-2 ${
+          onExpand && svg ? 'cursor-zoom-in hover:bg-slate-50 dark:hover:bg-slate-800/50' : ''
+        }`}
         dangerouslySetInnerHTML={{ 
           __html: svg || '<div class="animate-pulse h-28 bg-slate-100 dark:bg-slate-800 rounded-2xl w-full flex items-center justify-center text-slate-400 text-sm">Rendering diagram...</div>' 
         }}
       />
+      {onExpand && svg && (
+        <button
+          type="button"
+          onClick={handleExpand}
+          className="mt-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-center gap-1.5 px-3 py-1 text-xs font-medium text-slate-600 dark:text-slate-300 bg-slate-100 dark:bg-slate-800 rounded-full border border-slate-200 dark:border-slate-700 hover:text-primary-600 dark:hover:text-primary-400"
+          title="Click to zoom diagram"
+        >
+          <Maximize2 className="w-3.5 h-3.5" />
+          <span>Click to zoom</span>
+        </button>
+      )}
     </div>
   );
 }
