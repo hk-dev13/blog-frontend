@@ -21,12 +21,14 @@ import {
   AlignLeft, AlignCenter, AlignRight,
   Link2, Highlighter, Undo2, Redo2,
   Type, FileCode2, Search, Replace, ChevronLeft, ChevronRight, X,
-  Image as ImageIcon, Video as VideoIcon, Upload, Loader2
+  Image as ImageIcon, Video as VideoIcon, Upload, Loader2,
+  Plus, Table as TableIcon, Workflow, Trash2
 } from 'lucide-react';
 
 import { useAppStore } from '@/store/useAppStore';
 import { API_URL } from '@/lib/env';
 import InternalLinkPopover from '@/components/admin/InternalLinkPopover';
+import BlockDragHandle from '@/components/admin/BlockDragHandle';
 
 function getEmbedUrl(url: string) {
   const regExp = /^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
@@ -1251,6 +1253,202 @@ export default function RichTextEditor({
     );
   };
 
+function CustomBubbleMenu({ editor, openLinkPopover }: { editor: Editor; openLinkPopover: (ed?: Editor) => void }) {
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; visible: boolean }>({ top: 0, left: 0, visible: false });
+
+  const updatePosition = useCallback(() => {
+    if (!editor || editor.isDestroyed) return;
+
+    const { from, to, empty } = editor.state.selection;
+    const isTable = editor.isActive('table');
+
+    if (empty && !isTable) {
+      setMenuPos((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+      return;
+    }
+
+    try {
+      const editorDom = editor.view.dom;
+      const editorRect = editorDom.getBoundingClientRect();
+      const startCoords = editor.view.coordsAtPos(from);
+      const endCoords = editor.view.coordsAtPos(to);
+
+      const top = Math.max(0, startCoords.top - editorRect.top - 48);
+      const left = Math.max(10, (startCoords.left + endCoords.left) / 2 - editorRect.left - 120);
+
+      setMenuPos({ top, left, visible: true });
+    } catch {
+      setMenuPos((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+    }
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+
+    editor.on('selectionUpdate', updatePosition);
+    editor.on('transaction', updatePosition);
+
+    return () => {
+      editor.off('selectionUpdate', updatePosition);
+      editor.off('transaction', updatePosition);
+    };
+  }, [editor, updatePosition]);
+
+  if (!editor || !menuPos.visible) return null;
+
+  return (
+    <div
+      style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}
+      className="absolute z-40 flex flex-wrap items-center gap-1 p-1.5 rounded-xl bg-slate-900/95 text-white dark:bg-slate-900/95 dark:text-slate-100 shadow-2xl border border-slate-700/80 backdrop-blur-md transition-all duration-100"
+    >
+      <TB onClick={() => editor.chain().focus().toggleBold().run()} active={editor.isActive('bold')} title="Bold">
+        <Bold className="w-3.5 h-3.5" />
+      </TB>
+      <TB onClick={() => editor.chain().focus().toggleItalic().run()} active={editor.isActive('italic')} title="Italic">
+        <Italic className="w-3.5 h-3.5" />
+      </TB>
+      <TB onClick={() => editor.chain().focus().toggleUnderline().run()} active={editor.isActive('underline')} title="Underline">
+        <UnderlineIcon className="w-3.5 h-3.5" />
+      </TB>
+      <TB onClick={() => editor.chain().focus().toggleStrike().run()} active={editor.isActive('strike')} title="Strikethrough">
+        <Strikethrough className="w-3.5 h-3.5" />
+      </TB>
+      <TB onClick={() => editor.chain().focus().toggleHighlight().run()} active={editor.isActive('highlight')} title="Highlight">
+        <Highlighter className="w-3.5 h-3.5" />
+      </TB>
+      <div className="w-px h-4 bg-slate-700 mx-0.5" />
+      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 1 }).run()} active={editor.isActive('heading', { level: 1 })} title="Heading 1">
+        <Heading1 className="w-3.5 h-3.5" />
+      </TB>
+      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()} active={editor.isActive('heading', { level: 2 })} title="Heading 2">
+        <Heading2 className="w-3.5 h-3.5" />
+      </TB>
+      <TB onClick={() => editor.chain().focus().toggleHeading({ level: 3 }).run()} active={editor.isActive('heading', { level: 3 })} title="Heading 3">
+        <Heading3 className="w-3.5 h-3.5" />
+      </TB>
+      <div className="w-px h-4 bg-slate-700 mx-0.5" />
+      <TB onClick={() => openLinkPopover(editor)} active={editor.isActive('link')} title="Insert Link">
+        <Link2 className="w-3.5 h-3.5" />
+      </TB>
+      {editor.isActive('table') && (
+        <>
+          <div className="w-px h-4 bg-slate-700 mx-0.5" />
+          <TableAction onClick={() => editor.chain().focus().addRowAfter().run()} title="Add Row Below" label="+ Row" />
+          <TableAction onClick={() => editor.chain().focus().addColumnAfter().run()} title="Add Column Right" label="+ Col" />
+          <TableAction onClick={() => editor.chain().focus().deleteTable().run()} title="Delete Table" label="Del Tbl" />
+        </>
+      )}
+    </div>
+  );
+}
+
+function CustomFloatingMenu({
+  editor,
+  onOpenImageModal,
+  onOpenYoutubeModal,
+}: {
+  editor: Editor;
+  onOpenImageModal: () => void;
+  onOpenYoutubeModal: () => void;
+}) {
+  const [menuPos, setMenuPos] = useState<{ top: number; left: number; visible: boolean }>({ top: 0, left: 0, visible: false });
+
+  const updatePosition = useCallback(() => {
+    if (!editor || editor.isDestroyed) return;
+
+    const { $anchor, empty } = editor.state.selection;
+    const isCurrentBlockEmpty = $anchor.parent.content.size === 0;
+
+    if (!empty || !isCurrentBlockEmpty) {
+      setMenuPos((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+      return;
+    }
+
+    try {
+      const editorDom = editor.view.dom;
+      const editorRect = editorDom.getBoundingClientRect();
+      const coords = editor.view.coordsAtPos($anchor.pos);
+
+      const top = Math.max(0, coords.top - editorRect.top - 6);
+      const left = Math.max(0, coords.left - editorRect.left + 8);
+
+      setMenuPos({ top, left, visible: true });
+    } catch {
+      setMenuPos((prev) => (prev.visible ? { ...prev, visible: false } : prev));
+    }
+  }, [editor]);
+
+  useEffect(() => {
+    if (!editor || editor.isDestroyed) return;
+
+    editor.on('selectionUpdate', updatePosition);
+    editor.on('transaction', updatePosition);
+
+    return () => {
+      editor.off('selectionUpdate', updatePosition);
+      editor.off('transaction', updatePosition);
+    };
+  }, [editor, updatePosition]);
+
+  if (!editor || !menuPos.visible) return null;
+
+  return (
+    <div
+      style={{ top: `${menuPos.top}px`, left: `${menuPos.left}px` }}
+      className="absolute z-30 flex items-center gap-1 p-1 rounded-xl bg-slate-900/95 text-slate-100 border border-slate-700/80 shadow-2xl backdrop-blur-md transition-all duration-100"
+    >
+      <span className="text-[10px] font-bold text-primary-400 px-2 uppercase tracking-wider select-none flex items-center gap-1">
+        <Plus className="w-3 h-3" /> Insert
+      </span>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().insertTable({ rows: 3, cols: 3, withHeaderRow: true }).run()}
+        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700"
+        title="Insert 3x3 Table"
+      >
+        <TableIcon className="w-3.5 h-3.5 text-blue-400" />
+        <span>Table</span>
+      </button>
+      <button
+        type="button"
+        onClick={onOpenImageModal}
+        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700"
+        title="Insert Image"
+      >
+        <ImageIcon className="w-3.5 h-3.5 text-emerald-400" />
+        <span>Image</span>
+      </button>
+      <button
+        type="button"
+        onClick={onOpenYoutubeModal}
+        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700"
+        title="Insert YouTube Video"
+      >
+        <VideoIcon className="w-3.5 h-3.5 text-red-400" />
+        <span>Video</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().insertContent('```mermaid\ngraph TD\n    A[Start] --> B[End]\n```').run()}
+        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700"
+        title="Insert Mermaid Diagram"
+      >
+        <Workflow className="w-3.5 h-3.5 text-purple-400" />
+        <span>Mermaid</span>
+      </button>
+      <button
+        type="button"
+        onClick={() => editor.chain().focus().toggleHeading({ level: 2 }).run()}
+        className="flex items-center gap-1 px-2 py-1 rounded-md text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 transition-colors border border-slate-700"
+        title="Insert Heading"
+      >
+        <Heading2 className="w-3.5 h-3.5 text-amber-400" />
+        <span>Heading</span>
+      </button>
+    </div>
+  );
+}
+
   /* ─────────────── render ─────────────── */
   if (mode === 'markdown') {
     return (
@@ -1287,8 +1485,17 @@ export default function RichTextEditor({
       <div className={editorShellClass}>
         <WysiwygToolbar />
         {renderFindReplacePanel()}
-        <div className="rounded-b-lg">
+        <div className="relative rounded-b-lg pl-8 md:pl-10">
+          <BlockDragHandle editor={editor} />
           <EditorContent editor={editor} />
+          {editor && <CustomBubbleMenu editor={editor} openLinkPopover={openLinkPopover} />}
+          {editor && (
+            <CustomFloatingMenu
+              editor={editor}
+              onOpenImageModal={() => setImageModalOpen(true)}
+              onOpenYoutubeModal={() => setYoutubeModalOpen(true)}
+            />
+          )}
         </div>
       </div>
       <InternalLinkPopover
