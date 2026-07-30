@@ -25,7 +25,7 @@ export default function CodeBlock({ language, codeString, children }: CodeBlockP
   const displayLanguage = language ? language.toUpperCase() : 'CODE';
 
   return (
-    <div className="relative my-6 rounded-2xl overflow-hidden border border-slate-200 dark:border-slate-800/80 bg-slate-950 text-slate-100 shadow-xl group">
+    <div className="relative my-6 rounded-2xl overflow-hidden border border-slate-800 bg-slate-950 text-slate-100 shadow-xl group">
       {/* Header bar */}
       <div className="flex items-center justify-between px-4 py-2.5 bg-slate-900/90 dark:bg-slate-900/70 border-b border-slate-800 text-xs text-slate-400 font-mono select-none">
         <span className="font-semibold text-slate-300 tracking-wider">{displayLanguage}</span>
@@ -50,7 +50,7 @@ export default function CodeBlock({ language, codeString, children }: CodeBlockP
       </div>
 
       {/* Code content */}
-      <div className="p-4 md:p-5 overflow-x-auto text-sm font-mono leading-relaxed [&_pre]:!m-0 [&_pre]:!p-0 [&_pre]:!bg-transparent [&_code]:!bg-transparent [&_code]:!p-0 [&_code]:!border-0">
+      <div className="p-4 md:p-5 overflow-x-auto text-sm md:text-[15px] font-mono leading-relaxed [&_pre]:!m-0 [&_pre]:!p-0 [&_pre]:!bg-transparent [&_pre]:!text-sm md:[&_pre]:!text-[15px] [&_code]:!bg-transparent [&_code]:!p-0 [&_code]:!border-0 [&_code]:!text-sm md:[&_code]:!text-[15px] [&_code]:!font-mono [&::-webkit-scrollbar]:h-2 [&::-webkit-scrollbar-track]:bg-slate-900/50 [&::-webkit-scrollbar-thumb]:bg-slate-700 [&::-webkit-scrollbar-thumb:hover]:bg-slate-600 [&::-webkit-scrollbar-thumb]:rounded-full">
         {children}
       </div>
     </div>

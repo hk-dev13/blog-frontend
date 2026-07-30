@@ -265,4 +265,34 @@ body {
   color: #ffffff;
 }
 
+/* ── CodeBlock & Pre Scrollbar Customization ── */
+.prose pre,
+.prose code {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+}
+
+.prose pre {
+  scrollbar-width: thin;
+  scrollbar-color: #334155 transparent;
+}
+
+.prose pre::-webkit-scrollbar {
+  height: 8px;
+}
+
+.prose pre::-webkit-scrollbar-track {
+  background: rgba(15, 23, 42, 0.5);
+  border-radius: 9999px;
+}
+
+.prose pre::-webkit-scrollbar-thumb {
+  background: #334155;
+  border-radius: 9999px;
+}
+
+.prose pre::-webkit-scrollbar-thumb:hover {
+  background: #475569;
+}
+
+
 
