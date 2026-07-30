@@ -1265,9 +1265,9 @@ function CustomBubbleMenu({ editor, openLinkPopover }: { editor: Editor; openLin
     if (!editor || editor.isDestroyed) return;
 
     const { from, to, empty } = editor.state.selection;
-    const isTable = editor.isActive('table');
 
-    if (empty && !isTable) {
+    // Do not show bubble menu on empty caret click (e.g. typing inside table cells or paragraphs)
+    if (empty) {
       setMenuPos((prev) => (prev.visible ? { ...prev, visible: false } : prev));
       return;
     }
@@ -1378,8 +1378,10 @@ function CustomFloatingMenu({
 
     const { $anchor, empty } = editor.state.selection;
     const isCurrentBlockEmpty = $anchor.parent.content.size === 0;
+    const isInTable = editor.isActive('table');
 
-    if (!empty || !isCurrentBlockEmpty) {
+    // Do not show floating insert menu inside table cells or when text is present/selected
+    if (!empty || !isCurrentBlockEmpty || isInTable) {
       setMenuPos((prev) => (prev.visible ? { ...prev, visible: false } : prev));
       return;
     }
@@ -1478,7 +1480,7 @@ function CustomFloatingMenu({
   /* ─────────────── render ─────────────── */
   if (mode === 'markdown') {
     return (
-        <div className={editorShellClass}>
+      <div className={editorShellClass}>
         {/* Markdown toolbar header */}
         <div className={stickyToolbarClass}>
           <span className="text-xs text-slate-500 font-medium">Markdown Mode</span>
@@ -1486,21 +1488,26 @@ function CustomFloatingMenu({
             onClick={openFindReplace}
             active={isFindReplaceOpen}
             title={`Find and replace in Markdown source (${findReplaceShortcutHint})`}
+            ariaLabel="Find and replace"
           >
             <Search className={ic} />
           </TB>
           <ModeToggle />
         </div>
         {renderFindReplacePanel()}
-        <textarea
-          ref={contentRef ?? markdownTextareaRef}
-          value={value}
-          onChange={e => onChange(e.target.value)}
-          onKeyDown={handleMarkdownModeShortcuts}
-          rows={20}
-          className="min-h-[400px] w-full resize-y px-4 py-4 bg-slate-50 dark:bg-slate-900 border-0 rounded-b-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono text-sm"
-          placeholder={placeholder}
-        />
+        <div className="relative rounded-b-lg pl-8 md:pl-10 max-h-[650px] overflow-y-auto">
+          <div className="max-w-4xl mx-auto px-6 py-6">
+            <textarea
+              ref={contentRef ?? markdownTextareaRef}
+              value={value}
+              onChange={e => onChange(e.target.value)}
+              onKeyDown={handleMarkdownModeShortcuts}
+              rows={22}
+              className="min-h-[500px] w-full resize-y bg-transparent border-0 focus:outline-none font-mono text-sm leading-relaxed text-slate-800 dark:text-slate-200 placeholder:text-slate-400"
+              placeholder={placeholder}
+            />
+          </div>
+        </div>
       </div>
     );
   }
@@ -1511,7 +1518,7 @@ function CustomFloatingMenu({
       <div className={editorShellClass}>
         <WysiwygToolbar />
         {renderFindReplacePanel()}
-        <div className="relative rounded-b-lg pl-8 md:pl-10">
+        <div className="relative rounded-b-lg pl-8 md:pl-10 max-h-[650px] overflow-y-auto">
           <BlockDragHandle editor={editor} />
           <EditorContent editor={editor} />
           {editor && <CustomBubbleMenu editor={editor} openLinkPopover={openLinkPopover} />}
