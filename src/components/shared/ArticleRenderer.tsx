@@ -18,6 +18,17 @@ import TableOfContents from '@/components/shared/TableOfContents';
 import CommentSection from '@/app/posts/[slug]/CommentSection';
 import MermaidRenderer from '@/components/shared/MermaidRenderer';
 import LightboxModal, { LightboxMedia } from '@/components/shared/LightboxModal';
+import CodeBlock from '@/components/shared/CodeBlock';
+
+function extractTextContent(node: any): string {
+  if (typeof node === 'string') return node;
+  if (typeof node === 'number') return String(node);
+  if (Array.isArray(node)) return node.map(extractTextContent).join('');
+  if (isValidElement(node) && (node.props as any)?.children) {
+    return extractTextContent((node.props as any).children);
+  }
+  return '';
+}
 
 interface ArticleRendererProps {
   post: Post;
@@ -136,7 +147,7 @@ export default function ArticleRenderer({
                 <TableOfContents content={post.content} />
               </div>
 
-              <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 max-w-none">
+              <div className="prose prose-lg dark:prose-invert prose-slate prose-headings:font-serif prose-a:text-primary-600 hover:prose-a:text-primary-500 prose-code:before:content-none prose-code:after:content-none max-w-none">
                 {(post.content || '').split(/(@\[youtube\]\([^)]+\))/g).map((part, index) => {
                   const youtubeMatch = part.match(/^@\[youtube\]\(([^)]+)\)/);
                   if (youtubeMatch) {
@@ -166,7 +177,21 @@ export default function ArticleRenderer({
                           if (isMermaid) {
                             return <>{children}</>;
                           }
-                          return <pre {...props}>{children}</pre>;
+
+                          let language = '';
+                          if (isValidElement(children)) {
+                            const className = String((children.props as any)?.className || '');
+                            const match = /language-(\w+)/.exec(className);
+                            if (match) language = match[1];
+                          }
+
+                          const codeString = extractTextContent(children).replace(/\n$/, '');
+
+                          return (
+                            <CodeBlock language={language} codeString={codeString}>
+                              <pre {...props} className="!m-0 !p-0 !bg-transparent !border-0">{children}</pre>
+                            </CodeBlock>
+                          );
                         },
                         code: ({ className, children, ...props }) => {
                           const match = /language-(\w+)/.exec(className || '');
@@ -181,6 +206,18 @@ export default function ArticleRenderer({
                             );
                           }
                           
+                          const isInline = !className;
+                          if (isInline) {
+                            return (
+                              <code
+                                className="font-mono text-[0.875em] font-semibold text-primary-700 dark:text-primary-300 bg-slate-100 dark:bg-slate-800/90 px-1.5 py-0.5 rounded-md border border-slate-200/80 dark:border-slate-700/60 break-words"
+                                {...props}
+                              >
+                                {children}
+                              </code>
+                            );
+                          }
+
                           return (
                             <code className={className} {...props}>
                               {children}
