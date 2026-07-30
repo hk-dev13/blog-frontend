@@ -35,67 +35,161 @@ export function getContentStats(content: string) {
 }
 
 // ──────────────────────────────────────────
-// Autosave hook — localStorage with indicator
+// Autosave — versioned envelope with conflict detection
 // ──────────────────────────────────────────
-interface AutosaveData {
+
+const AUTOSAVE_SCHEMA_VERSION = 1 as const;
+
+/** Maximum age of a restorable autosave (30 days). */
+const AUTOSAVE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
+
+/** All form fields persisted to localStorage on every autosave tick. */
+export interface AutosaveData {
   title: string;
+  slug: string;
   excerpt: string;
   content: string;
   metaTitle: string;
   metaDescription: string;
-  slug: string;
-  savedAt: number;
+  canonicalUrl: string;
+  coverImageUrl: string;
+  coverImageAlt: string;
+  isFeatured: boolean;
+  selectedCategories: string[];
+  selectedTags: string[];
+  scheduleDate: string;
+  focusKeyword: string;
 }
 
-export type AutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
+/**
+ * Versioned wrapper stored in localStorage.
+ * `basedOnServerUpdatedAt` records the server's `updated_at` at the moment
+ * the autosave was written, enabling safe conflict detection without relying
+ * on clock comparison between devices.
+ */
+export interface AutosaveEnvelope {
+  schemaVersion: typeof AUTOSAVE_SCHEMA_VERSION;
+  postId: string | 'new';
+  savedAt: number;
+  basedOnServerUpdatedAt: string | null;
+  payload: AutosaveData;
+}
+
+/**
+ * Three-state restore decision:
+ * - `none`     → no valid autosave found (wrong schema, empty, too old)
+ * - `safe`     → local draft is based on the same server version → safe to offer restore
+ * - `conflict` → server has changed since the autosave was written → warn user
+ */
+export type RestoreState = 'none' | 'safe' | 'conflict';
+
+/** Isolated localStorage key per post — prevents cross-post data leakage. */
+export function getAutosaveKey(postId: string | 'new'): string {
+  return `admin-post-autosave:${postId}`;
+}
+
+function hasMeaningfulContent(payload: AutosaveData): boolean {
+  return Boolean(
+    payload.title.trim() ||
+    payload.content.trim() ||
+    payload.excerpt.trim(),
+  );
+}
+
+/**
+ * Determines whether a recovered autosave envelope should be offered for
+ * restoration, and in what state.
+ *
+ * Uses `basedOnServerUpdatedAt` (not local clock) to detect conflicts so
+ * device clock skew cannot cause a stale draft to appear fresh.
+ */
+export function getRestoreState(
+  envelope: AutosaveEnvelope,
+  serverUpdatedAt: string | null,
+): RestoreState {
+  // Wrong schema version — data shape may have changed
+  if (envelope.schemaVersion !== AUTOSAVE_SCHEMA_VERSION) return 'none';
+
+  // Nothing meaningful to restore
+  if (!hasMeaningfulContent(envelope.payload)) return 'none';
+
+  // Create mode ('new') — no server version to compare against
+  if (envelope.postId === 'new') {
+    const isFresh = Date.now() - envelope.savedAt < AUTOSAVE_MAX_AGE_MS;
+    return isFresh ? 'safe' : 'none';
+  }
+
+  // Edit mode — rely on basedOnServerUpdatedAt for conflict detection
+  if (!serverUpdatedAt) return 'none';
+
+  // Server version is unchanged since autosave was written → safe to restore
+  if (envelope.basedOnServerUpdatedAt === serverUpdatedAt) return 'safe';
+
+  // Server has changed since the autosave was created → conflict
+  return 'conflict';
+}
+
+// ──────────────────────────────────────────
+// Local autosave status (localStorage only)
+// Deliberately separate from server-save status
+// ──────────────────────────────────────────
+export type LocalAutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error';
+
+/**
+ * @deprecated Use `LocalAutosaveStatus` — kept for backward compatibility
+ * during the P2 refactor migration period.
+ */
+export type AutosaveStatus = LocalAutosaveStatus;
 
 export function useAutosave(
-  key: string,
-  data: Omit<AutosaveData, 'savedAt'>,
+  postId: string | 'new',
+  data: AutosaveData,
   enabled: boolean,
-  onRestore: (data: Omit<AutosaveData, 'savedAt'>) => void,
+  /**
+   * Called once on mount when a valid autosave envelope is found.
+   * The caller is responsible for rendering the restore UI
+   * (e.g. `AutosaveRestorePrompt`). No browser dialog is used here.
+   */
+  onRestoreAvailable: (state: RestoreState, envelope: AutosaveEnvelope) => void,
+  /**
+   * ISO string of the server post's `updated_at` field, used for conflict
+   * detection in edit mode. Pass `null` for create mode.
+   */
+  serverUpdatedAt: string | null,
 ) {
-  const onRestoreRef = useRef(onRestore);
-  onRestoreRef.current = onRestore;
-  const [status, setStatus] = useState<AutosaveStatus>('idle');
+  const key = getAutosaveKey(postId);
+  const onRestoreAvailableRef = useRef(onRestoreAvailable);
+  onRestoreAvailableRef.current = onRestoreAvailable;
+
+  const [status, setStatus] = useState<LocalAutosaveStatus>('idle');
   const [lastSavedAt, setLastSavedAt] = useState<number | null>(null);
   const initialRenderRef = useRef(true);
   const lastSavedSnapshotRef = useRef('');
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const snapshot = useMemo(() => JSON.stringify(data), [data]);
 
-  // On mount: check for saved draft and prompt restore
+  // On mount: check for a saved autosave and notify caller
   useEffect(() => {
     if (!enabled) return;
     try {
       const raw = localStorage.getItem(key);
       if (!raw) return;
-      const saved: AutosaveData = JSON.parse(raw);
-      // Only restore if saved within last 24 hours and has content
-      const age = Date.now() - saved.savedAt;
-      if (age < 86_400_000 && (saved.title || saved.content)) {
-        lastSavedSnapshotRef.current = JSON.stringify({
-          title: saved.title,
-          excerpt: saved.excerpt,
-          content: saved.content,
-          metaTitle: saved.metaTitle,
-          metaDescription: saved.metaDescription,
-          slug: saved.slug,
-        });
-        setLastSavedAt(saved.savedAt);
+      const envelope: AutosaveEnvelope = JSON.parse(raw);
+      const restoreState = getRestoreState(envelope, serverUpdatedAt);
+      if (restoreState !== 'none') {
+        lastSavedSnapshotRef.current = JSON.stringify(envelope.payload);
+        setLastSavedAt(envelope.savedAt);
         setStatus('saved');
-        const mins = Math.round(age / 60000);
-        const label = mins < 1 ? 'just now' : mins === 1 ? '1 minute ago' : `${mins} minutes ago`;
-        if (confirm(`📝 Found an autosaved draft from ${label}. Restore it?`)) {
-          const { savedAt: _, ...rest } = saved;
-          onRestoreRef.current(rest);
-        }
+        // Delegate UI to caller — no browser confirm() dialog
+        onRestoreAvailableRef.current(restoreState, envelope);
       }
-    } catch {/* ignore */}
-   
+    } catch {/* malformed localStorage entry — silently ignore */}
+    // serverUpdatedAt deliberately excluded: we only check on mount,
+    // subsequent changes to serverUpdatedAt should not re-trigger.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [key, enabled]);
 
-  // Autosave after changes settle
+  // Autosave after changes settle (1.2 s debounce)
   useEffect(() => {
     if (!enabled) return;
     if (initialRenderRef.current) {
@@ -122,10 +216,16 @@ export function useAutosave(
     saveTimeoutRef.current = setTimeout(() => {
       try {
         setStatus('saving');
-        const savedAt = Date.now();
-        localStorage.setItem(key, JSON.stringify({ ...data, savedAt }));
+        const envelope: AutosaveEnvelope = {
+          schemaVersion: AUTOSAVE_SCHEMA_VERSION,
+          postId,
+          savedAt: Date.now(),
+          basedOnServerUpdatedAt: serverUpdatedAt,
+          payload: data,
+        };
+        localStorage.setItem(key, JSON.stringify(envelope));
         lastSavedSnapshotRef.current = snapshot;
-        setLastSavedAt(savedAt);
+        setLastSavedAt(envelope.savedAt);
         setStatus('saved');
       } catch {
         setStatus('error');
@@ -137,10 +237,10 @@ export function useAutosave(
         clearTimeout(saveTimeoutRef.current);
       }
     };
-  }, [key, data, enabled, snapshot, status]);
+  }, [key, postId, data, enabled, snapshot, status, serverUpdatedAt]);
 
   const clearSave = useCallback(() => {
-    try { localStorage.removeItem(key); } catch {/* */}
+    try { localStorage.removeItem(key); } catch {/* storage unavailable */}
     lastSavedSnapshotRef.current = '';
     setLastSavedAt(null);
     setStatus('idle');

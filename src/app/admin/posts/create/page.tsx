@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
 import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, AlertCircle, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from '@/lib/editorUtils';
+import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave, type AutosaveData, type RestoreState, type AutosaveEnvelope } from '@/lib/editorUtils';
+import { useToastStore } from '@/store/useToastStore';
 import { API_URL } from '@/lib/env';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
@@ -20,6 +21,7 @@ export default function CreatePostPage() {
   const router = useRouter();
   const token = useAppStore(state => state.token);
   const queryClient = useQueryClient();
+  const pushToast = useToastStore(state => state.push);
 
   // Form state
   const [title, setTitle] = useState('');
@@ -28,6 +30,7 @@ export default function CreatePostPage() {
   const [excerpt, setExcerpt] = useState('');
   const [content, setContent] = useState('');
   const [coverImageUrl, setCoverImageUrl] = useState('');
+  const [coverImageAlt, setCoverImageAlt] = useState('');
   const [selectedCategories, setSelectedCategories] = useState<string[]>([]);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [uploadingImage, setUploadingImage] = useState(false);
@@ -37,32 +40,58 @@ export default function CreatePostPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [metaTitle, setMetaTitle] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
-  const [coverImageAlt, setCoverImageAlt] = useState('');
   const [seoOpen, setSeoOpen] = useState(false);
   const [isFeatured, setIsFeatured] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
   const [canonicalUrl, setCanonicalUrl] = useState('');
+  const [focusKeyword, setFocusKeyword] = useState('');
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [showOptionsSidebar, setShowOptionsSidebar] = useState(true);
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
+  const [autosaveRestoreState, setAutosaveRestoreState] = useState<{ state: RestoreState; envelope: AutosaveEnvelope } | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
+  const isSavingRef = useRef(false);
 
   // Live stats
   const contentStats = getContentStats(content);
 
-  // Autosave hook
-  const autosaveKey = 'editor:create';
+  // Autosave (local localStorage only — not server-dirty)
+  const autosaveData: AutosaveData = {
+    title, slug, excerpt, content,
+    metaTitle, metaDescription, canonicalUrl,
+    coverImageUrl, coverImageAlt,
+    isFeatured, selectedCategories, selectedTags,
+    scheduleDate, focusKeyword,
+  };
   const { clearSave, status: autosaveStatus, lastSavedAt } = useAutosave(
-    autosaveKey,
-    { title, excerpt, content, metaTitle, metaDescription, slug },
+    'new',
+    autosaveData,
     true,
-    ({ title: t, excerpt: e, content: c, metaTitle: mt, metaDescription: md, slug: s }) => {
-      setTitle(t); setExcerpt(e); setContent(c);
-      setMetaTitle(mt); setMetaDescription(md);
-      if (s) { setSlug(s); setSlugLocked(true); }
-    },
+    (state, envelope) => setAutosaveRestoreState({ state, envelope }),
+    null, // create mode — no server updated_at
   );
+
+  // Restore handler for AutosaveRestorePrompt (used in JSX below)
+  const handleAutosaveRestore = useCallback(() => {
+    if (!autosaveRestoreState) return;
+    const p = autosaveRestoreState.envelope.payload;
+    setTitle(p.title);
+    setExcerpt(p.excerpt);
+    setContent(p.content);
+    setMetaTitle(p.metaTitle);
+    setMetaDescription(p.metaDescription);
+    setCanonicalUrl(p.canonicalUrl);
+    setCoverImageUrl(p.coverImageUrl);
+    setCoverImageAlt(p.coverImageAlt);
+    setIsFeatured(p.isFeatured);
+    setSelectedCategories(p.selectedCategories);
+    setSelectedTags(p.selectedTags);
+    setScheduleDate(p.scheduleDate);
+    setFocusKeyword(p.focusKeyword);
+    if (p.slug) { setSlug(p.slug); setSlugLocked(true); }
+    setAutosaveRestoreState(null);
+  }, [autosaveRestoreState]);
 
   const autosaveLabel = autosaveStatus === 'saving'
     ? 'Saving draft...'
@@ -101,31 +130,40 @@ export default function CreatePostPage() {
     tag_ids: selectedTags,
   });
 
-  // Save as Draft
-  const handleSaveDraft = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
+  // Save as Draft — returns the created post so Ctrl+S can redirect
+  const handleSaveDraft = useCallback(async (): Promise<{ id: string } | null> => {
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required before saving.' });
+      return null;
+    }
     setIsSaving(true);
     try {
-      await fetchApi('/posts', { method: 'POST', body: JSON.stringify(buildPayload()) });
+      const created = await fetchApi<{ id: string }>('/posts', { method: 'POST', body: JSON.stringify(buildPayload()) });
       clearSave();
       router.push('/admin/posts');
-    } catch (err: any) {
-      alert(err.message || 'Failed to save draft');
+      return created;
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to save draft', description: err instanceof Error ? err.message : undefined });
+      return null;
     } finally {
       setIsSaving(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, content, buildPayload, clearSave, router, pushToast]);
 
   const handlePreview = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required to preview.' });
+      return;
+    }
     setIsSaving(true);
     try {
       const created = await fetchApi<{ id: string }>('/posts', { method: 'POST', body: JSON.stringify(buildPayload()) });
       clearSave();
       window.open(`/preview/posts/${created.id}`, '_blank', 'noopener,noreferrer');
       router.replace(`/admin/posts/${created.id}/edit`);
-    } catch (err: any) {
-      alert(err.message || 'Failed to open preview');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to open preview', description: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }
@@ -133,14 +171,17 @@ export default function CreatePostPage() {
 
   // Publish Now
   const handlePublishNow = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required to publish.' });
+      return;
+    }
     setIsSaving(true);
     try {
       await fetchApi('/posts/publish', { method: 'POST', body: JSON.stringify(buildPayload()) });
       clearSave();
       router.push('/admin/posts');
-    } catch (err: any) {
-      alert(err.message || 'Failed to publish post');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to publish post', description: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }
@@ -148,8 +189,14 @@ export default function CreatePostPage() {
 
   // Schedule
   const handleSchedule = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
-    if (!scheduleDate) { alert('Please select a date and time for scheduling'); return; }
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required to schedule.' });
+      return;
+    }
+    if (!scheduleDate) {
+      pushToast({ variant: 'error', title: 'Please select a date and time for scheduling.' });
+      return;
+    }
     setIsSaving(true);
     try {
       await fetchApi('/posts/publish', {
@@ -158,13 +205,44 @@ export default function CreatePostPage() {
       });
       clearSave();
       router.push('/admin/posts');
-    } catch (err: any) {
-      alert(err.message || 'Failed to schedule post');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to schedule post', description: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
       setShowScheduler(false);
     }
   };
+
+  // Ctrl+S / ⌘S — save draft with concurrency guard
+  useEffect(() => {
+    const handleSaveDraftRef = { current: handleSaveDraft };
+    handleSaveDraftRef.current = handleSaveDraft;
+
+    const handler = async (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key !== 's') return;
+      e.preventDefault();
+      if (isSavingRef.current) return;           // guard: already saving
+      if (modalState.isOpen) return;             // guard: modal open
+      if (showScheduler || showPublishMenu) return; // guard: overlay open
+      if (!title.trim()) {
+        pushToast({ variant: 'error', title: 'Add a title before saving.' });
+        return;
+      }
+      isSavingRef.current = true;
+      try {
+        const created = await handleSaveDraftRef.current();
+        if (created) {
+          // Use replace so Back does not return to create page and create a duplicate
+          router.replace(`/admin/posts/${created.id}/edit`);
+        }
+      } finally {
+        isSavingRef.current = false;
+      }
+    };
+
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [modalState.isOpen, showScheduler, showPublishMenu, title, router, pushToast, handleSaveDraft]);
 
   // Taxonomy Mutations
   const createCategoryMutation = useMutation({
@@ -209,8 +287,8 @@ export default function CreatePostPage() {
       const data = await res.json();
       if (data.success) setCoverImageUrl(data.data.url);
       else throw new Error(data.error || 'Upload failed');
-    } catch (err: any) {
-      alert(err.message || 'Failed to upload image');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to upload image', description: err instanceof Error ? err.message : undefined });
     } finally {
       setUploadingImage(false);
     }
@@ -384,9 +462,39 @@ export default function CreatePostPage() {
 	      </div>
 	    </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Autosave restore prompt (replaces browser confirm()) */}
+      {autosaveRestoreState && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-900/10">
+          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+            {autosaveRestoreState.state === 'conflict'
+              ? '⚠️ A local draft exists, but the server has a newer version.'
+              : '📝 An autosaved draft was found.'}
+          </p>
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+            Saved {Math.round((Date.now() - autosaveRestoreState.envelope.savedAt) / 60000)} minutes ago
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={handleAutosaveRestore}
+              className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
+            >
+              Restore draft
+            </button>
+            <button
+              type="button"
+              onClick={() => { clearSave(); setAutosaveRestoreState(null); }}
+              className="rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/20 transition-colors"
+            >
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 gap-6 ${showOptionsSidebar ? 'lg:grid-cols-[minmax(0,1fr)_clamp(18rem,22vw,22rem)]' : ''}`}>
         {/* Main Editor Area */}
-        <div className={`${showOptionsSidebar ? 'lg:col-span-9 2xl:col-span-10' : 'lg:col-span-12 w-full'} space-y-6 transition-all duration-300`}>
+        <div className="space-y-6">
           <div className="admin-surface-padded space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
@@ -413,7 +521,7 @@ export default function CreatePostPage() {
                     type="text"
                     value={slug}
                     onChange={e => { setSlug(generateSlug(e.target.value)); setSlugLocked(true); }}
-                    disabled={!slugLocked && !slug}
+                    disabled={false}
                     className="w-full px-3 py-1.5 text-sm bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none font-mono"
                     placeholder="auto-generated-from-title"
                   />
@@ -450,6 +558,13 @@ export default function CreatePostPage() {
                 className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
                 placeholder="Short summary of the post..."
               />
+              {/* Excerpt length guidance (P1.7) */}
+              <div className="flex items-center justify-between text-xs text-slate-400 mt-1">
+                <span>Ideal: 150–300 characters for search preview</span>
+                <span className={excerpt.length > 300 ? 'text-amber-500 font-medium' : ''}>
+                  {excerpt.length} chars
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -484,7 +599,7 @@ export default function CreatePostPage() {
 
         {/* Sidebar Options */}
         {showOptionsSidebar && (
-          <div className="lg:col-span-3 2xl:col-span-2 space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-6 animate-in fade-in duration-200">
           {/* Cover Image Upload */}
           <div className="admin-surface-padded space-y-4">
             <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cover Image</h3>

@@ -1,13 +1,14 @@
 'use client';
 
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag, Post, PostRevision } from '@/types';
 import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, History, RotateCcw, AlertCircle, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave } from '@/lib/editorUtils';
+import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave, type AutosaveData, type RestoreState, type AutosaveEnvelope } from '@/lib/editorUtils';
+import { useToastStore } from '@/store/useToastStore';
 import { API_URL } from '@/lib/env';
 import RichTextEditor from '@/components/admin/RichTextEditor';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
@@ -27,6 +28,7 @@ export default function EditPostPage() {
   const postId = params.id as string;
   const token = useAppStore(state => state.token);
   const queryClient = useQueryClient();
+  const pushToast = useToastStore(state => state.push);
   
   // Form state
   const [title, setTitle] = useState('');
@@ -50,27 +52,65 @@ export default function EditPostPage() {
   const [isDragging, setIsDragging] = useState(false);
   const [showRevisions, setShowRevisions] = useState(false);
   const [canonicalUrl, setCanonicalUrl] = useState('');
+  const [focusKeyword, setFocusKeyword] = useState('');
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [showOptionsSidebar, setShowOptionsSidebar] = useState(true);
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
+  const [revisionToRestore, setRevisionToRestore] = useState<PostRevision | null>(null);
+  const [autosaveRestoreState, setAutosaveRestoreState] = useState<{ state: RestoreState; envelope: AutosaveEnvelope } | null>(null);
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
+  const isSavingRef = useRef(false);
+  // Hydration guard: only set server snapshot ONCE after initial data load
+  const hasInitializedRef = useRef(false);
 
   // Live stats
   const contentStats = getContentStats(content);
 
-  // Autosave (keyed per post — won't collide between posts)
-  const autosaveKey = `editor:edit:${postId}`;
+  // Fetch post data
+  const { data: postData, isLoading: isPostLoading, error: postError, refetch: refetchPost } = useQuery({
+    queryKey: ['admin-post', postId],
+    queryFn: () => fetchApi<Post>(`/posts/admin/${postId}`),
+    enabled: !!postId,
+  });
+
+  const post = postData;
+
+  // Autosave (local localStorage — keyed per post, not server-dirty)
+  const autosaveData: AutosaveData = {
+    title, slug, excerpt, content,
+    metaTitle, metaDescription, canonicalUrl,
+    coverImageUrl, coverImageAlt,
+    isFeatured, selectedCategories, selectedTags,
+    scheduleDate, focusKeyword,
+  };
   const { clearSave, status: autosaveStatus, lastSavedAt } = useAutosave(
-    autosaveKey,
-    { title, excerpt, content, metaTitle, metaDescription, slug },
+    postId,
+    autosaveData,
     !!postId,
-    ({ title: t, excerpt: e, content: c, metaTitle: mt, metaDescription: md, slug: s }) => {
-      setTitle(t); setExcerpt(e); setContent(c);
-      setMetaTitle(mt); setMetaDescription(md);
-      if (s) { setSlug(s); setSlugLocked(true); }
-    },
+    (state, envelope) => setAutosaveRestoreState({ state, envelope }),
+    post?.updated_at ?? null,
   );
+
+  const handleAutosaveRestore = useCallback(() => {
+    if (!autosaveRestoreState) return;
+    const p = autosaveRestoreState.envelope.payload;
+    setTitle(p.title);
+    setExcerpt(p.excerpt);
+    setContent(p.content);
+    setMetaTitle(p.metaTitle);
+    setMetaDescription(p.metaDescription);
+    setCanonicalUrl(p.canonicalUrl);
+    setCoverImageUrl(p.coverImageUrl);
+    setCoverImageAlt(p.coverImageAlt);
+    setIsFeatured(p.isFeatured);
+    setSelectedCategories(p.selectedCategories);
+    setSelectedTags(p.selectedTags);
+    setScheduleDate(p.scheduleDate);
+    setFocusKeyword(p.focusKeyword);
+    if (p.slug) { setSlug(p.slug); setSlugLocked(true); }
+    setAutosaveRestoreState(null);
+  }, [autosaveRestoreState]);
 
   const autosaveLabel = autosaveStatus === 'saving'
     ? 'Saving draft...'
@@ -81,15 +121,6 @@ export default function EditPostPage() {
         : autosaveStatus === 'error'
           ? 'Autosave failed'
           : '';
-
-  // Fetch post data
-  const { data: postData, isLoading: isPostLoading, error: postError, refetch: refetchPost } = useQuery({
-    queryKey: ['admin-post', postId],
-    queryFn: () => fetchApi<Post>(`/posts/admin/${postId}`),
-    enabled: !!postId,
-  });
-
-  const post = postData;
 
   // Populate form when data arrives
   useEffect(() => {
@@ -177,29 +208,36 @@ export default function EditPostPage() {
   });
 
   // Update without changing status
-  const handleUpdate = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
+  const handleUpdate = useCallback(async (): Promise<void> => {
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required.' });
+      return;
+    }
     setIsSaving(true);
     try {
       await updateMutation.mutateAsync(buildPayload());
       clearSave();
       router.push('/admin/posts');
-    } catch (err: any) {
-      alert(err.message || 'Failed to update post');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to update post', description: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }
-  };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [title, content, buildPayload, clearSave, router, pushToast, updateMutation]);
 
   const handlePreview = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required to preview.' });
+      return;
+    }
     setIsSaving(true);
     try {
       await updateMutation.mutateAsync(buildPayload());
       clearSave();
       window.open(`/preview/posts/${postId}`, '_blank', 'noopener,noreferrer');
-    } catch (err: any) {
-      alert(err.message || 'Failed to open preview');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to open preview', description: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }
@@ -207,15 +245,18 @@ export default function EditPostPage() {
 
   // Publish Now
   const handlePublishNow = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required to publish.' });
+      return;
+    }
     setIsSaving(true);
     try {
       await updateMutation.mutateAsync(buildPayload());
       await publishMutation.mutateAsync({});
       clearSave();
       router.push('/admin/posts');
-    } catch (err: any) {
-      alert(err.message || 'Failed to publish post');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to publish post', description: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
     }
@@ -223,21 +264,49 @@ export default function EditPostPage() {
 
   // Schedule
   const handleSchedule = async () => {
-    if (!title || !content) { alert('Title and content are required'); return; }
-    if (!scheduleDate) { alert('Please select a date and time for scheduling'); return; }
+    if (!title.trim() || !content.trim()) {
+      pushToast({ variant: 'error', title: 'Title and content are required to schedule.' });
+      return;
+    }
+    if (!scheduleDate) {
+      pushToast({ variant: 'error', title: 'Please select a date and time for scheduling.' });
+      return;
+    }
     setIsSaving(true);
     try {
       await updateMutation.mutateAsync(buildPayload());
       await publishMutation.mutateAsync({ published_at: new Date(scheduleDate).toISOString() });
       clearSave();
       router.push('/admin/posts');
-    } catch (err: any) {
-      alert(err.message || 'Failed to schedule post');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to schedule post', description: err instanceof Error ? err.message : undefined });
     } finally {
       setIsSaving(false);
       setShowScheduler(false);
     }
   };
+
+  // Ctrl+S / ⌘S — update with concurrency guard
+  useEffect(() => {
+    const handleUpdateRef = { current: handleUpdate };
+    handleUpdateRef.current = handleUpdate;
+
+    const handler = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key !== 's') return;
+      e.preventDefault();
+      if (isSavingRef.current) return;
+      if (modalState.isOpen) return;
+      if (showScheduler || showPublishMenu) return;
+      if (!title.trim()) {
+        pushToast({ variant: 'error', title: 'Add a title before saving.' });
+        return;
+      }
+      isSavingRef.current = true;
+      void handleUpdateRef.current().finally(() => { isSavingRef.current = false; });
+    };
+    window.addEventListener('keydown', handler);
+    return () => window.removeEventListener('keydown', handler);
+  }, [modalState.isOpen, showScheduler, showPublishMenu, title, pushToast, handleUpdate]);
 
   // Taxonomy Mutations
   const createCategoryMutation = useMutation({
@@ -282,8 +351,8 @@ export default function EditPostPage() {
       const data = await res.json();
       if (data.success) setCoverImageUrl(data.data.url);
       else throw new Error(data.error || 'Upload failed');
-    } catch (err: any) {
-      alert(err.message || 'Failed to upload image');
+    } catch (err: unknown) {
+      pushToast({ variant: 'error', title: 'Failed to upload image', description: err instanceof Error ? err.message : undefined });
     } finally {
       setUploadingImage(false);
     }
@@ -501,9 +570,39 @@ export default function EditPostPage() {
       </div>
       </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      {/* Autosave restore prompt (replaces browser confirm()) */}
+      {autosaveRestoreState && (
+        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-900/10">
+          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
+            {autosaveRestoreState.state === 'conflict'
+              ? '⚠️ A local draft exists, but the server has a newer version.'
+              : '📝 An autosaved draft was found.'}
+          </p>
+          <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
+            Saved {Math.round((Date.now() - autosaveRestoreState.envelope.savedAt) / 60000)} minutes ago
+          </p>
+          <div className="mt-3 flex gap-2">
+            <button
+              type="button"
+              onClick={handleAutosaveRestore}
+              className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
+            >
+              Restore draft
+            </button>
+            <button
+              type="button"
+              onClick={() => { clearSave(); setAutosaveRestoreState(null); }}
+              className="rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/20 transition-colors"
+            >
+              Discard
+            </button>
+          </div>
+        </div>
+      )}
+
+      <div className={`grid grid-cols-1 gap-6 ${showOptionsSidebar ? 'lg:grid-cols-[minmax(0,1fr)_clamp(18rem,22vw,22rem)]' : ''}`}>
         {/* Main Editor Area */}
-        <div className={`${showOptionsSidebar ? 'lg:col-span-9 2xl:col-span-10' : 'lg:col-span-12 w-full'} space-y-6 transition-all duration-300`}>
+        <div className="space-y-6">
           <div className="admin-surface-padded space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
@@ -564,6 +663,13 @@ export default function EditPostPage() {
                 className="w-full px-4 py-2 bg-slate-50 dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg focus:ring-2 focus:ring-primary-500 focus:outline-none"
                 placeholder="Short summary of the post..."
               />
+              {/* Excerpt length guidance (P1.7) */}
+              <div className="flex items-center justify-between text-xs text-slate-400 mt-1">
+                <span>Ideal: 150–300 characters for search preview</span>
+                <span className={excerpt.length > 300 ? 'text-amber-500 font-medium' : ''}>
+                  {excerpt.length} chars
+                </span>
+              </div>
             </div>
 
             <div className="space-y-2">
@@ -599,7 +705,7 @@ export default function EditPostPage() {
 
         {/* Sidebar Options */}
         {showOptionsSidebar && (
-          <div className="lg:col-span-3 2xl:col-span-2 space-y-6 animate-in fade-in duration-200">
+          <div className="space-y-6 animate-in fade-in duration-200">
           {/* Cover Image Upload */}
           <div className="admin-surface-padded space-y-4">
             <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cover Image</h3>
@@ -823,13 +929,7 @@ export default function EditPostPage() {
                         </div>
                         <button
                           type="button"
-                          onClick={() => {
-                            if (confirm(`Restore revision v${rev.revision_number}? Current content will be replaced.`)) {
-                              setTitle(rev.title || title);
-                              setContent(rev.content || '');
-                              if (rev.excerpt) setExcerpt(rev.excerpt);
-                            }
-                          }}
+                          onClick={() => setRevisionToRestore(rev)}
                           className="flex-shrink-0 p-1.5 rounded-lg text-slate-400 hover:text-primary-500 hover:bg-primary-50 dark:hover:bg-primary-900/20 transition-colors"
                           title="Restore this revision"
                         >
@@ -963,6 +1063,44 @@ export default function EditPostPage() {
                 </button>
               </div>
             </form>
+          </div>
+        </div>
+      )}
+      {/* Revision Restore Modal (replaces browser confirm()) */}
+      {revisionToRestore && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-sm">
+          <div className="admin-modal-panel w-full max-w-md overflow-hidden animate-in fade-in zoom-in-95 duration-200 p-6 space-y-4">
+            <h3 className="font-semibold text-slate-900 dark:text-white text-lg">
+              Restore Revision v{revisionToRestore.revision_number}?
+            </h3>
+            <p className="text-sm text-slate-600 dark:text-slate-400">
+              This will update your current editor content with version from{' '}
+              <span className="font-medium text-slate-800 dark:text-slate-200">
+                {revisionDateFormatter.format(new Date(revisionToRestore.created_at))}
+              </span>.
+              The post will become unsaved until you click Update.
+            </p>
+            <div className="flex justify-end gap-3 pt-2">
+              <button
+                type="button"
+                onClick={() => setRevisionToRestore(null)}
+                className="px-4 py-2 text-sm font-medium text-slate-700 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-700 rounded-lg transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  setTitle(revisionToRestore.title || title);
+                  setContent(revisionToRestore.content || '');
+                  if (revisionToRestore.excerpt) setExcerpt(revisionToRestore.excerpt);
+                  setRevisionToRestore(null);
+                }}
+                className="px-4 py-2 text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 rounded-lg transition-colors"
+              >
+                Restore revision
+              </button>
+            </div>
           </div>
         </div>
       )}

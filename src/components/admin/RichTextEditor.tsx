@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 
 import { useAppStore } from '@/store/useAppStore';
+import { useToastStore } from '@/store/useToastStore';
 import { API_URL } from '@/lib/env';
 import InternalLinkPopover from '@/components/admin/InternalLinkPopover';
 import BlockDragHandle from '@/components/admin/BlockDragHandle';
@@ -482,8 +483,8 @@ export default function RichTextEditor({
       } else {
         throw new Error(data.error || 'Upload failed');
       }
-    } catch (err: any) {
-      alert(err.message || 'Failed to upload image');
+    } catch (err: unknown) {
+      useToastStore.getState().push({ variant: 'error', title: 'Failed to upload image', description: err instanceof Error ? err.message : undefined });
     } finally {
       setUploadingEditorImage(false);
     }
@@ -927,7 +928,7 @@ export default function RichTextEditor({
   }, [value, editor]);
 
   const ic = 'w-4 h-4';
-  const editorShellClass = 'max-h-[75vh] overflow-y-auto overscroll-contain rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900';
+  const editorShellClass = 'rounded-lg border border-slate-200 bg-white dark:border-slate-700 dark:bg-slate-900';
   const stickyToolbarClass = 'sticky top-0 z-20 flex items-center px-3 py-2 bg-slate-100/95 dark:bg-slate-900/95 backdrop-blur border border-slate-200 dark:border-slate-700 border-b-0 rounded-t-lg shadow-sm';
 
   /* ── mode toggle ── */
