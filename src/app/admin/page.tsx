@@ -4,11 +4,15 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import Link from 'next/link';
-import { FileText, Eye, TrendingUp, PenLine, Loader2, Calendar } from 'lucide-react';
+import { FileText, Eye, TrendingUp, PenLine, Loader2, Calendar, ArrowUpRight, Plus } from 'lucide-react';
 import ViewsChart from '@/components/admin/ViewsChart';
 import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
 import AdminLoadError from '@/components/admin/AdminLoadError';
 import { safeFormatDate } from '@/lib/editorUtils';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 
 export default function AdminDashboardPage() {
   const { data, isLoading, error, refetch } = useQuery({
@@ -19,7 +23,7 @@ export default function AdminDashboardPage() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-64">
-        <Loader2 className="w-8 h-8 animate-spin text-primary-500" />
+        <Loader2 className="w-8 h-8 animate-spin text-primary" />
       </div>
     );
   }
@@ -41,11 +45,11 @@ export default function AdminDashboardPage() {
   const recentPosts = posts.slice(0, 5);
 
   const stats = [
-    { label: 'Total Posts', value: totalPosts, icon: FileText, color: 'bg-slate-100 dark:bg-slate-800' },
-    { label: 'Published', value: publishedPosts, icon: TrendingUp, color: 'bg-slate-100 dark:bg-slate-800' },
-    { label: 'Scheduled', value: scheduledPosts, icon: Calendar, color: 'bg-slate-100 dark:bg-slate-800' },
-    { label: 'Drafts', value: draftPosts, icon: PenLine, color: 'bg-slate-100 dark:bg-slate-800' },
-    { label: 'Total Views', value: totalViews, icon: Eye, color: 'bg-slate-100 dark:bg-slate-800' },
+    { label: 'Total Posts', value: totalPosts, icon: FileText, subtext: 'All articles in system' },
+    { label: 'Published', value: publishedPosts, icon: TrendingUp, subtext: 'Live on website' },
+    { label: 'Scheduled', value: scheduledPosts, icon: Calendar, subtext: 'Upcoming publication' },
+    { label: 'Drafts', value: draftPosts, icon: PenLine, subtext: 'Work in progress' },
+    { label: 'Total Views', value: totalViews, icon: Eye, subtext: 'Cumulative readers' },
   ];
 
   const getSafeTime = (d?: string) => {
@@ -55,76 +59,75 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="space-y-8">
-      <header className="admin-page-hero overflow-hidden">
-        <div className="admin-page-hero-bg" />
-        <div className="admin-page-hero-content">
-          <div className="max-w-2xl">
-            <div className="admin-page-hero-icon">
-              <FileText className="h-5 w-5" />
-            </div>
-            <h1 className="admin-page-title">Dashboard</h1>
-            <p className="admin-page-description">
-              A quick overview of content performance and recent activity.
-            </p>
-          </div>
-          <div className="admin-hero-actions">
-            <Link
-              href="/admin/posts/create"
-              className="admin-hero-button"
-            >
-              Create Post
+    <div className="space-y-6">
+      {/* Dashboard Top Hero Bar */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-5">
+        <div>
+          <h1 className="text-2xl font-bold font-serif tracking-tight text-foreground">Dashboard Overview</h1>
+          <p className="text-sm text-muted-foreground mt-1">
+            Quick insight into publication performance, active drafts, and reader traffic.
+          </p>
+        </div>
+        <div className="flex items-center gap-2">
+          <Button asChild size="sm" className="rounded-xl font-semibold gap-1.5">
+            <Link href="/admin/posts/create">
+              <Plus className="w-4 h-4" /> Create Post
             </Link>
-            <Link
-              href="/admin/posts"
-              className="admin-hero-button"
-            >
+          </Button>
+          <Button variant="outline" size="sm" asChild className="rounded-xl font-semibold">
+            <Link href="/admin/posts">
               Manage Posts
             </Link>
-          </div>
+          </Button>
         </div>
-      </header>
+      </div>
 
       {/* Stats Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         {stats.map((stat) => (
-          <div
-            key={stat.label}
-            className="admin-surface group p-6 transition-all duration-300 hover:-translate-y-1 hover:bg-slate-100 dark:hover:bg-slate-800/50"
-          >
-            <div className="flex items-center gap-4">
-              <div className={`${stat.color} p-3 rounded-2xl shadow-sm ring-1 ring-slate-500 dark:ring-white/60`}>
-                <stat.icon className="w-6 h-6 text-slate-950 dark:text-white" />
-              </div>
-              <div className="min-w-0">
-                <p className="text-2xl font-bold text-slate-950 dark:text-white tabular-nums">{stat.value}</p>
-                <p className="text-sm text-slate-500 dark:text-slate-400">{stat.label}</p>
-              </div>
-            </div>
-          </div>
+          <Card key={stat.label} className="transition-all hover:shadow-md">
+            <CardHeader className="flex flex-row items-center justify-between pb-2">
+              <CardTitle className="text-xs font-medium text-muted-foreground">{stat.label}</CardTitle>
+              <stat.icon className="h-4 w-4 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              <div className="text-2xl font-bold tabular-nums text-foreground">{stat.value}</div>
+              <p className="text-[11px] text-muted-foreground mt-1 truncate">{stat.subtext}</p>
+            </CardContent>
+          </Card>
         ))}
       </div>
 
-      {/* Views Chart */}
+      {/* Views Chart & Analytics Side Card */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
-        <div className="lg:col-span-2">
-          <ViewsChart days={7} showRangeControls={false} height={160} compact />
-        </div>
-        <div className="admin-surface-padded">
-          <h3 className="text-sm font-semibold text-slate-950 dark:text-white">Analytics</h3>
-          <p className="mt-2 text-sm text-slate-600 dark:text-slate-300 leading-6">
-            Open detailed trends, top posts, and export reports for editorial and ads decisions.
-          </p>
-          <Link
-            href="/admin/analytics"
-            className="mt-4 inline-flex items-center justify-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm transition-colors hover:text-slate-950 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-600 dark:hover:text-white"
-          >
-            Open Analytics →
-          </Link>
-        </div>
+        <Card className="lg:col-span-2 overflow-hidden">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base font-semibold">Traffic Trends</CardTitle>
+            <CardDescription className="text-xs">Views over the last 7 days</CardDescription>
+          </CardHeader>
+          <CardContent className="pt-2">
+            <ViewsChart days={7} showRangeControls={false} height={170} compact />
+          </CardContent>
+        </Card>
+
+        <Card className="flex flex-col justify-between">
+          <CardHeader>
+            <CardTitle className="text-base font-semibold">Analytics & Reports</CardTitle>
+            <CardDescription className="text-xs">
+              Deep dive into top performing articles, category trends, and reader engagement metrics.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <Button variant="secondary" className="w-full rounded-xl gap-2 text-xs font-semibold" asChild>
+              <Link href="/admin/analytics">
+                Open Analytics <ArrowUpRight className="w-3.5 h-3.5" />
+              </Link>
+            </Button>
+          </CardContent>
+        </Card>
       </div>
 
-      {/* Continue Writing (P3.2) */}
+      {/* Continue Writing (Active Drafts Recovery Widget) */}
       {(() => {
         const draftPostsList = posts
           .filter((p) => p.status === 'draft')
@@ -134,103 +137,117 @@ export default function AdminDashboardPage() {
         if (draftPostsList.length === 0) return null;
 
         return (
-          <div className="admin-surface overflow-hidden border-l-4 border-l-amber-500">
-            <div className="p-6 border-b border-slate-200/70 dark:border-slate-800/70 flex items-center justify-between">
+          <Card className="border-l-4 border-l-amber-500 overflow-hidden">
+            <CardHeader className="pb-3">
               <div className="flex items-center gap-2">
-                <PenLine className="w-5 h-5 text-amber-500" />
-                <div>
-                  <h2 className="text-base font-semibold text-slate-950 dark:text-white">
-                    Continue Writing
-                  </h2>
-                  <p className="text-xs text-slate-500 dark:text-slate-400">
-                    Pick up where you left off on your active draft articles.
-                  </p>
-                </div>
+                <PenLine className="w-4 h-4 text-amber-500" />
+                <CardTitle className="text-base font-semibold">Continue Writing</CardTitle>
               </div>
-            </div>
-
-            <div className="divide-y divide-slate-100 dark:divide-slate-800">
-              {draftPostsList.map((draft) => (
-                <div
-                  key={draft.id}
-                  className="flex items-center justify-between px-6 py-3.5 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors"
-                >
-                  <div className="min-w-0 flex-1">
-                    <h3 className="text-sm font-semibold text-slate-900 dark:text-white truncate">
-                      {draft.title || 'Untitled Draft'}
-                    </h3>
-                    <p className="text-xs text-slate-400 mt-0.5">
-                      Last modified{' '}
-                      {safeFormatDate(draft.updated_at, 'MMM d, yyyy · HH:mm')}
-                    </p>
-                  </div>
-                  <Link
-                    href={`/admin/posts/${draft.id}/edit`}
-                    className="ml-4 inline-flex items-center gap-1 text-xs font-semibold text-amber-600 hover:text-amber-700 dark:text-amber-400 dark:hover:text-amber-300 bg-amber-50 dark:bg-amber-900/20 px-3 py-1.5 rounded-lg border border-amber-200 dark:border-amber-900/40 transition-colors"
+              <CardDescription className="text-xs">
+                Pick up right where you left off on your recent draft articles.
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="divide-y divide-border">
+                {draftPostsList.map((draft) => (
+                  <div
+                    key={draft.id}
+                    className="flex items-center justify-between px-6 py-3.5 hover:bg-accent/50 transition-colors"
                   >
-                    <PenLine className="w-3.5 h-3.5" /> Continue →
-                  </Link>
-                </div>
-              ))}
-            </div>
-          </div>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="text-sm font-semibold text-foreground truncate">
+                        {draft.title || 'Untitled Draft'}
+                      </h3>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        Last modified {safeFormatDate(draft.updated_at, 'MMM d, yyyy · HH:mm')}
+                      </p>
+                    </div>
+                    <Button variant="outline" size="sm" className="ml-4 rounded-xl gap-1 text-xs text-amber-600 dark:text-amber-400 hover:text-amber-700 hover:bg-amber-50 dark:hover:bg-amber-950/40" asChild>
+                      <Link href={`/admin/posts/${draft.id}/edit`}>
+                        <PenLine className="w-3.5 h-3.5" /> Continue →
+                      </Link>
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            </CardContent>
+          </Card>
         );
       })()}
 
-      {/* Recent Posts */}
-      <div className="admin-surface overflow-hidden">
-        <div className="relative overflow-hidden border-b border-slate-200/70 p-6 dark:border-slate-800/70">
-          <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_0%,rgba(13,135,207,0.12),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.55),transparent)] dark:bg-[radial-gradient(circle_at_30%_0%,rgba(13,135,207,0.18),transparent_45%),linear-gradient(180deg,rgba(255,255,255,0.06),transparent)]" />
-          <div className="relative flex items-center justify-between">
-            <div>
-              <h2 className="text-lg font-semibold text-slate-950 dark:text-white">Recent Posts</h2>
-              <p className="mt-1 text-xs text-slate-500 dark:text-slate-400">Latest updates across drafts, scheduled, and published posts.</p>
-            </div>
-            <Link href="/admin/posts" className="mt-4 inline-flex items-center justify-center rounded-full bg-slate-100 px-4 py-2 text-sm font-semibold text-slate-500 shadow-sm transition-colors hover:text-slate-950 hover:bg-slate-300 dark:bg-slate-800 dark:text-slate-400 dark:hover:bg-slate-600 dark:hover:text-white">
+      {/* Recent Posts Table */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <div>
+            <CardTitle className="text-base font-semibold">Recent Posts</CardTitle>
+            <CardDescription className="text-xs">Latest updates across drafts, scheduled, and published posts.</CardDescription>
+          </div>
+          <Button variant="ghost" size="sm" className="text-xs font-semibold rounded-xl" asChild>
+            <Link href="/admin/posts">
               View all →
             </Link>
-          </div>
-        </div>
-        <div className="divide-y divide-slate-200 dark:divide-slate-700">
+          </Button>
+        </CardHeader>
+        <CardContent className="p-0">
           {recentPosts.length === 0 ? (
-            <div className="p-6 text-center text-sm text-slate-500 dark:text-slate-400">
-              No posts yet. <Link href="/admin/posts/create" className="text-primary-600 hover:underline">Create your first post!</Link>
+            <div className="p-6 text-center text-sm text-muted-foreground">
+              No posts yet. <Link href="/admin/posts/create" className="text-primary font-medium hover:underline">Create your first post!</Link>
             </div>
           ) : (
-            recentPosts.map((post) => (
-              <div key={post.id} className="flex items-center justify-between px-6 py-4 hover:bg-slate-50/80 dark:hover:bg-slate-800/50 transition-colors">
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-semibold text-slate-950 dark:text-white truncate">{post.title}</p>
-                  <div className="flex items-center gap-2 mt-0.5">
-                    <p className="text-xs text-slate-500 dark:text-slate-400">/{post.slug}</p>
-                    <span className="text-[10px] text-slate-300 dark:text-slate-600">•</span>
-                    <p className="text-xs text-slate-400">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[45%]">Title</TableHead>
+                  <TableHead>Status</TableHead>
+                  <TableHead>Date</TableHead>
+                  <TableHead className="text-right">Views</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {recentPosts.map((post) => (
+                  <TableRow key={post.id}>
+                    <TableCell className="font-medium">
+                      <p className="text-sm font-semibold text-foreground truncate max-w-md">{post.title}</p>
+                      <p className="text-xs text-muted-foreground truncate">/{post.slug}</p>
+                    </TableCell>
+                    <TableCell>
+                      <Badge
+                        variant={
+                          post.status === 'published'
+                            ? 'default'
+                            : post.status === 'scheduled'
+                              ? 'secondary'
+                              : 'outline'
+                        }
+                        className={
+                          post.status === 'published'
+                            ? 'bg-emerald-500/15 text-emerald-700 dark:text-emerald-400 hover:bg-emerald-500/25 border-0'
+                            : post.status === 'scheduled'
+                              ? 'bg-amber-500/15 text-amber-700 dark:text-amber-400 hover:bg-amber-500/25 border-0'
+                              : 'text-muted-foreground'
+                        }
+                      >
+                        {post.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground whitespace-nowrap">
                       {post.status === 'published' || post.status === 'scheduled'
                         ? safeFormatDate(post.published_at || post.created_at, 'MMM d, yyyy')
                         : safeFormatDate(post.created_at, 'MMM d, yyyy')
                       }
-                    </p>
-                  </div>
-                </div>
-                <div className="flex items-center gap-4 ml-4">
-                  <span className={`inline-flex px-2 py-0.5 rounded-full text-xs font-medium ${
-                    post.status === 'published'
-                      ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400'
-                      : post.status === 'scheduled'
-                        ? 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400'
-                        : 'bg-yellow-100 text-yellow-700 dark:bg-yellow-900/30 dark:text-yellow-400'
-                  }`}>
-                    {post.status}
-                  </span>
-                  <span className="text-xs text-slate-500 flex items-center gap-1">
-                    <Eye className="w-3.5 h-3.5" /> {post.views || 0}
-                  </span>
-                </div>
-              </div>
-            ))
+                    </TableCell>
+                    <TableCell className="text-right text-xs font-semibold tabular-nums">
+                      <span className="inline-flex items-center gap-1">
+                        <Eye className="w-3.5 h-3.5 text-muted-foreground" /> {post.views || 0}
+                      </span>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
           )}
-        </div>
-      </div>
+        </CardContent>
+      </Card>
     </div>
   );
 }
