@@ -7,7 +7,7 @@ import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag, Post, PostRevision } from '@/types';
 import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, History, RotateCcw, AlertCircle, PanelRightClose, PanelRightOpen, Eye } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave, type AutosaveData, type RestoreState, type AutosaveEnvelope } from '@/lib/editorUtils';
+import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave, safeFormatIntl, type AutosaveData, type RestoreState, type AutosaveEnvelope } from '@/lib/editorUtils';
 import { useToastStore } from '@/store/useToastStore';
 import { API_URL } from '@/lib/env';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -923,7 +923,7 @@ export default function EditPostPage() {
                             v{rev.revision_number} — {rev.title}
                           </p>
                           <p className="text-xs text-slate-400 mt-0.5">
-                            {revisionDateFormatter.format(new Date(rev.created_at))}
+                            {safeFormatIntl(rev.created_at, revisionDateFormatter)}
                           </p>
                           <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
                             <span className="rounded-full bg-slate-100 px-2 py-0.5 uppercase tracking-wide dark:bg-slate-700/60">
@@ -1091,7 +1091,7 @@ export default function EditPostPage() {
             <p className="text-sm text-slate-600 dark:text-slate-400">
               This will update your current editor content with version from{' '}
               <span className="font-medium text-slate-800 dark:text-slate-200">
-                {revisionDateFormatter.format(new Date(revisionToRestore.created_at))}
+                {safeFormatIntl(revisionToRestore.created_at, revisionDateFormatter)}
               </span>.
               The post will become unsaved until you click Update.
             </p>

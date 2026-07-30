@@ -13,6 +13,7 @@ import {
   Trash2,
   Upload,
 } from 'lucide-react';
+import { safeFormatIntl } from '@/lib/editorUtils';
 import SEOAnalyzer from '@/components/admin/SEOAnalyzer';
 import type { Category, Tag, PostRevision } from '@/types';
 
@@ -359,7 +360,7 @@ export function PostEditorSidebar({
                           v{rev.revision_number} — {rev.title}
                         </p>
                         <p className="text-xs text-slate-400 mt-0.5">
-                          {revisionDateFormatter.format(new Date(rev.created_at))}
+                          {safeFormatIntl(rev.created_at, revisionDateFormatter)}
                         </p>
                         <div className="mt-1 flex items-center gap-2 text-[11px] text-slate-400">
                           <span className="rounded-full bg-slate-100 px-2 py-0.5 uppercase tracking-wide dark:bg-slate-700/60">

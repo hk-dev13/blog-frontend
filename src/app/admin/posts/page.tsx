@@ -11,6 +11,7 @@ import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
 import AdminLoadError from '@/components/admin/AdminLoadError';
 import { useAppStore } from '@/store/useAppStore';
 import { useToastStore } from '@/store/useToastStore';
+import { safeFormatDate } from '@/lib/editorUtils';
 
 const LIMIT = 10;
 
@@ -1058,7 +1059,7 @@ export default function AdminPostsPage() {
                                 {post.published_at && (
                                   <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-2 bg-slate-900 dark:bg-slate-700 text-white text-xs rounded-lg shadow-lg opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-50">
                                     <div className="font-medium">Scheduled for:</div>
-                                    <div>{format(new Date(post.published_at), 'MMM d, yyyy • HH:mm')} WIB</div>
+                                    <div>{safeFormatDate(post.published_at, 'MMM d, yyyy • HH:mm')} WIB</div>
                                     <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-slate-900 dark:border-t-slate-700" />
                                   </div>
                                 )}
@@ -1079,13 +1080,13 @@ export default function AdminPostsPage() {
                           <td className="px-4 py-4 whitespace-nowrap text-sm text-slate-500 dark:text-slate-400">
                             {post.status === 'scheduled' && post.published_at ? (
                               <div>
-                                <div>{format(new Date(post.published_at), 'MMM d, yyyy')}</div>
-                                <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">{format(new Date(post.published_at), 'HH:mm')} WIB</div>
+                                <div>{safeFormatDate(post.published_at, 'MMM d, yyyy')}</div>
+                                <div className="text-xs text-amber-600 dark:text-amber-400 font-medium">{safeFormatDate(post.published_at, 'HH:mm')} WIB</div>
                               </div>
                             ) : post.status === 'published' && post.published_at ? (
-                              format(new Date(post.published_at), 'MMM d, yyyy')
+                              safeFormatDate(post.published_at, 'MMM d, yyyy')
                             ) : (
-                              format(new Date(post.created_at), 'MMM d, yyyy')
+                              safeFormatDate(post.created_at, 'MMM d, yyyy')
                             )}
                           </td>
                         )}

@@ -5,11 +5,23 @@ import {
   getContentStats,
   getAutosaveKey,
   getRestoreState,
+  safeFormatDate,
+  safeFormatIntl,
   type AutosaveEnvelope,
   type AutosaveData,
 } from '../editorUtils';
 
 describe('editorUtils', () => {
+  it('formats dates safely without throwing RangeError on invalid values', () => {
+    assert.strictEqual(safeFormatDate(null), '—');
+    assert.strictEqual(safeFormatDate(undefined), '—');
+    assert.strictEqual(safeFormatDate('invalid-date'), '—');
+    assert.strictEqual(safeFormatDate('2026-07-30T12:00:00Z', 'yyyy-MM-dd'), '2026-07-30');
+
+    const fmt = new Intl.DateTimeFormat('en-US', { dateStyle: 'medium' });
+    assert.strictEqual(safeFormatIntl(null, fmt), '—');
+    assert.strictEqual(safeFormatIntl('invalid-date', fmt), '—');
+  });
   it('generates clean slugs matching backend rules', () => {
     assert.strictEqual(generateSlug('Hello World! 123'), 'hello-world-123');
     assert.strictEqual(generateSlug('  ---  Multiple   Spaces --- '), 'multiple-spaces');

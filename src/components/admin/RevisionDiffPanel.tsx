@@ -4,6 +4,7 @@ import { useMemo } from 'react';
 import { diffWords, type Change } from 'diff';
 import { X, RotateCcw, FileText, Calendar, User } from 'lucide-react';
 import type { PostRevision } from '@/types';
+import { safeFormatIntl } from '@/lib/editorUtils';
 
 interface RevisionDiffPanelProps {
   revision: PostRevision | null;
@@ -78,7 +79,7 @@ export function RevisionDiffPanel({
             <p className="text-xs text-slate-500 dark:text-slate-400 mt-1 flex items-center gap-3">
               <span className="flex items-center gap-1">
                 <Calendar className="w-3.5 h-3.5" />
-                {revisionDateFormatter.format(new Date(revision.created_at))}
+                {safeFormatIntl(revision.created_at, revisionDateFormatter)}
               </span>
               <span>·</span>
               <span className="flex items-center gap-1 uppercase font-mono text-[11px]">

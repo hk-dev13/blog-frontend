@@ -4,11 +4,11 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import Link from 'next/link';
-import { format } from 'date-fns';
 import { FileText, Eye, TrendingUp, PenLine, Loader2, Calendar } from 'lucide-react';
 import ViewsChart from '@/components/admin/ViewsChart';
 import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
 import AdminLoadError from '@/components/admin/AdminLoadError';
+import { safeFormatDate } from '@/lib/editorUtils';
 
 export default function AdminDashboardPage() {
   const { data, isLoading, error, refetch } = useQuery({
@@ -47,6 +47,12 @@ export default function AdminDashboardPage() {
     { label: 'Drafts', value: draftPosts, icon: PenLine, color: 'bg-slate-100 dark:bg-slate-800' },
     { label: 'Total Views', value: totalViews, icon: Eye, color: 'bg-slate-100 dark:bg-slate-800' },
   ];
+
+  const getSafeTime = (d?: string) => {
+    if (!d) return 0;
+    const t = new Date(d).getTime();
+    return Number.isNaN(t) ? 0 : t;
+  };
 
   return (
     <div className="space-y-8">
@@ -122,7 +128,7 @@ export default function AdminDashboardPage() {
       {(() => {
         const draftPostsList = posts
           .filter((p) => p.status === 'draft')
-          .sort((a, b) => new Date(b.updated_at).getTime() - new Date(a.updated_at).getTime())
+          .sort((a, b) => getSafeTime(b.updated_at) - getSafeTime(a.updated_at))
           .slice(0, 3);
 
         if (draftPostsList.length === 0) return null;
@@ -155,7 +161,7 @@ export default function AdminDashboardPage() {
                     </h3>
                     <p className="text-xs text-slate-400 mt-0.5">
                       Last modified{' '}
-                      {format(new Date(draft.updated_at), 'MMM d, yyyy · HH:mm')}
+                      {safeFormatDate(draft.updated_at, 'MMM d, yyyy · HH:mm')}
                     </p>
                   </div>
                   <Link
@@ -200,8 +206,8 @@ export default function AdminDashboardPage() {
                     <span className="text-[10px] text-slate-300 dark:text-slate-600">•</span>
                     <p className="text-xs text-slate-400">
                       {post.status === 'published' || post.status === 'scheduled'
-                        ? format(new Date(post.published_at || post.created_at), 'MMM d, yyyy')
-                        : format(new Date(post.created_at), 'MMM d, yyyy')
+                        ? safeFormatDate(post.published_at || post.created_at, 'MMM d, yyyy')
+                        : safeFormatDate(post.created_at, 'MMM d, yyyy')
                       }
                     </p>
                   </div>

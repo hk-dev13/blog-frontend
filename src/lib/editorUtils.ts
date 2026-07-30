@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useCallback, useMemo, useState } from 'react';
+import { format } from 'date-fns';
 
 // ──────────────────────────────────────────
 // Slug generator (mirror backend logic)
@@ -254,3 +255,46 @@ export function getLocalDateTimeMin(): string {
   const local = new Date(now.getTime() - now.getTimezoneOffset() * 60_000);
   return local.toISOString().slice(0, 16);
 }
+
+// ──────────────────────────────────────────
+// Safe Date Formatting (RangeError-proof)
+// ──────────────────────────────────────────
+
+/**
+ * Formats a date string/number/Date using `date-fns/format` without throwing
+ * `RangeError: Invalid time value` if the date is null, undefined, or invalid.
+ */
+export function safeFormatDate(
+  dateValue: string | number | Date | null | undefined,
+  formatStr: string = 'MMM d, yyyy',
+  fallback: string = '—',
+): string {
+  if (!dateValue) return fallback;
+  try {
+    const d = new Date(dateValue);
+    if (Number.isNaN(d.getTime())) return fallback;
+    return format(d, formatStr);
+  } catch {
+    return fallback;
+  }
+}
+
+/**
+ * Formats a date using `Intl.DateTimeFormat` safely without throwing
+ * `RangeError: Invalid time value` if the date is null, undefined, or invalid.
+ */
+export function safeFormatIntl(
+  dateValue: string | number | Date | null | undefined,
+  formatter: Intl.DateTimeFormat,
+  fallback: string = '—',
+): string {
+  if (!dateValue) return fallback;
+  try {
+    const d = new Date(dateValue);
+    if (Number.isNaN(d.getTime())) return fallback;
+    return formatter.format(d);
+  } catch {
+    return fallback;
+  }
+}
+
