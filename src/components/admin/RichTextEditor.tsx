@@ -1613,9 +1613,9 @@ function CustomFloatingMenu({
       const coords = editor.view.coordsAtPos($anchor.pos);
 
       const estimatedWidth = 320;
-      let top = Math.max(0, coords.top - editorRect.top - 6);
+      const top = Math.max(0, coords.top - editorRect.top - 6);
       const maxLeft = Math.max(0, editorRect.width - estimatedWidth - 8);
-      let left = Math.min(Math.max(0, coords.left - editorRect.left + 8), maxLeft);
+      const left = Math.min(Math.max(0, coords.left - editorRect.left + 8), maxLeft);
 
       setMenuPos({ top, left, visible: true });
     } catch {
