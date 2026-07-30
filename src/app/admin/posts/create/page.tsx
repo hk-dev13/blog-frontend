@@ -255,7 +255,7 @@ export default function CreatePostPage() {
   }
 
   return (
-    <div className="max-w-7xl mx-auto space-y-8">
+    <div className="w-full space-y-6">
       <header className="admin-page-hero">
         <div className="admin-page-hero-bg" />
         <div className="admin-page-hero-content">
@@ -384,9 +384,9 @@ export default function CreatePostPage() {
 	      </div>
 	    </header>
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
         {/* Main Editor Area */}
-        <div className={`${showOptionsSidebar ? 'lg:col-span-9' : 'lg:col-span-12 max-w-5xl mx-auto w-full'} space-y-6 transition-all duration-300`}>
+        <div className={`${showOptionsSidebar ? 'lg:col-span-9 2xl:col-span-10' : 'lg:col-span-12 w-full'} space-y-6 transition-all duration-300`}>
           <div className="admin-surface-padded space-y-4">
             <div>
               <label className="block text-sm font-medium text-slate-700 dark:text-slate-300 mb-1">Title</label>
@@ -484,7 +484,7 @@ export default function CreatePostPage() {
 
         {/* Sidebar Options */}
         {showOptionsSidebar && (
-          <div className="lg:col-span-3 space-y-6 animate-in fade-in duration-200">
+          <div className="lg:col-span-3 2xl:col-span-2 space-y-6 animate-in fade-in duration-200">
           {/* Cover Image Upload */}
           <div className="admin-surface-padded space-y-4">
             <h3 className="text-sm font-medium text-slate-700 dark:text-slate-300">Cover Image</h3>

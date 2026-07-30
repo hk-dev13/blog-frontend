@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { Search, Moon, Sun } from 'lucide-react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { useState, useEffect, FormEvent } from 'react';
 import LogoMark from '@/components/shared/LogoMark';
 import { useTheme } from '@/components/ThemeProvider';
@@ -11,12 +11,17 @@ export default function Navbar() {
   const { theme, setTheme, systemTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const router = useRouter();
+  const pathname = usePathname();
   const [searchQuery, setSearchQuery] = useState('');
 
   // Avoid hydration mismatch by waiting for mount
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   const handleSearch = (e: FormEvent) => {
     e.preventDefault();

@@ -1,4 +1,7 @@
+'use client';
+
 import Link from 'next/link';
+import { usePathname } from 'next/navigation';
 import { Globe, Mail } from 'lucide-react';
 import LogoMark from '@/components/shared/LogoMark';
 
@@ -25,7 +28,12 @@ const TOPIC_LINKS = [
 ];
 
 export default function Footer() {
+  const pathname = usePathname();
   const currentYear = new Date().getUTCFullYear();
+
+  if (pathname?.startsWith('/admin')) {
+    return null;
+  }
 
   return (
     <footer className="border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-950 mt-auto">

@@ -843,7 +843,7 @@ export default function RichTextEditor({
     content: value,          // initial content — markdown string
     editorProps: {
       attributes: {
-        class: 'prose prose-lg prose-slate dark:prose-invert prose-headings:font-serif prose-a:text-primary-600 max-w-none min-h-[400px] px-4 py-6 focus:outline-none leading-relaxed',
+        class: 'prose prose-lg prose-slate dark:prose-invert prose-headings:font-serif prose-a:text-primary-600 max-w-none min-h-[550px] px-6 py-6 focus:outline-none leading-relaxed',
       },
       handleKeyDown: (_view, event) => {
         const modifierPressed = event.metaKey || event.ctrlKey;
