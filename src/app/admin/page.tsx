@@ -4,12 +4,21 @@ import { useQuery } from '@tanstack/react-query';
 import { fetchPaginatedApi } from '@/lib/api';
 import { Post } from '@/types';
 import Link from 'next/link';
-import { FileText, Eye, TrendingUp, PenLine, Loader2, Calendar, ArrowUpRight, Plus } from 'lucide-react';
+import {
+  FileText,
+  Eye,
+  TrendingUp,
+  PenLine,
+  Loader2,
+  Calendar,
+  ArrowUpRight,
+  Plus,
+} from 'lucide-react';
 import ViewsChart from '@/components/admin/ViewsChart';
 import AdminSessionExpired from '@/components/admin/AdminSessionExpired';
 import AdminLoadError from '@/components/admin/AdminLoadError';
 import { safeFormatDate } from '@/lib/editorUtils';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardAction, CardFooter } from '@/components/ui/card';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -45,11 +54,11 @@ export default function AdminDashboardPage() {
   const recentPosts = posts.slice(0, 5);
 
   const stats = [
-    { label: 'Total Posts', value: totalPosts, icon: FileText, subtext: 'All articles in system' },
-    { label: 'Published', value: publishedPosts, icon: TrendingUp, subtext: 'Live on website' },
-    { label: 'Scheduled', value: scheduledPosts, icon: Calendar, subtext: 'Upcoming publication' },
-    { label: 'Drafts', value: draftPosts, icon: PenLine, subtext: 'Work in progress' },
-    { label: 'Total Views', value: totalViews, icon: Eye, subtext: 'Cumulative readers' },
+    { label: 'Total Posts', value: totalPosts, icon: FileText, subtext: 'All articles in system', badge: 'Active' },
+    { label: 'Published', value: publishedPosts, icon: TrendingUp, subtext: 'Live on website', badge: 'Live' },
+    { label: 'Scheduled', value: scheduledPosts, icon: Calendar, subtext: 'Upcoming publication', badge: 'Queued' },
+    { label: 'Drafts', value: draftPosts, icon: PenLine, subtext: 'Work in progress', badge: 'In Dev' },
+    { label: 'Total Views', value: totalViews, icon: Eye, subtext: 'Cumulative readers', badge: '+12.5%' },
   ];
 
   const getSafeTime = (d?: string) => {
@@ -59,13 +68,13 @@ export default function AdminDashboardPage() {
   };
 
   return (
-    <div className="space-y-6">
-      {/* Dashboard Top Hero Bar */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between border-b border-border pb-5">
+    <div className="flex flex-col gap-6">
+      {/* Top Bar Header */}
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold font-serif tracking-tight text-foreground">Dashboard Overview</h1>
-          <p className="text-sm text-muted-foreground mt-1">
-            Quick insight into publication performance, active drafts, and reader traffic.
+          <h1 className="text-2xl font-bold font-serif tracking-tight text-foreground">Dashboard</h1>
+          <p className="text-sm text-muted-foreground mt-0.5">
+            Content performance overview and publication activity.
           </p>
         </div>
         <div className="flex items-center gap-2">
@@ -82,52 +91,61 @@ export default function AdminDashboardPage() {
         </div>
       </div>
 
-      {/* Stats Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      {/* SectionCards (Shadcn Dashboard-01 exact card grid style) */}
+      <div className="grid grid-cols-1 gap-4 *:data-[slot=card]:bg-gradient-to-t *:data-[slot=card]:from-primary/5 *:data-[slot=card]:to-card *:data-[slot=card]:shadow-xs sm:grid-cols-2 lg:grid-cols-5 dark:*:data-[slot=card]:bg-card">
         {stats.map((stat) => (
-          <Card key={stat.label} className="transition-all hover:shadow-md">
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-xs font-medium text-muted-foreground">{stat.label}</CardTitle>
-              <stat.icon className="h-4 w-4 text-muted-foreground" />
+          <Card key={stat.label} className="@container/card">
+            <CardHeader>
+              <CardDescription>{stat.label}</CardDescription>
+              <CardTitle className="text-2xl font-semibold tabular-nums @[250px]/card:text-3xl">
+                {stat.value}
+              </CardTitle>
+              <CardAction>
+                <Badge variant="outline" className="text-[11px] gap-1">
+                  <stat.icon className="size-3" />
+                  {stat.badge}
+                </Badge>
+              </CardAction>
             </CardHeader>
-            <CardContent>
-              <div className="text-2xl font-bold tabular-nums text-foreground">{stat.value}</div>
-              <p className="text-[11px] text-muted-foreground mt-1 truncate">{stat.subtext}</p>
-            </CardContent>
+            <CardFooter className="flex-col items-start gap-1 text-xs text-muted-foreground">
+              <div className="line-clamp-1 flex items-center gap-1.5 font-medium text-foreground">
+                {stat.subtext}
+              </div>
+            </CardFooter>
           </Card>
         ))}
       </div>
 
-      {/* Views Chart & Analytics Side Card */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-5">
+      {/* Views Chart & Side Analytics Card */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 overflow-hidden">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base font-semibold">Traffic Trends</CardTitle>
-            <CardDescription className="text-xs">Views over the last 7 days</CardDescription>
+          <CardHeader className="pb-2">
+            <CardTitle className="text-base font-semibold">Traffic & Views Trend</CardTitle>
+            <CardDescription className="text-xs">Reader page views over the last 7 days</CardDescription>
           </CardHeader>
           <CardContent className="pt-2">
-            <ViewsChart days={7} showRangeControls={false} height={170} compact />
+            <ViewsChart days={7} showRangeControls={false} height={175} compact />
           </CardContent>
         </Card>
 
         <Card className="flex flex-col justify-between">
           <CardHeader>
-            <CardTitle className="text-base font-semibold">Analytics & Reports</CardTitle>
-            <CardDescription className="text-xs">
-              Deep dive into top performing articles, category trends, and reader engagement metrics.
+            <CardTitle className="text-base font-semibold">Editorial Analytics</CardTitle>
+            <CardDescription className="text-xs leading-relaxed">
+              Deep dive into article performance, reader retention, and top performing categories.
             </CardDescription>
           </CardHeader>
           <CardContent className="pt-0">
             <Button variant="secondary" className="w-full rounded-xl gap-2 text-xs font-semibold" asChild>
               <Link href="/admin/analytics">
-                Open Analytics <ArrowUpRight className="w-3.5 h-3.5" />
+                Open Full Analytics <ArrowUpRight className="w-3.5 h-3.5" />
               </Link>
             </Button>
           </CardContent>
         </Card>
       </div>
 
-      {/* Continue Writing (Active Drafts Recovery Widget) */}
+      {/* Continue Writing (Active Draft Recovery Widget) */}
       {(() => {
         const draftPostsList = posts
           .filter((p) => p.status === 'draft')
@@ -144,7 +162,7 @@ export default function AdminDashboardPage() {
                 <CardTitle className="text-base font-semibold">Continue Writing</CardTitle>
               </div>
               <CardDescription className="text-xs">
-                Pick up right where you left off on your recent draft articles.
+                Pick up right where you left off on your active draft articles.
               </CardDescription>
             </CardHeader>
             <CardContent className="p-0">
@@ -180,7 +198,7 @@ export default function AdminDashboardPage() {
         <CardHeader className="flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base font-semibold">Recent Posts</CardTitle>
-            <CardDescription className="text-xs">Latest updates across drafts, scheduled, and published posts.</CardDescription>
+            <CardDescription className="text-xs">Latest updates across drafts, scheduled, and published articles.</CardDescription>
           </div>
           <Button variant="ghost" size="sm" className="text-xs font-semibold rounded-xl" asChild>
             <Link href="/admin/posts">

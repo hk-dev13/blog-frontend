@@ -36,7 +36,7 @@ function PasswordInput({
 
   return (
     <div>
-      <label htmlFor={id} className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+      <label htmlFor={id} className="block text-sm font-medium text-foreground">
         {label}
       </label>
       <div className="relative mt-2">
@@ -47,13 +47,13 @@ function PasswordInput({
           minLength={minLength}
           value={value}
           onChange={(event) => onChange(event.target.value)}
-          className="w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 pr-12 text-sm text-slate-950 outline-none transition-colors focus:ring-1 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+          className="w-full rounded-xl border border-input bg-background px-4 py-2.5 pr-12 text-sm text-foreground outline-none transition-colors focus:ring-1 focus:ring-ring"
           required
         />
         <button
           type="button"
           onClick={() => setVisible(value => !value)}
-          className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-slate-500 transition-colors hover:bg-slate-100 hover:text-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+          className="absolute right-2 top-1/2 grid h-8 w-8 -translate-y-1/2 place-items-center rounded-lg text-muted-foreground transition-colors hover:bg-accent hover:text-foreground"
           aria-label={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
           title={visible ? `Hide ${label.toLowerCase()}` : `Show ${label.toLowerCase()}`}
         >
@@ -182,12 +182,12 @@ export default function AdminSettingsPage() {
           className="admin-surface-padded"
         >
           <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-900 shadow-sm ring-2 ring-white/40 dark:text-slate-300 dark:bg-slate-800 dark:ring-white/5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-muted text-foreground shadow-xs border border-border">
               <Mail className="h-5 w-5" />
             </span>
             <div>
-              <h2 className="text-lg font-bold text-slate-950 dark:text-white">Login email</h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+              <h2 className="text-lg font-bold text-foreground">Login email</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 This email is used to sign in to the admin panel.
               </p>
             </div>
@@ -195,7 +195,7 @@ export default function AdminSettingsPage() {
 
           <div className="mt-6 space-y-4">
             <div>
-              <label htmlFor="settings-email" className="block text-sm font-medium text-slate-700 dark:text-slate-300">
+              <label htmlFor="settings-email" className="block text-sm font-medium text-foreground">
                 Your email
               </label>
               <input
@@ -204,7 +204,7 @@ export default function AdminSettingsPage() {
                 autoComplete="email"
                 value={emailForm.email}
                 onChange={(event) => setEmailForm(prev => ({ ...prev, email: event.target.value }))}
-                className="mt-2 w-full rounded-xl border border-slate-200 bg-slate-50 px-4 py-2.5 text-sm text-slate-950 outline-none transition-colors focus:ring-1 focus:ring-primary-500 dark:border-slate-700 dark:bg-slate-900 dark:text-white"
+                className="mt-2 w-full rounded-xl border border-input bg-background px-4 py-2.5 text-sm text-foreground outline-none transition-colors focus:ring-1 focus:ring-ring"
                 required
               />
             </div>
@@ -221,7 +221,7 @@ export default function AdminSettingsPage() {
           <button
             type="submit"
             disabled={emailMutation.isPending}
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {emailMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save email
@@ -233,12 +233,12 @@ export default function AdminSettingsPage() {
           className="admin-surface-padded"
         >
           <div className="flex items-start gap-3">
-            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-slate-100 text-slate-900 shadow-sm ring-2 ring-white/40 dark:text-slate-300 dark:bg-slate-800 dark:ring-white/5">
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-2xl bg-muted text-foreground shadow-xs border border-border">
               <ShieldCheck className="h-5 w-5" />
             </span>
             <div>
-              <h2 className="text-lg font-bold text-slate-950 dark:text-white">Password</h2>
-              <p className="mt-1 text-sm leading-6 text-slate-600 dark:text-slate-400">
+              <h2 className="text-lg font-bold text-foreground">Password</h2>
+              <p className="mt-1 text-sm leading-6 text-muted-foreground">
                 Choose a new password after confirming your current one.
               </p>
             </div>
@@ -275,7 +275,7 @@ export default function AdminSettingsPage() {
           <button
             type="submit"
             disabled={passwordMutation.isPending}
-            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-slate-100 px-4 py-2.5 text-sm font-semibold text-slate-900 shadow-sm transition-colors hover:bg-slate-200 disabled:cursor-not-allowed disabled:opacity-70 dark:bg-slate-900 dark:text-slate-400 dark:hover:bg-slate-800 dark:hover:text-white"
+            className="mt-6 inline-flex items-center justify-center gap-2 rounded-full bg-primary px-5 py-2.5 text-sm font-semibold text-primary-foreground shadow-sm transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-70"
           >
             {passwordMutation.isPending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Save className="h-4 w-4" />}
             Save password
