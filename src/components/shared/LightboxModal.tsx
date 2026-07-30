@@ -181,7 +181,7 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
         onMouseLeave={handleMouseUp}
         onDoubleClick={handleDoubleClick}
         onClick={(e) => e.stopPropagation()}
-        className={`relative flex-1 w-full max-w-6xl flex items-center justify-center overflow-hidden my-2 ${
+        className={`relative flex-1 w-full h-full flex items-center justify-center overflow-hidden my-2 ${
           scale > 1 ? (isDragging ? 'cursor-grabbing' : 'cursor-grab') : 'cursor-zoom-in'
         }`}
       >
@@ -200,7 +200,7 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
                 src={media.src}
                 alt={media.alt || 'Enlarged image'}
                 draggable={false}
-                className="max-h-[75vh] max-w-full object-contain rounded-xl shadow-2xl border border-slate-700/30 select-none pointer-events-auto"
+                className="max-h-[82vh] max-w-[92vw] w-auto h-auto object-contain rounded-xl shadow-2xl border border-slate-700/30 select-none pointer-events-auto"
               />
               {media.caption && scale === 1 && (
                 <p className="mt-3 text-sm text-slate-300 text-center font-sans italic max-w-2xl px-4 bg-slate-900/60 py-1.5 px-4 rounded-full border border-slate-800 pointer-events-none">
@@ -211,11 +211,11 @@ export default function LightboxModal({ media, onClose }: LightboxModalProps) {
           )}
 
           {media.type === 'mermaid' && media.svgContent && (
-            <div className="w-full flex flex-col items-center">
-              <div className="bg-slate-900/90 dark:bg-slate-950 p-6 md:p-10 rounded-2xl border border-slate-800 shadow-2xl flex justify-center items-center [&_svg]:max-w-full [&_svg]:h-auto select-none pointer-events-auto">
+            <div className="w-full flex flex-col items-center justify-center">
+              <div className="w-full max-w-[92vw] max-h-[82vh] bg-slate-900/90 dark:bg-slate-950 p-6 md:p-10 rounded-2xl border border-slate-800 shadow-2xl flex justify-center items-center [&_svg]:w-full [&_svg]:max-w-[85vw] [&_svg]:h-auto [&_svg]:max-h-[78vh] [&_svg]:object-contain select-none pointer-events-auto">
                 <div
                   dangerouslySetInnerHTML={{ __html: media.svgContent }}
-                  className="flex justify-center"
+                  className="w-full flex justify-center items-center"
                 />
               </div>
             </div>
