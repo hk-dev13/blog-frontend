@@ -6,6 +6,7 @@ import {
   type AutosaveData,
   type RestoreState,
   type AutosaveEnvelope,
+  type AutosaveRestoreCandidate,
 } from '@/lib/editorUtils';
 import type { usePostEditorForm } from './usePostEditorForm';
 
@@ -26,10 +27,7 @@ export function usePostAutosave({
   form,
   enabled = true,
 }: UsePostAutosaveOptions) {
-  const [autosaveRestoreState, setAutosaveRestoreState] = useState<{
-    state: RestoreState;
-    envelope: AutosaveEnvelope;
-  } | null>(null);
+  const [autosaveRestoreState, setAutosaveRestoreState] = useState<AutosaveRestoreCandidate | null>(null);
 
   const autosaveData: AutosaveData = {
     title: form.title,
@@ -49,8 +47,8 @@ export function usePostAutosave({
   };
 
   const handleRestoreAvailable = useCallback(
-    (state: RestoreState, envelope: AutosaveEnvelope) => {
-      setAutosaveRestoreState({ state, envelope });
+    (candidate: AutosaveRestoreCandidate) => {
+      setAutosaveRestoreState(candidate);
     },
     [],
   );
@@ -83,13 +81,16 @@ export function usePostAutosave({
     if (p.slug) {
       form.setSlug(p.slug);
     }
+    autosaveRestoreState.accept(p);
     setAutosaveRestoreState(null);
   }, [autosaveRestoreState, form]);
 
   const handleDiscard = useCallback(() => {
-    clearSave();
+    if (autosaveRestoreState) {
+      autosaveRestoreState.discard();
+    }
     setAutosaveRestoreState(null);
-  }, [clearSave]);
+  }, [autosaveRestoreState]);
 
   const autosaveLabel =
     localStatus === 'saving'

@@ -3,7 +3,7 @@
 import type { AutosaveEnvelope, RestoreState } from '@/lib/editorUtils';
 
 interface AutosaveRestorePromptProps {
-  restoreState: RestoreState;
+  state: RestoreState;
   envelope: AutosaveEnvelope;
   onRestore: () => void;
   onDiscard: () => void;
@@ -14,15 +14,15 @@ interface AutosaveRestorePromptProps {
  * Handles both 'safe' and 'conflict' states (where server version has changed).
  */
 export function AutosaveRestorePrompt({
-  restoreState,
+  state,
   envelope,
   onRestore,
   onDiscard,
 }: AutosaveRestorePromptProps) {
-  if (restoreState === 'none') return null;
+  if (state === 'none') return null;
 
   const minutesAgo = Math.max(1, Math.round((Date.now() - envelope.savedAt) / 60000));
-  const isConflict = restoreState === 'conflict';
+  const isConflict = state === 'conflict';
 
   return (
     <div className={`rounded-xl border p-4 transition-all ${

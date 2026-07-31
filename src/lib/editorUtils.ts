@@ -89,13 +89,7 @@ export function getAutosaveKey(postId: string | 'new'): string {
   return `admin-post-autosave:${postId}`;
 }
 
-function hasMeaningfulContent(payload: AutosaveData): boolean {
-  return Boolean(
-    payload.title.trim() ||
-    payload.content.trim() ||
-    payload.excerpt.trim(),
-  );
-}
+
 
 /**
  * Determines whether a recovered autosave envelope should be offered for
@@ -142,6 +136,31 @@ export type LocalAutosaveStatus = 'idle' | 'dirty' | 'saving' | 'saved' | 'error
  */
 export type AutosaveStatus = LocalAutosaveStatus;
 
+export interface AutosaveRestoreCandidate {
+  state: RestoreState;
+  envelope: AutosaveEnvelope;
+  accept: (restoredData: AutosaveData) => void;
+  discard: () => void;
+}
+
+export function hasMeaningfulContent(payload: AutosaveData): boolean {
+  return Boolean(
+    payload.title?.trim() ||
+    payload.content?.trim() ||
+    payload.excerpt?.trim() ||
+    payload.metaTitle?.trim() ||
+    payload.metaDescription?.trim() ||
+    payload.canonicalUrl?.trim() ||
+    payload.coverImageUrl?.trim() ||
+    payload.coverImageAlt?.trim() ||
+    payload.focusKeyword?.trim() ||
+    payload.isFeatured ||
+    payload.scheduleDate ||
+    payload.selectedCategories?.length ||
+    payload.selectedTags?.length
+  );
+}
+
 export function useAutosave(
   postId: string | 'new',
   data: AutosaveData,
@@ -151,7 +170,7 @@ export function useAutosave(
    * The caller is responsible for rendering the restore UI
    * (e.g. `AutosaveRestorePrompt`). No browser dialog is used here.
    */
-  onRestoreAvailable: (state: RestoreState, envelope: AutosaveEnvelope) => void,
+  onRestoreAvailable: (candidate: AutosaveRestoreCandidate) => void,
   /**
    * ISO string of the server post's `updated_at` field, used for conflict
    * detection in edit mode. Pass `null` for create mode.
@@ -168,43 +187,97 @@ export function useAutosave(
   const lastSavedSnapshotRef = useRef('');
   const saveTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
   const snapshot = useMemo(() => JSON.stringify(data), [data]);
+  
+  // State refs to manage race-conditions
+  const restorePendingRef = useRef(false);
+  const restoredSnapshotRef = useRef<string | null>(null);
+  const clearedSnapshotRef = useRef<string | null>(null);
+  const restoreCheckedKeyRef = useRef<string | null>(null);
 
-  // On mount: check for a saved autosave and notify caller
+  // Track latest data for sync ops
+  const latestDataRef = useRef(data);
+  const latestServerUpdatedRef = useRef(serverUpdatedAt);
+  
+  useEffect(() => {
+    latestDataRef.current = data;
+    latestServerUpdatedRef.current = serverUpdatedAt;
+  }, [data, serverUpdatedAt]);
+
+  const acceptRestore = useCallback((restoredData: AutosaveData) => {
+    const restoredSnapshot = JSON.stringify(restoredData);
+    lastSavedSnapshotRef.current = restoredSnapshot;
+    latestDataRef.current = restoredData;
+    restorePendingRef.current = false;
+    restoredSnapshotRef.current = restoredSnapshot;
+    setLastSavedAt(Date.now());
+    setStatus('saved');
+  }, []);
+
+  const discardRestore = useCallback(() => {
+    const currentSnapshot = JSON.stringify(latestDataRef.current);
+    try { localStorage.removeItem(key); } catch {}
+    restorePendingRef.current = false;
+    lastSavedSnapshotRef.current = currentSnapshot; // Set baseline
+    setLastSavedAt(null);
+    setStatus('idle');
+  }, [key]);
+
+  // On mount or when serverUpdatedAt becomes available: check for saved autosave
   useEffect(() => {
     if (!enabled) return;
+    if (postId !== 'new' && !serverUpdatedAt) return;
+    
+    const identity = postId === 'new' ? `${key}:new` : `${key}:${serverUpdatedAt}`;
+    if (restoreCheckedKeyRef.current === identity) return;
+    restoreCheckedKeyRef.current = identity;
+
     try {
       const raw = localStorage.getItem(key);
       if (!raw) return;
       const envelope: AutosaveEnvelope = JSON.parse(raw);
       const restoreState = getRestoreState(envelope, serverUpdatedAt);
       if (restoreState !== 'none') {
-        lastSavedSnapshotRef.current = JSON.stringify(envelope.payload);
-        setLastSavedAt(envelope.savedAt);
-        setStatus('saved');
+        restorePendingRef.current = true;
         // Delegate UI to caller — no browser confirm() dialog
-        onRestoreAvailableRef.current(restoreState, envelope);
+        onRestoreAvailableRef.current({
+          state: restoreState,
+          envelope,
+          accept: acceptRestore,
+          discard: discardRestore,
+        });
       }
     } catch {/* malformed localStorage entry — silently ignore */}
-    // serverUpdatedAt deliberately excluded: we only check on mount,
-    // subsequent changes to serverUpdatedAt should not re-trigger.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [key, enabled]);
+  }, [key, postId, enabled, serverUpdatedAt, acceptRestore, discardRestore]);
 
   // Autosave after changes settle (1.2 s debounce)
   useEffect(() => {
-    if (!enabled) return;
+    if (!enabled || restorePendingRef.current) return;
     if (initialRenderRef.current) {
       initialRenderRef.current = false;
       return;
     }
-    if (!data.title && !data.content) {
+
+    // Unblock hook after accepted restore applies to the form
+    if (restoredSnapshotRef.current && snapshot === restoredSnapshotRef.current) {
+      lastSavedSnapshotRef.current = snapshot;
+      restoredSnapshotRef.current = null;
+      setStatus('saved');
+      return;
+    }
+    if (restoredSnapshotRef.current) return;
+
+    // Reset suppression if the user makes a new edit
+    if (clearedSnapshotRef.current && snapshot !== clearedSnapshotRef.current) {
+      clearedSnapshotRef.current = null;
+    }
+
+    if (!hasMeaningfulContent(latestDataRef.current)) {
       setStatus('idle');
       return;
     }
+
     if (snapshot === lastSavedSnapshotRef.current) {
-      if (status === 'saving' || status === 'dirty') {
-        setStatus('saved');
-      }
+      setStatus(current => (current === 'saving' || current === 'dirty' ? 'saved' : current));
       return;
     }
 
@@ -215,14 +288,15 @@ export function useAutosave(
     }
 
     saveTimeoutRef.current = setTimeout(() => {
+      saveTimeoutRef.current = null;
       try {
         setStatus('saving');
         const envelope: AutosaveEnvelope = {
           schemaVersion: AUTOSAVE_SCHEMA_VERSION,
           postId,
           savedAt: Date.now(),
-          basedOnServerUpdatedAt: serverUpdatedAt,
-          payload: data,
+          basedOnServerUpdatedAt: latestServerUpdatedRef.current,
+          payload: latestDataRef.current,
         };
         localStorage.setItem(key, JSON.stringify(envelope));
         lastSavedSnapshotRef.current = snapshot;
@@ -236,13 +310,54 @@ export function useAutosave(
     return () => {
       if (saveTimeoutRef.current) {
         clearTimeout(saveTimeoutRef.current);
+        saveTimeoutRef.current = null;
       }
     };
-  }, [key, postId, data, enabled, snapshot, status, serverUpdatedAt]);
+  }, [key, postId, enabled, snapshot, serverUpdatedAt]);
+
+  // Synchronous save on unmount or tab close if there are pending changes
+  useEffect(() => {
+    const handleBeforeUnload = () => {
+      if (!enabled) return;
+      const currentData = latestDataRef.current;
+      const currentSnapshot = JSON.stringify(currentData);
+      
+      // Skip if suppressed (just cleared) or no meaningful changes
+      if (currentSnapshot === clearedSnapshotRef.current) return;
+      if (currentSnapshot === lastSavedSnapshotRef.current) return;
+      if (!hasMeaningfulContent(currentData)) return;
+
+      try {
+        const envelope: AutosaveEnvelope = {
+          schemaVersion: AUTOSAVE_SCHEMA_VERSION,
+          postId,
+          savedAt: Date.now(),
+          basedOnServerUpdatedAt: latestServerUpdatedRef.current,
+          payload: currentData,
+        };
+        localStorage.setItem(key, JSON.stringify(envelope));
+        lastSavedSnapshotRef.current = currentSnapshot;
+      } catch {}
+    };
+    
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      handleBeforeUnload(); // run on component unmount
+    };
+  }, [key, postId, enabled]);
 
   const clearSave = useCallback(() => {
+    const currentSnapshot = JSON.stringify(latestDataRef.current);
+    clearedSnapshotRef.current = currentSnapshot;
+    lastSavedSnapshotRef.current = currentSnapshot;
+    
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
+      saveTimeoutRef.current = null;
+    }
+
     try { localStorage.removeItem(key); } catch {/* storage unavailable */}
-    lastSavedSnapshotRef.current = '';
     setLastSavedAt(null);
     setStatus('idle');
   }, [key]);

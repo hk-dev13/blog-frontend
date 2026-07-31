@@ -7,7 +7,15 @@ import { fetchApi, fetchPaginatedApi } from '@/lib/api';
 import { Category, Tag } from '@/types';
 import { Loader2, Image as ImageIcon, Upload, ChevronDown, ChevronUp, CalendarClock, Globe, Save, Search, Trash2, Plus, X, Lock, Unlock, Clock, AlignLeft, Star, AlertCircle, PanelRightClose, PanelRightOpen } from 'lucide-react';
 import { useAppStore } from '@/store/useAppStore';
-import { generateSlug, getContentStats, getLocalDateTimeMin, useAutosave, type AutosaveData, type RestoreState, type AutosaveEnvelope } from '@/lib/editorUtils';
+import { 
+  useAutosave, 
+  getLocalDateTimeMin, 
+  AutosaveRestoreCandidate,
+  generateSlug,
+  getContentStats,
+  type AutosaveData
+} from '@/lib/editorUtils';
+import { AutosaveRestorePrompt } from '@/components/admin/AutosaveRestorePrompt';
 import { useToastStore } from '@/store/useToastStore';
 import { API_URL } from '@/lib/env';
 import RichTextEditor from '@/components/admin/RichTextEditor';
@@ -49,7 +57,35 @@ export default function CreatePostPage() {
   const [editorMode, setEditorMode] = useState<'wysiwyg' | 'markdown'>('wysiwyg');
   const [showOptionsSidebar, setShowOptionsSidebar] = useState(true);
   const [modalState, setModalState] = useState<{ isOpen: boolean; type: 'category' | 'tag'; name: string }>({ isOpen: false, type: 'category', name: '' });
-  const [autosaveRestoreState, setAutosaveRestoreState] = useState<{ state: RestoreState; envelope: AutosaveEnvelope } | null>(null);
+  const [autosaveRestoreState, setAutosaveRestoreState] = useState<AutosaveRestoreCandidate | null>(null);
+
+  const handleRestoreAvailable = useCallback((candidate: AutosaveRestoreCandidate) => {
+    setAutosaveRestoreState(candidate);
+  }, []);
+
+  const handleAutosaveRestore = () => {
+    const candidate = autosaveRestoreState;
+    if (!candidate) return;
+    const p = candidate.envelope.payload;
+    setTitle(p.title);
+    setExcerpt(p.excerpt);
+    setContent(p.content);
+    setMetaTitle(p.metaTitle);
+    setMetaDescription(p.metaDescription);
+    setCanonicalUrl(p.canonicalUrl);
+    setCoverImageUrl(p.coverImageUrl);
+    setCoverImageAlt(p.coverImageAlt);
+    setIsFeatured(p.isFeatured);
+    setSelectedCategories(p.selectedCategories);
+    setSelectedTags(p.selectedTags);
+    setScheduleDate(p.scheduleDate);
+    setFocusKeyword(p.focusKeyword);
+    if (p.slug) { setSlug(p.slug); setSlugLocked(true); }
+    
+    candidate.accept(p);
+    setAutosaveRestoreState(null);
+  };
+
   const contentRef = useRef<HTMLTextAreaElement>(null);
   const coverImageInputRef = useRef<HTMLInputElement>(null);
   const isSavingRef = useRef(false);
@@ -69,30 +105,9 @@ export default function CreatePostPage() {
     'new',
     autosaveData,
     true,
-    (state, envelope) => setAutosaveRestoreState({ state, envelope }),
+    handleRestoreAvailable,
     null, // create mode — no server updated_at
   );
-
-  // Restore handler for AutosaveRestorePrompt (used in JSX below)
-  const handleAutosaveRestore = useCallback(() => {
-    if (!autosaveRestoreState) return;
-    const p = autosaveRestoreState.envelope.payload;
-    setTitle(p.title);
-    setExcerpt(p.excerpt);
-    setContent(p.content);
-    setMetaTitle(p.metaTitle);
-    setMetaDescription(p.metaDescription);
-    setCanonicalUrl(p.canonicalUrl);
-    setCoverImageUrl(p.coverImageUrl);
-    setCoverImageAlt(p.coverImageAlt);
-    setIsFeatured(p.isFeatured);
-    setSelectedCategories(p.selectedCategories);
-    setSelectedTags(p.selectedTags);
-    setScheduleDate(p.scheduleDate);
-    setFocusKeyword(p.focusKeyword);
-    if (p.slug) { setSlug(p.slug); setSlugLocked(true); }
-    setAutosaveRestoreState(null);
-  }, [autosaveRestoreState]);
 
   const autosaveLabel = autosaveStatus === 'saving'
     ? 'Saving draft...'
@@ -358,34 +373,17 @@ export default function CreatePostPage() {
         onScheduleDateChange={setScheduleDate}
       />
 
-      {/* Autosave restore prompt (replaces browser confirm()) */}
+      {/* Top Banner for Autosave Restore */}
       {autosaveRestoreState && (
-        <div className="rounded-xl border border-amber-200 bg-amber-50 p-4 dark:border-amber-900/40 dark:bg-amber-900/10">
-          <p className="text-sm font-semibold text-amber-800 dark:text-amber-300">
-            {autosaveRestoreState.state === 'conflict'
-              ? '⚠️ A local draft exists, but the server has a newer version.'
-              : '📝 An autosaved draft was found.'}
-          </p>
-          <p className="mt-1 text-xs text-amber-700 dark:text-amber-400">
-            Saved {Math.round((Date.now() - autosaveRestoreState.envelope.savedAt) / 60000)} minutes ago
-          </p>
-          <div className="mt-3 flex gap-2">
-            <button
-              type="button"
-              onClick={handleAutosaveRestore}
-              className="rounded-lg bg-amber-500 px-3 py-1.5 text-xs font-semibold text-white hover:bg-amber-600 transition-colors"
-            >
-              Restore draft
-            </button>
-            <button
-              type="button"
-              onClick={() => { clearSave(); setAutosaveRestoreState(null); }}
-              className="rounded-lg border border-amber-200 px-3 py-1.5 text-xs font-medium text-amber-700 hover:bg-amber-100 dark:border-amber-800 dark:text-amber-400 dark:hover:bg-amber-900/20 transition-colors"
-            >
-              Discard
-            </button>
-          </div>
-        </div>
+        <AutosaveRestorePrompt
+          state={autosaveRestoreState.state}
+          envelope={autosaveRestoreState.envelope}
+          onRestore={handleAutosaveRestore}
+          onDiscard={() => {
+            autosaveRestoreState.discard();
+            setAutosaveRestoreState(null);
+          }}
+        />
       )}
 
       <div className={`grid grid-cols-1 gap-6 ${showOptionsSidebar ? 'lg:grid-cols-[minmax(0,1fr)_clamp(18rem,22vw,22rem)]' : ''}`}>
